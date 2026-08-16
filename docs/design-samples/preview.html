@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>운명人지도 · 관상 프로필 디자인 샘플</title>
+  <style>
+    :root {
+      --bg: #f7f4ef;
+      --card: #fff;
+      --text: #2c2825;
+      --muted: #7a7268;
+      --accent: #8b6f5c;
+      --border: #e8e2d9;
+      --rec: #c9a88a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    header {
+      padding: 2rem 1.25rem 1rem;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+    h1 { margin: 0 0 .5rem; font-size: 1.55rem; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); font-size: .95rem; max-width: 52rem; }
+    main { max-width: 1120px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+    section { margin-bottom: 2.75rem; }
+    h2 {
+      font-size: 1.12rem;
+      margin: 0 0 .35rem;
+      color: var(--accent);
+    }
+    h3 { font-size: .95rem; margin: 1.25rem 0 .5rem; }
+    .desc { color: var(--muted); font-size: .9rem; margin: 0 0 1rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: .9rem;
+    }
+    .grid.wide { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: .7rem;
+      text-align: center;
+    }
+    .card img, .card svg {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #faf8f5;
+      display: block;
+    }
+    .pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .35rem;
+      margin-bottom: .4rem;
+    }
+    .pair img { aspect-ratio: 1; width: 100%; border-radius: 8px; background: #faf8f5; }
+    .card strong { display: block; margin-top: .45rem; font-size: .84rem; }
+    .card span { display: block; font-size: .74rem; color: var(--muted); }
+    .tag {
+      display: inline-block;
+      font-size: .68rem;
+      padding: .12rem .42rem;
+      border-radius: 999px;
+      background: #efe9e1;
+      color: var(--accent);
+      margin-top: .3rem;
+    }
+    .tag.rec { background: #f3e8dc; color: #6b4f3a; }
+    .rec-card { border-color: var(--rec); box-shadow: 0 0 0 2px #c9a88a33; }
+    .links { font-size: .85rem; margin-top: .75rem; }
+    .links a { color: var(--accent); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .82rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: .55rem .65rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #f3efe8; color: var(--accent); font-weight: 600; }
+    tr:last-child td { border-bottom: none; }
+    .pill {
+      display: inline-block;
+      font-size: .68rem;
+      padding: .1rem .35rem;
+      border-radius: 6px;
+      background: #eee8df;
+      margin-right: .2rem;
+    }
+    .pill.yes { background: #e3f0e6; color: #2d5a3d; }
+    .pill.mid { background: #f5eed8; color: #6b5a2a; }
+    .pill.no { background: #f0e8e8; color: #6b4040; }
+    .compare {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      align-items: start;
+    }
+    .compare .card { padding: 1rem; }
+    code { font-size: .82em; background: #efe9e1; padding: .1rem .3rem; border-radius: 4px; }
+    footer {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 1.25rem 2rem;
+      font-size: .78rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>관상 프로필 디자인 샘플</h1>
+    <p class="sub">
+      현재 앱의 <strong>1안(SVG 파라미터)</strong>과 비교하며, <strong>2안(레이어 조합)</strong> 고도화 방향을 샘플링하는 로컬 갤러리입니다.
+      이미지는 DiceBear API·컨셉 시안으로 구성되어 있으며, 오프라인에서도 열 수 있습니다.
+    </p>
+  </header>
+
+  <main>
+    <section>
+      <h2>현재 구현 (1안) vs 목표 (2안)</h2>
+      <p class="desc">왼쪽은 앱에 들어가 있는 파라미터 SVG. 오른쪽은 레이어드 스타일 목표 느낌.</p>
+      <div class="compare">
+        <div class="card">
+          <svg viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg" aria-label="현재 1안 SVG">
+            <rect width="100" height="90" fill="#faf8f5"/>
+            <path d="M28 38 Q28 52 24 58 Q50 72 76 58 Q72 52 72 38 Q50 18 28 38 Z" fill="#8b6f5c" fill-opacity=".22" stroke="#7a7268" stroke-width="1.2" stroke-opacity=".55"/>
+            <path d="M36 32 Q42 28 46 32" stroke="#7a7268" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+            <path d="M54 32 Q58 28 64 32" stroke="#7a7268" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+            <ellipse cx="41" cy="40" rx="5.5" ry="3.8" fill="#8b6f5c" opacity=".35"/>
+            <ellipse cx="59" cy="40" rx="5.5" ry="3.8" fill="#8b6f5c" opacity=".35"/>
+            <path d="M35.5 39 Q41 36.5 46.5 39" stroke="#7a7268" stroke-width=".9" fill="none" opacity=".7"/>
+            <path d="M53.5 39 Q59 36.5 64.5 39" stroke="#7a7268" stroke-width=".9" fill="none" opacity=".7"/>
+            <path d="M47 44 L50 56 L53 44" stroke="#7a7268" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <path d="M38 60 Q50 62.5 62 60" stroke="#7a7268" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".8"/>
+          </svg>
+          <strong>현재 1안</strong>
+          <span><code>PhysiognomyFacePreview</code> · 베지어 파라미터</span>
+          <span class="tag">데이터 구조 완료</span>
+        </div>
+        <div class="card rec-card">
+          <img src="layered-papercut-concept.png" alt="레이어드 페이퍼컷 컨셉" />
+          <strong>2안 목표</strong>
+          <span>부위별 레이어 + 미세 그림자</span>
+          <span class="tag rec">추천 방향</span>
+        </div>
+        <div class="card rec-card">
+          <img src="avataaars.png" alt="Avataaars 레퍼런스" />
+          <strong>Avataaars</strong>
+          <span>레이어 조합 구조 참고</span>
+          <span class="tag rec">구현 레퍼런스</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>⭐ 추천: 레이어드 / 모던 벡터 (2안)</h2>
+      <p class="desc">부위별 SVG·PNG를 z-index로 겹치는 방식. 관상 위저드 데이터 구조와 가장 잘 맞습니다.</p>
+      <div class="grid wide">
+        <div class="card rec-card">
+          <div class="pair">
+            <img src="avataaars.png" alt="Avataaars A" />
+            <img src="avataaars-happy.png" alt="Avataaars B" />
+          </div>
+          <strong>Avataaars</strong>
+          <span>눈·코·입·헤어 레이어 교과서</span>
+          <span class="tag rec">2안 최적</span>
+        </div>
+        <div class="card rec-card">
+          <div class="pair">
+            <img src="lorelei.png" alt="Lorelei A" />
+            <img src="lorelei-2.png" alt="Lorelei B" />
+          </div>
+          <strong>Lorelei</strong>
+          <span>깔끔한 얼굴·헤어 라인</span>
+          <span class="tag rec">2안 최적</span>
+        </div>
+        <div class="card">
+          <div class="pair">
+            <img src="open-peeps.png" alt="Open Peeps A" />
+            <img src="open-peeps-2.png" alt="Open Peeps B" />
+          </div>
+          <strong>Open Peeps</strong>
+          <span>손그림·친근한 톤</span>
+        </div>
+        <div class="card">
+          <div class="pair">
+            <img src="notionists.png" alt="Notionists A" />
+            <img src="notionists-2.png" alt="Notionists B" />
+          </div>
+          <strong>Notionists</strong>
+          <span>노션 이모지 스타일</span>
+        </div>
+      </div>
+      <p class="links">
+        라이브 조합:
+        <a href="https://getavataaars.com/" target="_blank" rel="noopener">getavataaars.com</a> ·
+        <a href="https://notion-avatar.app/" target="_blank" rel="noopener">notion-avatar.app</a> ·
+        <a href="https://www.dicebear.com/styles/" target="_blank" rel="noopener">DiceBear 52종</a>
+      </p>
+    </section>
+
+    <section>
+      <h2>미니멀 / 캐릭터 변형</h2>
+      <p class="desc">관상 앱 톤에 맞게 단순화·여백 조절하면 좋은 스타일.</p>
+      <div class="grid">
+        <div class="card">
+          <div class="pair">
+            <img src="micah.png" alt="Micah A" />
+            <img src="micah-2.png" alt="Micah B" />
+          </div>
+          <strong>Micah</strong>
+          <span>선 위주 미니멀</span>
+        </div>
+        <div class="card">
+          <div class="pair">
+            <img src="croodles.png" alt="Croodles A" />
+            <img src="croodles-2.png" alt="Croodles B" />
+          </div>
+          <strong>Croodles</strong>
+          <span>낙서·친근함</span>
+        </div>
+        <div class="card">
+          <img src="big-smile.png" alt="Big Smile" />
+          <strong>Big Smile</strong>
+          <span>둥근 표정</span>
+        </div>
+        <div class="card">
+          <img src="adventurer.png" alt="Adventurer" />
+          <strong>Adventurer</strong>
+          <span>캐릭터풍</span>
+        </div>
+        <div class="card">
+          <img src="personas.png" alt="Personas" />
+          <strong>Personas</strong>
+          <span>중성·심플 실루엣</span>
+        </div>
+        <div class="card">
+          <img src="fun-emoji.png" alt="Fun Emoji" />
+          <strong>Fun Emoji</strong>
+          <span>이모지형 과장 표현</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>동양적 / 브랜드 차별화 (3안)</h2>
+      <p class="desc">관상 정체성에 맞는 고난도 방향. 수묵·여백·절제된 선.</p>
+      <div class="grid wide">
+        <div class="card">
+          <img src="zen-oriental-concept.png" alt="동양적 미니멀 컨셉" />
+          <strong>동양적 미니멀</strong>
+          <span>수묵·여백·이솝식 정갈함</span>
+          <span class="tag">브랜드 차별화</span>
+        </div>
+        <div class="card">
+          <img src="layered-papercut-concept.png" alt="레이어드 페이퍼컷" />
+          <strong>레이어드 페이퍼컷</strong>
+          <span>종이 겹침 + 미세 그림자</span>
+          <span class="tag rec">2안 목표 느낌</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>스타일 비교표</h2>
+      <p class="desc">현재 코드 구조와의 궁합, 관상 앱 톤 적합도.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>스타일</th>
+            <th>레이어 조합</th>
+            <th>관상 톤</th>
+            <th>구현 난이도</th>
+            <th>메모</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Avataaars / Lorelei</strong></td>
+            <td><span class="pill yes">최적</span></td>
+            <td><span class="pill mid">중</span></td>
+            <td><span class="pill mid">중</span></td>
+            <td>부위별 에셋 분리 구조가 명확. 2안 1순위.</td>
+          </tr>
+          <tr>
+            <td><strong>Notionists / Micah</strong></td>
+            <td><span class="pill yes">좋음</span></td>
+            <td><span class="pill yes">좋음</span></td>
+            <td><span class="pill mid">중</span></td>
+            <td>미니멀·모던. 파스텔/무채색으로 톤 다운 가능.</td>
+          </tr>
+          <tr>
+            <td><strong>Open Peeps / Croodles</strong></td>
+            <td><span class="pill mid">가능</span></td>
+            <td><span class="pill mid">중</span></td>
+            <td><span class="pill yes">쉬움</span></td>
+            <td>친근하지만 관상 무게감은 약할 수 있음.</td>
+          </tr>
+          <tr>
+            <td><strong>동양적 미니멀 (3안)</strong></td>
+            <td><span class="pill mid">커스텀</span></td>
+            <td><span class="pill yes">최적</span></td>
+            <td><span class="pill no">높음</span></td>
+            <td>브랜드 차별화 최고. 전용 일러스트 제작 필요.</td>
+          </tr>
+          <tr>
+            <td><strong>현재 1안 (SVG 파라미터)</strong></td>
+            <td><span class="pill no">없음</span></td>
+            <td><span class="pill mid">중</span></td>
+            <td><span class="pill yes">완료</span></td>
+            <td>데이터·위저드 완료. 시각 고도화만 남음.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>구현 메모</h2>
+      <p class="desc">
+        <strong>2안 전환 시:</strong> 이마·눈·코·입·턱별 PNG/SVG 에셋 + z-index 레이어 스택.
+        관상 선택값(<code>physiognomy.json</code>) → 부위 variant id 매핑.
+      </p>
+      <h3>오픈소스 참고</h3>
+      <p class="desc">
+        <a href="https://github.com/fangpenlin/avataaars">avataaars</a> (MIT) ·
+        <a href="https://github.com/dicebear/dicebear">DiceBear</a> (CC0/CC BY) ·
+        <a href="https://github.com/ashleyyip/lorelei">Lorelei</a>
+      </p>
+      <h3>샘플 갱신</h3>
+      <p class="desc"><code>./scripts/fetch-design-samples.sh</code> 또는 <code>npm run design:samples</code></p>
+    </section>
+  </main>
+
+  <footer>
+  이미지 출처: DiceBear API (7.x) · 컨셉 시안은 앱 디자인 탐색용. 상업 사용 전 각 스타일 라이선스 확인.
+  </footer>
+</body>
+</html>

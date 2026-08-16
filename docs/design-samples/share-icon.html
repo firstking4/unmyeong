@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>공유 아이콘</title>
+<style>
+  :root { --ink:#1A1714; --seal:#B23A2F; --mist:#8A8278; --paper:#F5F3ED; --card:#FFFCF8; --rule:#E4DED4; }
+  body { margin:0; padding:32px; background:var(--paper); font:14px/1.6 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif; color:var(--ink); }
+  h1 { font-size:22px; margin:0 0 4px; }
+  h2 { font-size:15px; margin:32px 0 12px; }
+  p.note { color:var(--mist); margin:0; }
+  .row { display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap; }
+  .tile { background:var(--card); border:1px solid var(--rule); border-radius:16px; padding:14px; display:flex; align-items:center; justify-content:center; }
+  .dark { background:#1A1714; border-color:#1A1714; }
+  .cell { display:flex; flex-direction:column; align-items:center; }
+  .cap { color:var(--mist); font-size:12px; margin-top:6px; }
+  img.ref { max-width:420px; border:1px solid var(--rule); border-radius:12px; }
+  code { background:#fff; border:1px solid var(--rule); border-radius:6px; padding:2px 6px; font-size:12px; }
+</style>
+</head>
+<body>
+<h1>공유 아이콘</h1>
+<p class="note">벡터(SVG) 단일안 · <code>components/ui/ShareIcon.tsx</code> · viewBox 24</p>
+
+<h2>검정 아이콘</h2>
+<div class="row" id="light"></div>
+
+<h2>흰색 아이콘</h2>
+<div class="row" id="dark"></div>
+
+<h2>주홍 (강조용)</h2>
+<div class="row" id="seal"></div>
+
+<h2>레퍼런스</h2>
+<img class="ref" src="share-icon-reference.png" alt="reference" />
+
+<script>
+const icon = (c) => `
+<path d="M11 5.4H5.5a3.5 3.5 0 0 0-3.5 3.5v9.2a3.5 3.5 0 0 0 3.5 3.5h8.6a3.5 3.5 0 0 0 3.5-3.5v-4.4"
+  fill="none" stroke="${c}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M7.5 17.9C7.3 12.85 11.1 10.75 16.15 10.7"
+  fill="none" stroke="${c}" stroke-width="3.2" stroke-linecap="round"/>
+<path d="M14.8 3.25 21.3 8.25 14.8 13.25z"
+  fill="${c}" stroke="${c}" stroke-width="1.6" stroke-linejoin="round"/>`;
+
+const SIZES = [200, 64, 40, 24, 20, 18];
+
+for (const [id, color, dark] of [['light','#1A1714',false], ['dark','#FFFCF8',true], ['seal','#B23A2F',false]]) {
+  const row = document.getElementById(id);
+  for (const size of SIZES) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.innerHTML = `
+      <div class="tile ${dark ? 'dark' : ''}">
+        <svg width="${size}" height="${size}" viewBox="0 0 24 24">${icon(color)}</svg>
+      </div>
+      <div class="cap">${size}px</div>`;
+    row.appendChild(cell);
+  }
+}
+</script>
+</body>
+</html>

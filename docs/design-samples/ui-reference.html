@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>운명人지도 · 앱 전체 UI 레퍼런스</title>
+  <style>
+    :root {
+      --bg: #f3eee6;
+      --card: #fff;
+      --text: #1a1714;
+      --muted: #8a8278;
+      --accent: #b23a2f;
+      --border: #e8e2d9;
+      --rec: #c9a88a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    header, main { max-width: 1120px; margin: 0 auto; padding: 0 1.25rem; }
+    header { padding-top: 2rem; padding-bottom: 1rem; }
+    h1 { margin: 0 0 .4rem; font-size: 1.55rem; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); font-size: .95rem; max-width: 54rem; }
+    main { padding-bottom: 3rem; }
+    section { margin-bottom: 2.75rem; }
+    h2 { font-size: 1.12rem; margin: 0 0 .35rem; color: var(--accent); }
+    h3 { font-size: .95rem; margin: 1.25rem 0 .5rem; }
+    .desc { color: var(--muted); font-size: .9rem; margin: 0 0 1rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    .grid.wide { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem;
+    }
+    .card img {
+      width: 100%;
+      border-radius: 10px;
+      background: #faf8f5;
+      display: block;
+    }
+    .card strong { display: block; margin-top: .6rem; font-size: .9rem; }
+    .card p { margin: .35rem 0 0; font-size: .82rem; color: var(--muted); }
+    .tag {
+      display: inline-block;
+      font-size: .68rem;
+      padding: .12rem .45rem;
+      border-radius: 999px;
+      background: #efe9e1;
+      color: var(--accent);
+      margin-top: .4rem;
+      margin-right: .25rem;
+    }
+    .tag.rec { background: #f3e8dc; color: #6b4f3a; }
+    .links { font-size: .8rem; margin-top: .5rem; }
+    .links a { color: var(--accent); text-decoration: none; }
+    .links a:hover { text-decoration: underline; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .84rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td { padding: .6rem .75rem; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #faf8f5; color: var(--accent); font-weight: 600; }
+    tr:last-child td { border-bottom: none; }
+    .mock {
+      border-radius: 12px;
+      padding: 1rem;
+      background: #faf8f5;
+      border: 1px solid var(--border);
+      font-size: .78rem;
+    }
+    .mock-phone {
+      width: 180px;
+      margin: 0 auto;
+      border: 2px solid #1a1714;
+      border-radius: 22px;
+      padding: 8px;
+      background: #f3eee6;
+    }
+    .mock-screen { border-radius: 14px; padding: 10px; background: #f3eee6; min-height: 280px; }
+    .mock-id {
+      background: #eae3d8;
+      border: 1.5px solid #b23a2f;
+      border-radius: 8px;
+      padding: 8px;
+      display: grid;
+      grid-template-columns: 1fr 48px;
+      gap: 6px;
+      font-size: 7px;
+    }
+    .mock-fortune {
+      margin-top: 8px;
+      background: #eae3d8;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 7px;
+    }
+    .mock-ring {
+      width: 36px; height: 36px;
+      border: 3px solid #b23a2f;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: #b23a2f;
+      float: right;
+    }
+    .nav { margin-bottom: 1.5rem; font-size: .85rem; }
+    .nav a { color: var(--accent); margin-right: 1rem; }
+    .takeaway {
+      background: #fff;
+      border-left: 3px solid var(--accent);
+      padding: .75rem 1rem;
+      border-radius: 0 10px 10px 0;
+      font-size: .88rem;
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>운명人지도 · 앱 전체 UI 레퍼런스</h1>
+    <p class="sub">
+      프로필 아바타(이전 조사)를 넘어 <strong>홈·신분증·운세·탭 구조</strong> 전반의 고도화 방향을 정리했습니다.
+      현재 팔레트(잉크·한지·인장 적색)와 조선궁서체를 살리는 것이 차별화 포인트입니다.
+    </p>
+    <nav class="nav">
+      <a href="preview.html">← 프로필 아바타 샘플</a>
+      <a href="#directions">방향 4가지</a>
+      <a href="#apps">앱 레퍼런스</a>
+      <a href="#components">컴포넌트별</a>
+      <a href="#roadmap">로드맵</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="directions">
+      <h2>1. 추천 UI 방향 4가지</h2>
+      <p class="desc">지금 앱 톤과의 궁합 + 구현 난이도 기준. ⭐ = 현재 브랜드와 가장 잘 맞음.</p>
+
+      <div class="grid wide">
+        <div class="card">
+          <img src="ui-concept-editorial-home.png" alt="에디토리얼 홈 컨셉" />
+          <strong>⭐ A. 에디토리얼 동양 미니멀 (추천)</strong>
+          <p>한지 배경 + 인장 적색 포인트 + 여백. 이솝·일본 에디토리얼 앱 느낌. 지금 Colors.ts와 동일 계열.</p>
+          <span class="tag rec">1순위</span><span class="tag">신분증</span><span class="tag">타이포</span>
+        </div>
+        <div class="card">
+          <img src="ui-concept-saju-tab.png" alt="사주 탭 컨셉" />
+          <strong>⭐ B. 데이터 카드 + 오행 시각화</strong>
+          <p>사주·타로·관상 탭에 차트·칩·레이어 카드. Apple Health식 정보 밀도 + 동양 무늬.</p>
+          <span class="tag rec">탭 고도화</span><span class="tag">차트</span>
+        </div>
+        <div class="card">
+          <img src="ui-concept-style-comparison.png" alt="스타일 비교" />
+          <strong>C. 타이포 중심 (Co-Star식)</strong>
+          <p>일러스트 최소, 시적인 문장·큰 글자·다크모드. 젊은 층 친화적이나 동양 정체성은 약해짐.</p>
+          <span class="tag">참고만</span><span class="tag">카피</span>
+        </div>
+        <div class="card">
+          <div class="mock">
+            <div class="mock-phone">
+              <div class="mock-screen" style="background: linear-gradient(160deg,#2d1b69,#7c3aed);color:#fff;font-size:7px;">
+                <div style="padding:6px;">오늘의 운세 ✨</div>
+                <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:8px;margin-top:8px;">
+                  <div style="font-size:14px;">대길 🎉</div>
+                  <div>연애운 UP!</div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:8px;">
+                  <div style="background:#ffd70033;border-radius:6px;padding:6px;text-align:center;">타로</div>
+                  <div style="background:#ff69b433;border-radius:6px;padding:6px;text-align:center;">사주</div>
+                </div>
+              </div>
+            </div>
+            <p style="text-align:center;margin:.5rem 0 0;color:var(--muted);">점신·포스텔러 계열 (비추천)</p>
+          </div>
+          <strong>D. 컬러풀 게이미피케이션</strong>
+          <p>보라·금색·일러스트·배너. 전환율은 높지만 운명人지도 브랜드와 충돌. 요소만 참고.</p>
+          <span class="tag">한국 시장 참고</span>
+        </div>
+      </div>
+
+      <div class="takeaway">
+        <strong>결론:</strong> A(에디토리얼) + B(데이터 카드) 조합이 가장 자연스럽습니다.
+        C는 운세 문구·헤드라인 톤만, D는 카드 그리드·온보딩 흐름만 빌려오세요.
+      </div>
+    </section>
+
+    <section id="apps">
+      <h2>2. 앱·서비스 레퍼런스</h2>
+      <p class="desc">직접 베끼기보다 “이 앱에서 뭘 가져올지” 기준으로 정리.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>앱/서비스</th>
+            <th>가져올 요소</th>
+            <th>피할 요소</th>
+            <th>우리 앱 적용</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Co-Star</strong></td>
+            <td>시적인 헤드라인, 여백, 다크모드 타이포</td>
+            <td>완전 흑백·서양 점성술 톤</td>
+            <td>IntegratedFortune 헤드라인·요약 문장 스타일</td>
+          </tr>
+          <tr>
+            <td><strong>The Pattern</strong></td>
+            <td>타임라인·사이클 카드, 친구 비교</td>
+            <td>영문 중심 UX</td>
+            <td>“이번 주 흐름” 섹션 (2차)</td>
+          </tr>
+          <tr>
+            <td><strong>CHANI</strong></td>
+            <td>따뜻한 팔레트, 여성향 타이포</td>
+            <td>파스텔 과다</td>
+            <td>성향 탭 톤앤매너</td>
+          </tr>
+          <tr>
+            <td><strong>점신 / 포스텔러</strong></td>
+            <td>탭 구조, 콘텐츠 허브, 잠금→해제 흐름</td>
+            <td>보라 그라데이션, 과한 일러스트</td>
+            <td>LockedFortune → 열림 패턴 (이미 유사)</td>
+          </tr>
+          <tr>
+            <td><strong>헬로우봇</strong></td>
+            <td>캐릭터 친근함, 대화형 온보딩</td>
+            <td>챗봇 UI 전면</td>
+            <td>관상 위저드 대화 톤 (선택)</td>
+          </tr>
+          <tr>
+            <td><strong>Apple Health</strong></td>
+            <td>링 차트, 인사이트 칩, 카드 섹션</td>
+            <td>의료 UI 느낌</td>
+            <td>ScoreRing·InsightChips 고도화</td>
+          </tr>
+          <tr>
+            <td><strong>지갑/신분증 앱</strong></td>
+            <td>ID 카드 비율, 필드 탭 편집, 증명사진 프레임</td>
+            <td>정부 UI 딱딱함</td>
+            <td>IdentityCard 레이아웃·테두리</td>
+          </tr>
+          <tr>
+            <td><strong>이솝(Aesop) / 무인양품</strong></td>
+            <td>여백, 절제된 색, 고급 종이 질감</td>
+            <td>웹 중심</td>
+            <td>전체 브랜드 톤 (배경·카드 질감)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>디자인 갤러리 (스크린샷 모음)</h3>
+      <div class="links">
+        <a href="https://dribbble.com/search/astrology-ui-design" target="_blank">Dribbble · Astrology UI</a> ·
+        <a href="https://www.behance.net/search/projects/astrology%20application%20ui%20design" target="_blank">Behance · Astrology App</a> ·
+        <a href="https://screensdesign.com/showcase/costar-personalized-astrology" target="_blank">ScreensDesign · Co-Star</a> ·
+        <a href="https://uibowl.io" target="_blank">UIBowl · 한국 앱 UX 분석</a> ·
+        <a href="https://mobbin.com/browse/ios/apps" target="_blank">Mobbin · iOS 앱 UI</a>
+      </div>
+    </section>
+
+    <section id="components">
+      <h2>3. 화면별 고도화 체크리스트</h2>
+
+      <div class="grid">
+        <div class="card">
+          <div class="mock">
+            <div class="mock-phone">
+              <div class="mock-screen">
+                <div style="font-size:8px;color:#8a8278;">8월 10일 월</div>
+                <div style="font-size:10px;font-weight:600;margin:4px 0;">종윤님의 오늘</div>
+                <div class="mock-id">
+                  <div>
+                    <div>이름 · 생년월일</div>
+                    <div>MBTI · 별자리</div>
+                  </div>
+                  <div style="background:#ddd;border-radius:4px;height:56px;"></div>
+                </div>
+                <div class="mock-fortune">
+                  <div style="color:#b23a2f;font-size:7px;">오늘의 종합 운세</div>
+                  <div class="mock-ring">78</div>
+                  <div style="clear:both;">차분히 결정하면 좋은 날</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <strong>홈 (index)</strong>
+          <p>신분증+운세 수직 흐름 → 카드 간격·섹션 라벨 통일. 히어로에 오늘 날짜+한 줄 인사 강화.</p>
+        </div>
+
+        <div class="card">
+          <strong>신분증 IdentityCard</strong>
+          <p>증명사진 비율(7:9) 유지. 테두리=프로필 완성도 색 변화(이미 구현). 인장 스탬프·한지 텍스처 배경 추가 검토.</p>
+          <span class="tag">지갑앱 참고</span>
+        </div>
+
+        <div class="card">
+          <strong>종합 운세 IntegratedFortune</strong>
+          <p>ScoreRing → 오행 색 링 또는 사주 기운 그래프. InsightChips → 카테고리별(연애·재물·건강) 분리.</p>
+          <span class="tag">Health 앱</span>
+        </div>
+
+        <div class="card">
+          <strong>탭 허브 SectionHub</strong>
+          <p>“준비 중” 리스트 → 아이콘+미니 프리뷰 카드 그리드. 사주=팔자표, 타로=카드 뒷면, 관상=부위 맵.</p>
+          <span class="tag">콘텐츠 허브</span>
+        </div>
+
+        <div class="card">
+          <strong>관상 위저드</strong>
+          <p>단계 인디케이터, 큰 미리보기, 부위별 일러스트. → <a href="preview.html">아바타 샘플</a> 참고.</p>
+          <span class="tag">Avataaars식</span>
+        </div>
+
+        <div class="card">
+          <strong>타이포·색</strong>
+          <p>제목=조선궁서(ChosunGs), 본문=산세리프. 적색은 CTA·인장·강조만. 보라 그라데이션 금지(현행 유지).</p>
+          <span class="tag">브랜드</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>4. 디자인 토큰 제안 (현행 확장)</h2>
+      <table>
+        <thead>
+          <tr><th>토큰</th><th>현재</th><th>제안</th><th>용도</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>background</td><td>#F3EEE6</td><td>+ 미세 노이즈 텍스처</td><td>한지 느낌</td></tr>
+          <tr><td>tint / seal</td><td>#B23A2F</td><td>유지</td><td>CTA·인장·완성 테두리</td></tr>
+          <tr><td>card</td><td>#EAE3D8</td><td>elevation shadow 추가</td><td>카드 떠있는 느낌</td></tr>
+          <tr><td>radius</td><td>혼재</td><td>12 / 16 / 20 통일</td><td>카드·모달</td></tr>
+          <tr><td>spacing</td><td>16~28</td><td>8pt 그리드 (8·16·24·32)</td><td>전체</td></tr>
+          <tr><td>오행색</td><td>없음</td><td>목#4a7c59 화#c45c4a 토#c9a227 금#9a9a9a 수#4a6fa5</td><td>사주·칩</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="roadmap">
+      <h2>5. 추천 로드맵</h2>
+      <table>
+        <thead>
+          <tr><th>단계</th><th>작업</th><th>효과</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1단계 (빠름)</strong></td>
+            <td>spacing·radius·섹션 라벨 통일, 카드 그림자, LockedFortune 애니메이션</td>
+            <td>전체 완성도 ↑</td>
+          </tr>
+          <tr>
+            <td><strong>2단계</strong></td>
+            <td>IntegratedFortune 카테고리 칩·오행 링, SectionHub 아이콘 카드</td>
+            <td>정보 밀도·시각화</td>
+          </tr>
+          <tr>
+            <td><strong>3단계</strong></td>
+            <td>신분증 한지 텍스처·인장 스탬프, 관상 아바타 레이어(2안)</td>
+            <td>브랜드 차별화</td>
+          </tr>
+          <tr>
+            <td><strong>4단계 (선택)</strong></td>
+            <td>다크모드 폴리시, 마이크로 인터랙션(탭·위저드 전환)</td>
+            <td>프리미엄 느낌</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="takeaway">
+        샘플링 순서: 이 페이지에서 방향 고르기 →
+        <a href="preview.html">프로필 아바타</a>에서 캐릭터 톤 고르기 →
+        마음에 드는 조합 알려주시면 1단계부터 코드 반영.
+      </div>
+    </section>
+  </main>
+</body>
+</html>

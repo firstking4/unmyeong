@@ -1,10 +1,19 @@
+import { NotoSansKR_400Regular } from '@expo-google-fonts/noto-sans-kr';
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect, useMemo } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
+import { ContactsProvider } from '@/context/ContactsContext';
+import { PersonalityResultsProvider } from '@/context/PersonalityResultsContext';
+import { ProfileProvider } from '@/context/ProfileContext';
+import { RewardUnlockProvider } from '@/context/RewardUnlockContext';
+import { AppThemeProvider } from '@/context/ThemeContext';
+import { getNotifications } from '@/lib/notificationsModule';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -18,10 +27,22 @@ export const unstable_settings = {
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+// setOptions(fade)는 개발 빌드에서만 지원 — Expo Go에서는 경고만 나고 무시됨.
+
+getNotifications()?.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    ChosunGs: require('../assets/fonts/ChosunGs.ttf'),
+    NotoSansKR_400Regular,
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
@@ -39,18 +60,114 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <AppThemeProvider>
+      <RootLayoutNav />
+    </AppThemeProvider>
+  );
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const scheme = useColorScheme();
+  const c = Colors[scheme];
+
+  const navTheme = useMemo(() => {
+    const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: c.tint,
+        background: c.background,
+        card: c.background,
+        text: c.text,
+        border: c.hairline,
+        notification: c.tint,
+      },
+    };
+  }, [scheme, c.tint, c.background, c.text, c.hairline]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
+    <ProfileProvider>
+      <PersonalityResultsProvider>
+        <ContactsProvider>
+          <RewardUnlockProvider>
+            <ThemeProvider value={navTheme}>
+              <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+              <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="profile-edit"
+                options={{
+                  presentation: 'modal',
+                  title: '프로필관리',
+                  headerBackVisible: true,
+                  headerShadowVisible: false,
+                }}
+              />
+              <Stack.Screen
+                name="personality-test"
+                options={{
+                  presentation: 'modal',
+                  title: '성향 테스트',
+                  headerBackVisible: true,
+                  headerShadowVisible: false,
+                }}
+              />
+              <Stack.Screen
+                name="modal"
+                options={{
+                  presentation: 'modal',
+                  title: '메뉴',
+                  headerBackVisible: true,
+                  headerShadowVisible: false,
+                  headerTransparent: false,
+                  headerStatusBarHeight: 8,
+                  headerTitleStyle: { fontSize: 17 },
+                }}
+              />
+              <Stack.Screen
+                name="gwansang"
+                options={{
+                  presentation: 'modal',
+                  title: '관상',
+                  headerBackVisible: true,
+                  headerShadowVisible: false,
+                  headerTransparent: false,
+                  headerStatusBarHeight: 8,
+                  headerTitleStyle: { fontSize: 17 },
+                }}
+              />
+              <Stack.Screen
+                name="saju-code-share"
+                options={{
+                  presentation: 'modal',
+                  title: '사주 코드 공유',
+                  headerBackVisible: true,
+                  headerShadowVisible: false,
+                  headerTransparent: false,
+                  headerStatusBarHeight: 8,
+                  headerTitleStyle: { fontSize: 17 },
+                }}
+              />
+              <Stack.Screen
+                name="history"
+                options={{
+                  presentation: 'modal',
+                  title: '기록',
+                  headerBackVisible: true,
+                  headerShadowVisible: false,
+                  headerTransparent: false,
+                  headerStatusBarHeight: 8,
+                  headerTitleStyle: { fontSize: 17 },
+                }}
+              />
+              <Stack.Screen name="contact" options={{ headerShown: false }} />
+              </Stack>
+            </ThemeProvider>
+          </RewardUnlockProvider>
+        </ContactsProvider>
+      </PersonalityResultsProvider>
+    </ProfileProvider>
   );
 }

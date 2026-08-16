@@ -1,0 +1,25 @@
+---
+description: 성향·사주·타로 탭의 카드/섹션 타이틀·구분선 간격 공통 스타일
+alwaysApply: true
+---
+
+# 탭 섹션 스타일 (사주 기준)
+
+성향·사주·타로·지인 화면은 `constants/Theme.ts`의 `tabSection`을 쓴다.
+
+- **페이지:** `content` · `eyebrow`(letterSpacing 3) · `pageTitle` 32 · `lead` 15 · `disclaimer`
+- **최상단 오늘 카드 타이틀** (`tabSection.cardTitle`): 26 / lineHeight 34, display 폰트
+- **카드 밖 섹션 타이틀** (`tabSection.title`): 동일 크기
+- **구분 밑줄** (`tabSection.rule`): `marginTop` = `paddingTop` = `space.sm`(16) — 위·아래 동일. 선 색은 `hairline`
+- **오늘 카드 셸** (`tabSection.card`): padding 18, radius.lg, marginBottom 0 (다음 섹션이 rule로 간격)
+- **카드 안 요약·상세** (`tabSection.cardSplit`): 헤드라인·부제·키워드(요약) 아래 hairline → 상세. 라인 위·아래 여백 동일 (`space.sm`)
+  - 요약 안 세로 간격: `summaryGap` 8 · 플로우 타이틀: `flowTitle` 16
+  - 상세 풀이 타이포: `detailBody` 15/22 · `detailLabel` 13 · `detailHint` 14/21
+  - 사주 상세: `LockedContentCard`(잠금·설명·CTA). 광고 전 스탠드인은 CTA 탭 → `summary`·`hints` 노출
+  - 타로 상세: `LockedContentCard` → CTA 탭 시 blurb·summary·hints 노출
+  - 컴포넌트: `components/ui/LockedContentCard.tsx`
+- **UpcomingFeatures:** `marginTop` = `space.sm`(16)
+
+명칭은 화면별: 사주 `오늘의 사주` / 타로 `오늘의 카드` / 성향 `오늘의 성향`.
+사주 잠금은 **오늘의 사주** 상세만. 이달·올해는 바로 본문·힌트 노출.
+성향은 최상단 `오늘의 성향` 카드 + 아래 `나의 성향`(비카드) + 지표 섹션.

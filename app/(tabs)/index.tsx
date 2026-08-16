@@ -1,31 +1,66 @@
-import { StyleSheet } from 'react-native';
+import { useRef } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+import { IntegratedFortune } from '@/components/IntegratedFortune';
+import { IdentityCard } from '@/components/id-card/IdentityCard';
+import { AdBannerSlot } from '@/components/home/AdBannerSlot';
+import { DestinyQuote } from '@/components/home/DestinyQuote';
+import { HomeHeroFilled } from '@/components/home/HomeHeroFilled';
+import { LockedFortune } from '@/components/home/LockedFortune';
+import { TodayKeywords } from '@/components/home/TodayKeywords';
+import { PaperGrain } from '@/components/ui/PaperGrain';
+import Colors from '@/constants/Colors';
+import { space } from '@/constants/Theme';
+import { useColorScheme } from '@/components/useColorScheme';
+import { useProfile } from '@/context/ProfileContext';
 
-export default function TabOneScreen() {
+export default function HomeScreen() {
+  const scheme = useColorScheme() ?? 'light';
+  const c = Colors[scheme];
+  const { fortuneReady } = useProfile();
+  const scrollRef = useRef<ScrollView>(null);
+  const fortuneY = useRef(0);
+
+  const scrollToFortune = () => {
+    scrollRef.current?.scrollTo({ y: Math.max(0, fortuneY.current - 12), animated: true });
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+    <View style={{ flex: 1, backgroundColor: c.background }}>
+      <PaperGrain color={c.grain} />
+      <ScrollView
+        ref={scrollRef}
+        style={{ flex: 1, backgroundColor: 'transparent' }}
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled">
+        <HomeHeroFilled />
+        <View style={styles.profileGap}>
+          <IdentityCard />
+        </View>
+        <View style={styles.adGap}>
+          <AdBannerSlot />
+        </View>
+        <View onLayout={(e) => { fortuneY.current = e.nativeEvent.layout.y; }}>
+          {fortuneReady ? <IntegratedFortune /> : <LockedFortune />}
+        </View>
+        <TodayKeywords onPressMapKeyword={scrollToFortune} />
+        <DestinyQuote />
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: space.md,
+    paddingTop: space.sm,
+    paddingBottom: space.lg,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  profileGap: {
+    marginTop: space.sm,
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  adGap: {
+    marginTop: space.sm,
+    marginBottom: space.xs,
   },
 });

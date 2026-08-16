@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "app": "unmyeong-injido",
+  "format": "encrypted",
+  "kdf": "pbkdf2-sha256",
+  "iterations": 120000,
+  "salt": "「랜덤 Base64」",
+  "iv": "「랜덤 Base64」",
+  "ciphertext": "「AES-256-GCM으로 암호화된 프로필·관상·지인 JSON」",
+  "exportedAt": "2026-08-16T09:50:00.000Z"
+}

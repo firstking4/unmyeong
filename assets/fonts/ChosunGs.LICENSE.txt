@@ -1,0 +1,7 @@
+조선궁서체 (ChosunGs)
+Copyright (c) Chosun Ilbo
+Free for personal/commercial use; do not sell or modify for sale.
+Do not redistribute a modified font file; use as distributed.
+https://noonnu.cc/font_page/416
+https://event.chosun.com/100/100font.html
+Full Hangul syllable coverage (11,172).

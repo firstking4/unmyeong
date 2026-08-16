@@ -1,0 +1,55 @@
+---
+description: 하단 탭 아이콘은 후보에서 언제든 교체 가능 — 생성 스크립트·샘플 시트 기준
+alwaysApply: true
+---
+
+# 하단 탭 아이콘 (교체 가능)
+
+탭바 아이콘은 앱 코드에 하드코딩된 그림이 아니라 **생성 PNG**다. 나중에 바꿔도 된다 — 사용자가 자주 재선정할 수 있다고 명시함.
+
+## 현재 선택 (2026-08-15)
+
+| 탭 | 코드 | 이름 |
+|---|---|---|
+| 지도 | **인장** | 브랜드 dojang (人) — `scripts/generate-seal-icon.py`의 `seal_alpha()` 공유 |
+| 성향 | **21** | 인물기운 (원안) |
+| 사주 | **30** | 오행링 (원안) |
+| 타로 | **05** | 카드달 (원안) |
+| 지인 | **46** | 두원 — seonghyang 시트 (임시) |
+
+약칭: **人·21·30·05·46** (50-후보 시트 번호)
+
+라벨: `body` (NotoSansKR), ~11pt. 지도(인장) 표시 ~28 · 나머지 ~30.
+비인장 아이콘은 생성 시 `CONTENT_FILL≈0.90`으로 캔버스에 맞춰 키워 인장과 광학 크기를 맞춘다.
+
+관상은 하단 탭이 아니라 **메뉴 모달**(`app/modal.tsx` → `/gwansang`)로 진입한다.
+
+## 교체 방법
+
+1. 후보 시트 확인:
+   - `docs/design-samples/tab-icon-candidates.png` (A–E, 전 탭)
+   - `docs/design-samples/tab-icon-tarot-gwansang-extra.png` (타로·관상 F–J, 면)
+   - `docs/design-samples/tab-icon-line-extra.png` (타로·관상 K–O, 선)
+2. `scripts/generate-tab-icons.py`의 `PICKS`에서 탭별 (모듈, 번호)를 바꾼다 — 홈은 `seal_alpha`
+3. `npm run icons:tabs` 실행 → `assets/images/tabs/{name}.png` / `-active.png` 갱신
+4. 앱 쪽 `TabIconImage` 경로는 그대로라 코드 변경 불필요
+
+## 샘플 재생성
+
+- **현행 후보(각 50)**: `python3 scripts/sample-tab-icons-50.py`
+  → `docs/design-samples/tab-icon-50-{seonghyang,saju,tarot,gwansang}.png`
+  - 도형은 `scripts/icon_candidates/*.py`, 드로잉 헬퍼는 `scripts/icon_kit.py`
+  - 24 그리드 · 스트로크 1.8(가는 선 1.25) · 라운드 캡 — 상용 아이콘셋 관례
+  - 시트 하단에 **28pt 실제 크기 스트립**이 같이 찍히므로 판독성은 거기서 판단
+- **숏리스트 비교(원안 vs 고도화)**: `python3 scripts/sample-tab-icons-shortlist.py`
+  → `docs/design-samples/tab-icon-shortlist.png`
+  - 고도화안은 `scripts/icon_candidates/shortlist.py`, 원안은 각 탭 모듈에 그대로 남아 있음
+  - 겹침 표현은 `_card_over`/`_halo`(제 실루엣만큼 지우고 다시 긋기)로 처리
+- 구버전(도장 질감) 시트: `sample-tab-icons.py`, `-extra.py`, `-line.py`
+
+## 스타일 메모
+
+- **또렷한 실루엣** — 도장 침식(질감) 없음. 면/선은 후보에 따라 선택
+- 홈만 예외: 브랜드 인장 그대로(질감 유지, 人 음각 유지). 인장 사각 테두리는 **모서리를 아주 살짝만** 둥글게(`generate-seal-icon.py`, radius ≈ 캔버스 6%) — 뾰족한 느낌만 덜어냄
+- 비활성 `MIST`, 활성 `SEAL` 주홍
+- 인장을 고치면 `python3 scripts/generate-seal-icon.py` → `npm run icons:tabs` 순으로 재생성 (헤더 `DojangSeal`과 홈 탭이 같은 마크를 씀)

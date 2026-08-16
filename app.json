@@ -1,18 +1,20 @@
 {
   "expo": {
-    "name": "unmyeong-injido",
+    "name": "운명人지도",
     "slug": "unmyeong-injido",
-    "version": "1.0.0",
+    "version": "0.1.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "unmyeonginjido",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yun.unmyeonginjido"
     },
     "android": {
+      "package": "com.yun.unmyeonginjido",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#F3EEE6",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -26,17 +28,40 @@
     },
     "plugins": [
       "expo-router",
+      "expo-notifications",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/splash-lockup.png",
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#F3EEE6",
+          "imageWidth": 236
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "appDisplayName": "운명人지도",
+      "corePillars": [
+        "성향",
+        "사주",
+        "타로",
+        "성향",
+        "사주",
+        "타로"
+      ],
+      "router": {},
+      "eas": {
+        "projectId": "8d329f50-671e-4aea-8319-3b2805a8d100"
+      }
+    },
+    "splash": {
+      "image": "./assets/images/splash-lockup.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F3EEE6"
+    },
+    "owner": "winter369"
   }
 }
