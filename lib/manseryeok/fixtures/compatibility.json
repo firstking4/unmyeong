@@ -25,14 +25,14 @@
         6,
         10,
         10,
-        12,
+        8,
         -6
       ],
-      "rawTotal": 32,
-      "todayScore": 59,
-      "baseCorrectionBonus": 24,
-      "dailyDelta": 32,
-      "score": 83
+      "rawTotal": 28,
+      "todayScore": 62,
+      "baseCorrectionBonus": 22,
+      "dailyDelta": 28,
+      "score": 84
     }
   },
   {
@@ -61,15 +61,15 @@
         6,
         5,
         2,
-        12,
+        8,
         12,
         3
       ],
-      "rawTotal": 40,
-      "todayScore": 70,
-      "baseCorrectionBonus": 16,
-      "dailyDelta": 40,
-      "score": 86
+      "rawTotal": 36,
+      "todayScore": 73,
+      "baseCorrectionBonus": 15,
+      "dailyDelta": 36,
+      "score": 88
     }
   },
   {
@@ -98,14 +98,14 @@
         6,
         10,
         10,
-        12,
+        8,
         -6
       ],
-      "rawTotal": 32,
-      "todayScore": 59,
-      "baseCorrectionBonus": 24,
-      "dailyDelta": 32,
-      "score": 83
+      "rawTotal": 28,
+      "todayScore": 62,
+      "baseCorrectionBonus": 22,
+      "dailyDelta": 28,
+      "score": 84
     }
   },
   {
@@ -134,14 +134,14 @@
         12,
         -10,
         6,
-        12,
+        8,
         -4
       ],
-      "rawTotal": 16,
-      "todayScore": 37,
-      "baseCorrectionBonus": 35,
-      "dailyDelta": 16,
-      "score": 72
+      "rawTotal": 12,
+      "todayScore": 42,
+      "baseCorrectionBonus": 32,
+      "dailyDelta": 12,
+      "score": 74
     }
   },
   {
@@ -170,14 +170,14 @@
         -12,
         10,
         -2,
-        12,
+        8,
         6
       ],
-      "rawTotal": 14,
-      "todayScore": 34,
-      "baseCorrectionBonus": 32,
-      "dailyDelta": 14,
-      "score": 66
+      "rawTotal": 10,
+      "todayScore": 39,
+      "baseCorrectionBonus": 30,
+      "dailyDelta": 10,
+      "score": 69
     }
   }
 ]

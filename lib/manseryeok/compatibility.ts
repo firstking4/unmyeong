@@ -89,8 +89,8 @@ const RELATION_TEN_GOD_DELTA: Record<string, number> = {
   편관: -10,
 };
 
-/** 합산용 — 오늘 일진 십신(각 1명분) +/−. 관계 항목과 맞춤(±12). */
-const TODAY_TEN_GOD_DELTA: Record<string, number> = {
+/** 합산용 — 오늘 일진 십신(지인) +/−. 관계 항목과 맞춤(±12). */
+const TODAY_OTHER_TEN_GOD_DELTA: Record<string, number> = {
   정재: 12,
   식신: 10,
   정인: 8,
@@ -103,21 +103,29 @@ const TODAY_TEN_GOD_DELTA: Record<string, number> = {
   편관: -12,
 };
 
+/**
+ * 합산용 — 오늘 일진 십신(나) +/−.
+ * 공통 항목이라 목록 전체를 끌어내리지 않게 지인 대비 약 2/3.
+ */
+const TODAY_SELF_TEN_GOD_DELTA: Record<string, number> = {
+  정재: 8,
+  식신: 7,
+  정인: 5,
+  정관: 4,
+  편재: 3,
+  비견: 0,
+  편인: -3,
+  상관: -4,
+  겁재: -5,
+  편관: -8,
+};
+
 const SAME_TODAY_TEN_GOD_BONUS = 3;
 /** 기본(시작) 점수 */
-const SCORE_ORIGIN = 10;
-/**
- * 항목 +/− 합산의 만점(전부 최고 플러스).
- * 환산: (기본 + raw) ÷ (기본 + 이 값) × 100
- */
-const MAX_POSITIVE_SUM =
-  ANIMAL_DELTA.육합 +
-  ELEMENT_DELTA.생함 +
-  RELATION_TEN_GOD_DELTA.정재 +
-  TODAY_TEN_GOD_DELTA.정재 +
-  TODAY_TEN_GOD_DELTA.정재 +
-  SAME_TODAY_TEN_GOD_BONUS; // 61
-const SCORE_SCALE_MAX = SCORE_ORIGIN + MAX_POSITIVE_SUM; // 71
+const SCORE_ORIGIN = 20;
+/** 항목 +/− 만점(육합12+생함10+정재12+나8+지인12+같은십신3). 환산 분모 = 시작 + 이 값 */
+const MAX_POSITIVE_SUM = 57;
+const SCORE_SCALE_MAX = SCORE_ORIGIN + MAX_POSITIVE_SUM; // 77
 const SCORE_FLOOR = 0;
 const SCORE_CEILING = 100;
 
@@ -220,8 +228,12 @@ function relationTenGodDelta(god: string): number {
   return RELATION_TEN_GOD_DELTA[god] ?? 0;
 }
 
-function todayTenGodDelta(god: string): number {
-  return TODAY_TEN_GOD_DELTA[god] ?? 0;
+function todaySelfTenGodDelta(god: string): number {
+  return TODAY_SELF_TEN_GOD_DELTA[god] ?? 0;
+}
+
+function todayOtherTenGodDelta(god: string): number {
+  return TODAY_OTHER_TEN_GOD_DELTA[god] ?? 0;
 }
 
 function formatDelta(delta: number): string {
@@ -230,8 +242,8 @@ function formatDelta(delta: number): string {
 }
 
 /**
- * 오늘의 궁합 = (기본 10 + 항목합산) ÷ (10 + 항목만점) × 100.
- * 항목만점 = 전부 최고 플러스(현재 61). 그때 정확히 100.
+ * 오늘의 궁합 = (기본 20 + 항목합산) ÷ (20 + 항목만점) × 100.
+ * 항목만점 = 전부 최고 플러스(현재 57). 그때 정확히 100.
  */
 export function buildCompatibilityScoreParts(input: {
   animalKind: AnimalRelationKind;
@@ -261,12 +273,12 @@ export function buildCompatibilityScoreParts(input: {
     {
       key: 'todaySelf',
       label: `오늘(나) ${input.selfTodayTenGod}`,
-      delta: todayTenGodDelta(input.selfTodayTenGod),
+      delta: todaySelfTenGodDelta(input.selfTodayTenGod),
     },
     {
       key: 'todayOther',
       label: `오늘(지인) ${input.otherTodayTenGod}`,
-      delta: todayTenGodDelta(input.otherTodayTenGod),
+      delta: todayOtherTenGodDelta(input.otherTodayTenGod),
     },
   ];
 

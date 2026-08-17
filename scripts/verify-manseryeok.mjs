@@ -239,7 +239,7 @@ const RELATION_TEN_GOD_DELTA = {
   겁재: -8,
   편관: -10,
 };
-const TODAY_TEN_GOD_DELTA = {
+const TODAY_OTHER_TEN_GOD_DELTA = {
   정재: 12,
   식신: 10,
   정인: 8,
@@ -251,10 +251,22 @@ const TODAY_TEN_GOD_DELTA = {
   겁재: -8,
   편관: -12,
 };
+const TODAY_SELF_TEN_GOD_DELTA = {
+  정재: 8,
+  식신: 7,
+  정인: 5,
+  정관: 4,
+  편재: 3,
+  비견: 0,
+  편인: -3,
+  상관: -4,
+  겁재: -5,
+  편관: -8,
+};
 const SAME_TODAY_TEN_GOD_BONUS = 3;
-const SCORE_ORIGIN = 10;
-const MAX_POSITIVE_SUM = 12 + 10 + 12 + 12 + 12 + 3; // 61
-const SCORE_SCALE_MAX = SCORE_ORIGIN + MAX_POSITIVE_SUM; // 71
+const SCORE_ORIGIN = 20;
+const MAX_POSITIVE_SUM = 12 + 10 + 12 + 8 + 12 + 3; // 57
+const SCORE_SCALE_MAX = SCORE_ORIGIN + MAX_POSITIVE_SUM; // 77
 const BASE_RAW_MIN = 51;
 const BASE_RAW_MAX = 84;
 const BASE_MAP_MIN = 35;
@@ -340,8 +352,8 @@ function computeCompatibility(self, other, at) {
     { key: 'animal', delta: ANIMAL_DELTA[animal.kind] },
     { key: 'element', delta: ELEMENT_DELTA[elementKind] },
     { key: 'relation', delta: RELATION_TEN_GOD_DELTA[otherToSelfTenGod] ?? 0 },
-    { key: 'todaySelf', delta: TODAY_TEN_GOD_DELTA[selfTodayTenGod] ?? 0 },
-    { key: 'todayOther', delta: TODAY_TEN_GOD_DELTA[otherTodayTenGod] ?? 0 },
+    { key: 'todaySelf', delta: TODAY_SELF_TEN_GOD_DELTA[selfTodayTenGod] ?? 0 },
+    { key: 'todayOther', delta: TODAY_OTHER_TEN_GOD_DELTA[otherTodayTenGod] ?? 0 },
   ];
   if (selfTodayTenGod === otherTodayTenGod) {
     parts.push({ key: 'todaySame', delta: SAME_TODAY_TEN_GOD_BONUS });

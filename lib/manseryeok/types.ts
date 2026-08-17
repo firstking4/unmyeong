@@ -105,7 +105,7 @@ export type CompatibilityEngineResult = {
   otherTodayTenGod: string;
   /** +/− 합산 항목 */
   scoreParts: CompatibilityScorePart[];
-  /** 시작점(기본 10) */
+  /** 시작점(기본 20) */
   scoreOrigin: number;
   /** 환산 분모 (기본 + 항목만점) */
   scoreScaleMax: number;
