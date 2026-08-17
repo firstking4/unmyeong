@@ -1,6 +1,14 @@
 import { getFiveElement, getZodiacAnimalRecord } from '@/lib/data/catalog';
 import type { SeedRecord } from '@/lib/data/types';
 import { pickDaily } from '@/lib/daily/pick';
+import {
+  computeFourPillars,
+  getManseryeokPeriod,
+  natalTenGodText,
+  scopeCopy,
+  scopeLead,
+  tenGodKeywords,
+} from '@/lib/manseryeok';
 import type { PillarTone } from '@/lib/types';
 
 const ZODIAC_ANIMALS = [
@@ -114,22 +122,6 @@ export type ElementRelation = {
 
 const TONES: PillarTone[] = ['관계', '일', '재물', '성장'];
 
-/** 양력 월 → 월지(인월=2월). 절기 보정 없는 참고용. */
-const MONTH_BRANCH: { animal: ZodiacAnimal; element: Element }[] = [
-  { animal: '소', element: '토' },
-  { animal: '호랑이', element: '목' },
-  { animal: '토끼', element: '목' },
-  { animal: '용', element: '토' },
-  { animal: '뱀', element: '화' },
-  { animal: '말', element: '화' },
-  { animal: '양', element: '토' },
-  { animal: '원숭이', element: '금' },
-  { animal: '닭', element: '금' },
-  { animal: '개', element: '토' },
-  { animal: '돼지', element: '수' },
-  { animal: '쥐', element: '수' },
-];
-
 function hashSeed(input: string): number {
   let h = 0;
   for (let i = 0; i < input.length; i++) h = (h * 31 + input.charCodeAt(i)) >>> 0;
@@ -144,10 +136,6 @@ function ymd(date: Date): string {
   return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 }
 
-function yearStamp(year: number): string {
-  return `${year}-06-15`;
-}
-
 function pickTones(seed: string): PillarTone[] {
   const h = hashSeed(seed);
   const primary = TONES[h % TONES.length];
@@ -159,29 +147,16 @@ function pickTones(seed: string): PillarTone[] {
   return [primary, secondary];
 }
 
-function pickFrom(pool: string[], seed: string): string {
-  if (pool.length === 0) return '';
-  return pool[hashSeed(seed) % pool.length];
-}
-
-/**
- * 일진(참고). 1970-01-01 = 기유(己酉)로 두고 60갑자를 굴린다.
- * 만세력·시주 정본이 아니다.
- */
-function getDayStemBranch(date: Date): { animal: ZodiacAnimal; element: Element } {
-  const days = Math.floor(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000,
-  );
-  const stem = (((5 + days) % 10) + 10) % 10;
-  const branch = (((9 + days) % 12) + 12) % 12;
-  return {
-    animal: ZODIAC_ANIMALS[branch],
-    element: ELEMENTS[Math.floor(stem / 2)],
+function tonesForTenGods(primary: string, secondary: string): PillarTone[] {
+  const toneFor = (god: string): PillarTone => {
+    if (god === '편재' || god === '정재') return '재물';
+    if (god === '편관' || god === '정관') return '일';
+    if (god === '식신' || god === '상관' || god === '편인' || god === '정인') return '성장';
+    return '관계';
   };
-}
-
-function getMonthBranch(date: Date): { animal: ZodiacAnimal; element: Element } {
-  return MONTH_BRANCH[date.getMonth()];
+  const first = toneFor(primary);
+  const second = toneFor(secondary);
+  return first === second ? [first, first === '성장' ? '일' : '성장'] : [first, second];
 }
 
 /** 오행 상생(목→화→토→금→수) · 상극(목→토→수→화→금) */
@@ -190,7 +165,7 @@ export function relateElements(self: Element, other: Element, when: SajuPeriod):
     return {
       kind: '같음',
       title: '같은 기운',
-      blurb: `${when}은 나와 같은 ${self}의 기운이 겹칩니다. 본디 가진 결이 더 또렷해집니다.`,
+      blurb: `${withEun(when)} 나와 같은 ${self}의 기운이 겹칩니다. 본디 가진 결이 더 또렷해집니다.`,
     };
   }
   const a = ELEMENTS.indexOf(self);
@@ -200,27 +175,27 @@ export function relateElements(self: Element, other: Element, when: SajuPeriod):
     return {
       kind: '생함',
       title: `${self}생${other}`,
-      blurb: `내 ${self} 기운이 ${when} ${other}를 살립니다. 베풀고 이끄는 흐름입니다.`,
+      blurb: `내 ${self} 기운이 ${when} 들어오는 ${withEulReul(other)} 살립니다. 베풀고 이끄는 흐름입니다.`,
     };
   }
   if (diff === 4) {
     return {
       kind: '생받음',
       title: `${other}생${self}`,
-      blurb: `${when} ${other}의 기운이 내 ${self}를 북돋웁니다. 도움과 기회가 따라오기 쉽습니다.`,
+      blurb: `${when} ${other}의 기운이 내 ${withEulReul(self)} 북돋웁니다. 도움과 기회가 따라오기 쉽습니다.`,
     };
   }
   if (diff === 2) {
     return {
       kind: '극함',
       title: `${self}극${other}`,
-      blurb: `내 ${self}가 ${when} ${other}를 누릅니다. 결단은 빠르지만 마찰을 살피세요.`,
+      blurb: `내 ${withIga(self)} ${when} 들어오는 ${withEulReul(other)} 누릅니다. 결단은 빠르지만 마찰을 살피세요.`,
     };
   }
   return {
     kind: '극받음',
     title: `${other}극${self}`,
-    blurb: `${when} ${other}가 내 ${self}를 시험합니다. 무리보다 조율이 필요합니다.`,
+    blurb: `${when} ${withIga(other)} 내 ${withEulReul(self)} 시험합니다. 무리보다 조율이 필요합니다.`,
   };
 }
 
@@ -251,34 +226,6 @@ export type SajuReading = {
   year: PeriodReading;
 };
 
-function hintLines(
-  animal: SeedRecord,
-  element: SeedRecord,
-  tones: PillarTone[],
-  seed: string,
-): { label: string; text: string }[] {
-  const love = [animal.hints?.love, element.hints?.love].filter(Boolean) as string[];
-  const work = [animal.hints?.work, element.hints?.work].filter(Boolean) as string[];
-  const growth = [animal.hints?.growth, element.hints?.growth].filter(Boolean) as string[];
-  const lines: { label: string; text: string }[] = [];
-  if (tones.includes('관계') && love.length) {
-    lines.push({ label: '관계', text: pickFrom(love, `${seed}:love`) });
-  }
-  if ((tones.includes('일') || tones.includes('재물')) && work.length) {
-    lines.push({
-      label: tones.includes('재물') && !tones.includes('일') ? '재물' : '일·재능',
-      text: pickFrom(work, `${seed}:work`),
-    });
-  }
-  if (tones.includes('성장') && growth.length) {
-    lines.push({ label: '성장', text: pickFrom(growth, `${seed}:growth`) });
-  }
-  if (lines.length === 0 && growth.length) {
-    lines.push({ label: '성장', text: pickFrom(growth, `${seed}:growth`) });
-  }
-  return lines;
-}
-
 function themeDateForPeriod(when: SajuPeriod, date: Date): Date {
   if (when === '오늘') return date;
   if (when === '이번 주') return startOfWeek(date);
@@ -305,6 +252,79 @@ function formatWeekLabel(start: Date): string {
     ? `${end.getDate()}일`
     : `${sameYear ? '' : `${end.getFullYear()}년 `}${end.getMonth() + 1}월 ${end.getDate()}일`;
   return `${prefix}${startLabel} – ${endLabel}`;
+}
+
+function hasFinalConsonant(word: string): boolean {
+  const last = word.trim().slice(-1);
+  const code = last.charCodeAt(0);
+  if (Number.isNaN(code) || code < 0xac00 || code > 0xd7a3) return false;
+  return (code - 0xac00) % 28 !== 0;
+}
+
+/** 정재가 / 편관이 */
+function withIga(word: string): string {
+  return `${word}${hasFinalConsonant(word) ? '이' : '가'}`;
+}
+
+/** 임자는 / 갑진은 */
+function withEun(word: string): string {
+  return `${word}${hasFinalConsonant(word) ? '은' : '는'}`;
+}
+
+/** 목을 / 화를 */
+function withEulReul(word: string): string {
+  return `${word}${hasFinalConsonant(word) ? '을' : '를'}`;
+}
+
+/** 일일 팩 문장에서 카드마다 반복되는 상투 도입부를 걷어내고 마침표를 맞춘다. */
+function cleanThemeLine(text: string): string {
+  const trimmed = text.replace(/^들어오는 오행과 맞물려\s*/, '').trim();
+  if (!trimmed) return '';
+  return /[.!?…]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+}
+
+/**
+ * 띠·오행 시드에서 뽑는 생활 힌트 (관계·일·성장).
+ * 오늘·주·월·년 카드가 한 화면에 함께 있으므로 `rotate`로 시작 위치를 어긋내 같은 문장이 겹치지 않게 한다.
+ */
+function hintLines(
+  animal: SeedRecord,
+  element: SeedRecord,
+  tones: PillarTone[],
+  seed: string,
+  rotate = 0,
+  used?: Set<string>,
+): { label: string; text: string }[] {
+  const workLabel = tones.includes('재물') && !tones.includes('일') ? '재물' : '일·재능';
+  const pool = [
+    { tone: '관계' as PillarTone, label: '관계', text: animal.hints?.love },
+    { tone: '관계' as PillarTone, label: '관계', text: element.hints?.love },
+    { tone: '일' as PillarTone, label: workLabel, text: animal.hints?.work },
+    { tone: '일' as PillarTone, label: workLabel, text: element.hints?.work },
+    { tone: '성장' as PillarTone, label: '성장', text: animal.hints?.growth },
+    { tone: '성장' as PillarTone, label: '성장', text: element.hints?.growth },
+  ].filter((entry): entry is { tone: PillarTone; label: string; text: string } =>
+    Boolean(entry.text),
+  );
+  if (pool.length === 0) return [];
+
+  const wanted = (tone: PillarTone) =>
+    tones.includes(tone) || (tone === '일' && tones.includes('재물'));
+  const ranked = [...pool.filter((entry) => wanted(entry.tone)), ...pool.filter((entry) => !wanted(entry.tone))];
+
+  const start = (hashSeed(seed) + rotate * 2) % ranked.length;
+  const picked: { label: string; text: string }[] = [];
+  // 1차는 다른 카드가 이미 쓴 문장을 건너뛰고, 풀이 마르면 2차에서 허용한다.
+  for (let pass = 0; pass < 2 && picked.length < 2; pass++) {
+    for (let i = 0; i < ranked.length && picked.length < 2; i++) {
+      const entry = ranked[(start + i) % ranked.length];
+      if (picked.some((line) => line.text === entry.text || line.label === entry.label)) continue;
+      if (pass === 0 && used?.has(entry.text)) continue;
+      picked.push({ label: entry.label, text: entry.text });
+      used?.add(entry.text);
+    }
+  }
+  return picked;
 }
 
 function mostFrequent<T>(items: T[], getKey: (item: T) => string): T | null {
@@ -336,47 +356,72 @@ function buildPeriod(input: {
   natalElement: SeedRecord;
   seed: string;
   date: Date;
+  pillarKorean?: string;
+  tenGod?: string;
+  summaryLead?: string;
+  tones?: PillarTone[];
+  /** 기간별 카피 역할 — 중복 문장 분리용 */
+  scope?: 'day' | 'month' | 'year';
+  /** 한 화면의 다른 카드가 이미 쓴 시드 문장 */
+  usedHints?: Set<string>;
 }): PeriodReading | null {
   const periodAnimal = getZodiacAnimalRecord(input.periodAnimal);
   const periodElement = getFiveElement(input.periodElement);
   if (!periodAnimal || !periodElement) return null;
 
   const relation = relateElements(input.selfElement, input.periodElement, input.when);
-  const tones = pickTones(input.seed);
+  const tones = input.tones ?? pickTones(input.seed);
   const theme = pickDaily('saju', input.seed, themeDateForPeriod(input.when, input.date));
+  const god = input.tenGod;
+  const scoped = god && input.scope ? scopeCopy(input.scope, god) : null;
+
+  // 키워드: 십신·기간 역할 우선. 띠/오행 시드 키워드는 넣지 않아 체감 중복을 줄인다.
   const keywords = [
+    god,
+    ...tenGodKeywords(god),
     theme.keyword,
-    ...(periodElement.keywords ?? []),
-    ...(periodAnimal.keywords ?? []),
-  ].filter((kw, i, all) => Boolean(kw) && all.indexOf(kw) === i);
-  if (relation.kind === '극함') keywords.push('마찰');
-  if (relation.kind === '극받음') keywords.push('시험');
+    relation.kind === '극함' ? '마찰' : null,
+    relation.kind === '극받음' ? '시험' : null,
+  ].filter((kw, i, all): kw is string => Boolean(kw) && all.indexOf(kw) === i);
 
-  const summary = [
-    `${input.when} 들어오는 ${periodElement.label} 기운(${input.flowKind} ${periodAnimal.label}띠)이 당신의 ${input.selfElement} 기운과 만나 ${relation.title} 흐름입니다.`,
-    relation.blurb,
-    theme.focus,
-  ].join(' ');
+  const summary = [input.summaryLead, scoped?.focus, cleanThemeLine(theme.focus)]
+    .filter(Boolean)
+    .join(' ');
 
-  const baseHints = hintLines(input.natalAnimal, input.natalElement, tones, input.seed).map((hint) => {
-    if (hint.label === '관계') {
-      return { ...hint, text: `${hint.text} ${theme.relationship}` };
-    }
-    return hint;
-  });
+  const practiceLabel =
+    input.when === '오늘' ? '오늘의 한 가지' : input.when === '이번 달' ? '이달의 배치' : '올해의 방향';
 
   const hints = [
-    ...baseHints,
-    { label: input.when === '오늘' ? '오늘의 한 가지' : '실천 포인트', text: theme.action },
-    { label: '주의', text: theme.caution },
-  ];
+    god
+      ? {
+          label:
+            input.scope === 'day' ? '오늘의 십신' : input.scope === 'month' ? '이달의 십신' : '올해의 십신',
+          text: `${god} · ${natalTenGodText(god)}`,
+        }
+      : null,
+    { label: '기운 관계', text: `${relation.title} · ${relation.blurb}` },
+    ...hintLines(
+      input.natalAnimal,
+      input.natalElement,
+      tones,
+      input.seed,
+      input.scope === 'day' ? 0 : input.scope === 'month' ? 2 : 3,
+      input.usedHints,
+    ),
+    { label: practiceLabel, text: scoped?.action ?? theme.action },
+    { label: '주의', text: scoped?.caution ?? theme.caution },
+  ].filter(Boolean) as { label: string; text: string }[];
 
   return {
     eyebrow: input.eyebrow,
     when: input.when,
     dateLabel: input.dateLabel,
-    headline: `${periodElement.label}의 기운, ${theme.headline}`,
-    flowLabel: `${input.flowKind} · ${periodAnimal.label}띠`,
+    headline: input.pillarKorean
+      ? `${input.pillarKorean} · ${god ?? periodElement.label}`
+      : `${periodElement.label}의 기운, ${theme.headline}`,
+    flowLabel: input.pillarKorean
+      ? `${input.flowKind}`
+      : `${input.flowKind} · ${periodAnimal.label}띠`,
     relation,
     summary,
     tones,
@@ -394,7 +439,9 @@ function buildWeekPeriod(input: {
   natalAnimal: SeedRecord;
   natalElement: SeedRecord;
   birthDate: string;
+  birthTime?: string;
   date: Date;
+  usedHints?: Set<string>;
 }): PeriodReading | null {
   const weekStart = startOfWeek(input.date);
   const days = Array.from({ length: 7 }, (_, index) => {
@@ -403,23 +450,37 @@ function buildWeekPeriod(input: {
     return day;
   });
   const dayFlows = days.map((day) => {
-    const branch = getDayStemBranch(day);
+    const period = getManseryeokPeriod(
+      { birthDate: input.birthDate, birthTime: input.birthTime },
+      day,
+      'day',
+    );
+    if (!period) return null;
     return {
       day,
-      branch,
-      relation: relateElements(input.selfElement, branch.element, '이번 주'),
-      tones: pickTones(`${ymd(day)}:${input.birthDate}:day`),
+      period,
+      relation: relateElements(input.selfElement, period.element as Element, '이번 주'),
+      tones: tonesForTenGods(period.stemTenGod, period.branchTenGod),
       theme: pickDaily('saju', `${ymd(day)}:${input.birthDate}:day`, day),
     };
-  });
+  }).filter(Boolean) as {
+    day: Date;
+    period: NonNullable<ReturnType<typeof getManseryeokPeriod>>;
+    relation: ElementRelation;
+    tones: PillarTone[];
+    theme: ReturnType<typeof pickDaily>;
+  }[];
   const dominant = mostFrequent(dayFlows, (flow) => flow.relation.kind);
   if (!dominant) return null;
-
+  const dominantGod =
+    mostFrequent(dayFlows, (flow) => flow.period.stemTenGod)?.period.stemTenGod ??
+    dominant.period.stemTenGod;
   const weeklyTheme = pickDaily(
     'saju',
     `${ymd(weekStart)}:${input.birthDate}:week`,
     weekStart,
   );
+  const scoped = scopeCopy('week', dominantGod);
   const tones = [...TONES]
     .sort(
       (left, right) =>
@@ -428,49 +489,53 @@ function buildWeekPeriod(input: {
     )
     .slice(0, 2);
   const keywords = [
+    dominantGod,
+    ...tenGodKeywords(dominantGod),
     weeklyTheme.keyword,
-    ...dayFlows.map((flow) => flow.theme.keyword),
-    ...(getFiveElement(dominant.branch.element)?.keywords ?? []),
-    ...(getZodiacAnimalRecord(dominant.branch.animal)?.keywords ?? []),
-  ].filter((keyword, index, all) => Boolean(keyword) && all.indexOf(keyword) === index);
-
-  if (dominant.relation.kind === '극함') keywords.push('마찰');
-  if (dominant.relation.kind === '극받음') keywords.push('시험');
-
-  const baseHints = hintLines(
-    input.natalAnimal,
-    input.natalElement,
-    tones,
-    `${ymd(weekStart)}:${input.birthDate}:week`,
-  ).map((hint) =>
-    hint.label === '관계'
-      ? { ...hint, text: `${hint.text} ${weeklyTheme.relationship}` }
-      : hint,
+    dominant.relation.kind === '극함' ? '마찰' : null,
+    dominant.relation.kind === '극받음' ? '시험' : null,
+  ].filter((keyword, index, all): keyword is string =>
+    Boolean(keyword) && all.indexOf(keyword) === index,
   );
 
   return {
     eyebrow: '이번 주 기운',
     when: '이번 주',
     dateLabel: formatWeekLabel(weekStart),
-    headline: `${dominant.branch.element}의 기운, ${weeklyTheme.headline}`,
-    flowLabel: `주간 일진 · ${dominant.branch.animal}띠`,
+    headline: `${dominantGod} 주간 · ${dominant.period.pillar.korean}`,
+    flowLabel: `7일 일진 집계 · ${dominantGod}`,
     relation: dominant.relation,
     summary: [
-      `월요일부터 일요일까지의 참고용 일진을 모으면 ${dominant.branch.element} 기운이 가장 자주 나타납니다.`,
-      dominant.relation.blurb,
-      weeklyTheme.focus,
-    ].join(' '),
+      scopeLead('week', dominantGod),
+      scoped.focus,
+      cleanThemeLine(weeklyTheme.focus),
+    ]
+      .filter(Boolean)
+      .join(' '),
     tones,
     keywords: keywords.slice(0, 5),
     hints: [
-      ...baseHints,
-      { label: '이번 주의 한 가지', text: weeklyTheme.action },
-      { label: '주의', text: weeklyTheme.caution },
+      { label: '주간 십신', text: `${dominantGod} · ${natalTenGodText(dominantGod)}` },
+      { label: '기운 관계', text: `${dominant.relation.title} · ${dominant.relation.blurb}` },
+      ...hintLines(
+        input.natalAnimal,
+        input.natalElement,
+        tones,
+        `${ymd(weekStart)}:${input.birthDate}:week`,
+        1,
+        input.usedHints,
+      ),
+      { label: '이번 주의 한 가지', text: scoped.action },
+      { label: '주의', text: scoped.caution },
     ],
   };
 }
 
-export function buildSajuReading(birthDate: string, date = new Date()): SajuReading | null {
+export function buildSajuReading(
+  birthDate: string,
+  date = new Date(),
+  birthTime?: string,
+): SajuReading | null {
   const birthYear = parseBirthYear(birthDate);
   const animalLabel = getZodiacAnimal(birthDate);
   const elementLabel = getElement(birthDate);
@@ -480,21 +545,18 @@ export function buildSajuReading(birthDate: string, date = new Date()): SajuRead
 
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
-  const yearStampDate = yearStamp(year);
-  const yearAnimalLabel = getZodiacAnimal(yearStampDate);
-  const yearElementLabel = getElement(yearStampDate);
-  if (!yearAnimalLabel || !yearElementLabel) return null;
-
-  const dayBranch = getDayStemBranch(date);
-  const monthBranch = getMonthBranch(date);
-  const keywords = [...(animal.keywords ?? []), ...(element.keywords ?? [])]
-    .filter((kw, i, all) => Boolean(kw) && all.indexOf(kw) === i)
-    .slice(0, 6);
+  const natalPillars = computeFourPillars({ birthDate, birthTime });
+  const todayPeriod = getManseryeokPeriod({ birthDate, birthTime }, date, 'day');
+  const monthPeriod = getManseryeokPeriod({ birthDate, birthTime }, date, 'month');
+  const yearPeriod = getManseryeokPeriod({ birthDate, birthTime }, date, 'year');
+  if (!natalPillars || !todayPeriod || !monthPeriod || !yearPeriod) return null;
+  const dayMaster = natalPillars.dayMasterElement as Element;
 
   const base = {
-    selfElement: elementLabel,
+    selfElement: dayMaster,
     natalAnimal: animal,
     natalElement: element,
+    usedHints: new Set<string>(),
   };
 
   const today = buildPeriod({
@@ -507,15 +569,21 @@ export function buildSajuReading(birthDate: string, date = new Date()): SajuRead
       day: 'numeric',
       weekday: 'long',
     }),
-    flowKind: '일진',
-    periodAnimal: dayBranch.animal,
-    periodElement: dayBranch.element,
+    flowKind: `일진 · ${todayPeriod.pillar.korean} · ${todayPeriod.stemTenGod}`,
+    periodAnimal: todayPeriod.animal as ZodiacAnimal,
+    periodElement: todayPeriod.element as Element,
     seed: `${ymd(date)}:${birthDate}:day`,
     date,
+    pillarKorean: todayPeriod.pillar.korean,
+    tenGod: todayPeriod.stemTenGod,
+    tones: tonesForTenGods(todayPeriod.stemTenGod, todayPeriod.branchTenGod),
+    scope: 'day',
+    summaryLead: scopeLead('day', todayPeriod.stemTenGod),
   });
   const week = buildWeekPeriod({
     ...base,
     birthDate,
+    birthTime,
     date,
   });
   const monthReading = buildPeriod({
@@ -523,32 +591,86 @@ export function buildSajuReading(birthDate: string, date = new Date()): SajuRead
     eyebrow: '이달의 사주',
     when: '이번 달',
     dateLabel: `${year}년 ${month}월`,
-    flowKind: '월건',
-    periodAnimal: monthBranch.animal,
-    periodElement: monthBranch.element,
+    flowKind: `절입 월주 · ${monthPeriod.pillar.korean} · ${monthPeriod.stemTenGod}`,
+    periodAnimal: monthPeriod.animal as ZodiacAnimal,
+    periodElement: monthPeriod.element as Element,
     seed: `${year}-${pad2(month)}:${birthDate}:month`,
     date,
+    pillarKorean: monthPeriod.pillar.korean,
+    tenGod: monthPeriod.stemTenGod,
+    tones: tonesForTenGods(monthPeriod.stemTenGod, monthPeriod.branchTenGod),
+    scope: 'month',
+    summaryLead: scopeLead('month', monthPeriod.stemTenGod),
   });
   const yearReading = buildPeriod({
     ...base,
     eyebrow: '올해의 사주',
     when: '올해',
     dateLabel: `${year}년`,
-    flowKind: '세운',
-    periodAnimal: yearAnimalLabel,
-    periodElement: yearElementLabel,
+    flowKind: `입춘 세운 · ${yearPeriod.pillar.korean} · ${yearPeriod.stemTenGod}`,
+    periodAnimal: yearPeriod.animal as ZodiacAnimal,
+    periodElement: yearPeriod.element as Element,
     seed: `${year}:${birthDate}:year`,
     date,
+    pillarKorean: yearPeriod.pillar.korean,
+    tenGod: yearPeriod.stemTenGod,
+    tones: tonesForTenGods(yearPeriod.stemTenGod, yearPeriod.branchTenGod),
+    scope: 'year',
+    summaryLead: scopeLead('year', yearPeriod.stemTenGod),
   });
   if (!today || !week || !monthReading || !yearReading) return null;
 
-  const natalSummary = [animal.summary, element.summary].filter(Boolean).join(' ');
-  const natalHints = hintLines(animal, element, [...TONES], `${birthDate}:natal`);
+  const dayEl = getFiveElement(natalPillars.dayMasterElement);
+  const natalKeywords = [
+    `일간 ${natalPillars.day.stem}`,
+    natalPillars.dayMasterElement,
+    natalPillars.day.korean,
+    ...(dayEl?.keywords ?? []).slice(0, 2),
+  ].filter((kw, i, all) => Boolean(kw) && all.indexOf(kw) === i);
+
+  const natalSummary = [
+    `일간 ${natalPillars.day.stem}(${natalPillars.dayMasterElement}) · 일주 ${natalPillars.day.korean}이 나의 중심입니다.`,
+    dayEl?.summary,
+    `${animal.label}띠는 배경 기운으로만 참고하세요. 네 기둥·십신 구조는 아래 사주팔자에서 봅니다.`,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const natalHints = [
+    {
+      label: '일간',
+      text: `${natalPillars.day.stem} · ${natalPillars.dayMasterElement}. 타고난 반응과 선택의 기준입니다.${
+        dayEl?.mood ? ` 기본 결은 ${dayEl.mood}입니다.` : ''
+      }`,
+    },
+    {
+      label: '일주',
+      text: `${natalPillars.day.korean}. 가까운 관계와 일상의 결을 읽는 자리입니다. 월주 ${withEun(
+        natalPillars.month.korean,
+      )} 사회·환경, 연주 ${withEun(natalPillars.year.korean)} 뿌리로 봅니다.`,
+    },
+    natalPillars.tenGods
+      ? {
+          label: '월지 십신',
+          text: `${natalPillars.tenGods.month.branch} · ${natalTenGodText(
+            natalPillars.tenGods.month.branch,
+          )}`,
+        }
+      : null,
+    dayEl?.hints?.work ? { label: '일·재능', text: dayEl.hints.work } : null,
+    dayEl?.hints?.growth ? { label: '성장', text: dayEl.hints.growth } : null,
+    {
+      label: '배경',
+      text: `${animal.label}띠 · ${element.label}의 기운은 보조 배경입니다. ${
+        animal.summary ?? ''
+      } 기간 풀이(오늘·주·월·년)는 일간 기준으로 봅니다.`.replace(/\s+/g, ' '),
+    },
+  ].filter(Boolean) as { label: string; text: string }[];
 
   return {
     birthYear,
-    headline: `${element.label}의 기운 · ${animal.label}띠`,
-    keywords,
+    headline: `일간 ${natalPillars.day.stem} · ${natalPillars.dayMasterElement}의 기운`,
+    keywords: natalKeywords.slice(0, 6),
     summary: natalSummary,
     hints: natalHints,
     animal,

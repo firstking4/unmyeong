@@ -1,0 +1,17 @@
+[
+  {
+    "id": "luck-male-1982",
+    "birthDate": "1982-12-11",
+    "birthTime": "09:50",
+    "gender": "male",
+    "expected": {
+      "forward": true,
+      "startAge": 9,
+      "first": [
+        { "age": 9, "korean": "계축", "hanja": "癸丑" },
+        { "age": 19, "korean": "갑인", "hanja": "甲寅" },
+        { "age": 29, "korean": "을묘", "hanja": "乙卯" }
+      ]
+    }
+  }
+]

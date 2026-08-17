@@ -1,0 +1,183 @@
+[
+  {
+    "id": "pair-1982-1990",
+    "note": "일지 같음(용) · 토생금 · 식신/편인",
+    "self": {
+      "birthDate": "1982-12-11",
+      "birthTime": "09:50"
+    },
+    "other": {
+      "birthDate": "1990-05-15",
+      "birthTime": null
+    },
+    "atKst": "2026-08-17T12:00:00+09:00",
+    "expected": {
+      "selfDay": "무진",
+      "otherDay": "경진",
+      "animalKind": "같음",
+      "elementKind": "생함",
+      "otherToSelfTenGod": "식신",
+      "selfTodayTenGod": "정재",
+      "otherTodayTenGod": "상관",
+      "todayPillarKorean": "계해",
+      "baseScore": 76,
+      "partDeltas": [
+        6,
+        10,
+        10,
+        12,
+        -6
+      ],
+      "rawTotal": 32,
+      "todayScore": 59,
+      "baseCorrectionBonus": 24,
+      "dailyDelta": 32,
+      "score": 83
+    }
+  },
+  {
+    "id": "pair-same-1982",
+    "note": "같은 일주 · 비견 · 오늘 정재 겹침",
+    "self": {
+      "birthDate": "1982-12-11",
+      "birthTime": "09:50"
+    },
+    "other": {
+      "birthDate": "1982-12-11",
+      "birthTime": "09:50"
+    },
+    "atKst": "2026-08-17T12:00:00+09:00",
+    "expected": {
+      "selfDay": "무진",
+      "otherDay": "무진",
+      "animalKind": "같음",
+      "elementKind": "같음",
+      "otherToSelfTenGod": "비견",
+      "selfTodayTenGod": "정재",
+      "otherTodayTenGod": "정재",
+      "todayPillarKorean": "계해",
+      "baseScore": 72,
+      "partDeltas": [
+        6,
+        5,
+        2,
+        12,
+        12,
+        3
+      ],
+      "rawTotal": 40,
+      "todayScore": 70,
+      "baseCorrectionBonus": 16,
+      "dailyDelta": 40,
+      "score": 86
+    }
+  },
+  {
+    "id": "pair-no-time",
+    "note": "양쪽 시각 없음 — 일주·오늘 일진은 시각 있는 1982-1990과 같음",
+    "self": {
+      "birthDate": "1982-12-11",
+      "birthTime": null
+    },
+    "other": {
+      "birthDate": "1990-05-15",
+      "birthTime": null
+    },
+    "atKst": "2026-08-17T12:00:00+09:00",
+    "expected": {
+      "selfDay": "무진",
+      "otherDay": "경진",
+      "animalKind": "같음",
+      "elementKind": "생함",
+      "otherToSelfTenGod": "식신",
+      "selfTodayTenGod": "정재",
+      "otherTodayTenGod": "상관",
+      "todayPillarKorean": "계해",
+      "baseScore": 76,
+      "partDeltas": [
+        6,
+        10,
+        10,
+        12,
+        -6
+      ],
+      "rawTotal": 32,
+      "todayScore": 59,
+      "baseCorrectionBonus": 24,
+      "dailyDelta": 32,
+      "score": 83
+    }
+  },
+  {
+    "id": "pair-harmony-1992",
+    "note": "일지 육합 용·닭",
+    "self": {
+      "birthDate": "1982-12-11",
+      "birthTime": "09:50"
+    },
+    "other": {
+      "birthDate": "1992-01-10",
+      "birthTime": "08:00"
+    },
+    "atKst": "2026-08-17T12:00:00+09:00",
+    "expected": {
+      "selfDay": "무진",
+      "otherDay": "을유",
+      "animalKind": "육합",
+      "elementKind": "극받음",
+      "otherToSelfTenGod": "정관",
+      "selfTodayTenGod": "정재",
+      "otherTodayTenGod": "편인",
+      "todayPillarKorean": "계해",
+      "baseScore": 73,
+      "partDeltas": [
+        12,
+        -10,
+        6,
+        12,
+        -4
+      ],
+      "rawTotal": 16,
+      "todayScore": 37,
+      "baseCorrectionBonus": 35,
+      "dailyDelta": 16,
+      "score": 72
+    }
+  },
+  {
+    "id": "pair-clash-1992",
+    "note": "일지 육충 용·개",
+    "self": {
+      "birthDate": "1982-12-11",
+      "birthTime": "09:50"
+    },
+    "other": {
+      "birthDate": "1992-01-11",
+      "birthTime": "08:00"
+    },
+    "atKst": "2026-08-17T12:00:00+09:00",
+    "expected": {
+      "selfDay": "무진",
+      "otherDay": "병술",
+      "animalKind": "육충",
+      "elementKind": "생받음",
+      "otherToSelfTenGod": "편인",
+      "selfTodayTenGod": "정재",
+      "otherTodayTenGod": "정관",
+      "todayPillarKorean": "계해",
+      "baseScore": 66,
+      "partDeltas": [
+        -12,
+        10,
+        -2,
+        12,
+        6
+      ],
+      "rawTotal": 14,
+      "todayScore": 34,
+      "baseCorrectionBonus": 32,
+      "dailyDelta": 14,
+      "score": 66
+    }
+  }
+]

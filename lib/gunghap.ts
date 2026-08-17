@@ -1,12 +1,12 @@
-import { getZodiacAnimalRecord } from '@/lib/data/catalog';
-import { pickDaily } from '@/lib/daily/pick';
 import {
-  getElement,
-  getZodiacAnimal,
-  relateElements,
-  type Element,
-  type ZodiacAnimal,
-} from '@/lib/saju';
+  computeCompatibility,
+  meetingCopy,
+  pairCopy,
+  pairLead,
+  tenGodKeywords,
+  type CompatibilityScorePart,
+} from '@/lib/manseryeok';
+import { relateElements, type Element, type ZodiacAnimal } from '@/lib/saju';
 import type { ContactProfile, Profile } from '@/lib/types';
 
 export type CompatibilityGrade = '좋음' | '무난' | '주의';
@@ -16,6 +16,14 @@ export type TodayCompatibility = {
   reason?: string;
   score: number;
   baseScore: number;
+  todayScore: number;
+  baseCorrectionFactor: number;
+  baseCorrectionBonus: number;
+  scoreOrigin: number;
+  scoreScaleMax: number;
+  maxPositiveSum: number;
+  scoreParts: CompatibilityScorePart[];
+  rawTotal: number;
   dailyDelta: number;
   grade: CompatibilityGrade;
   moodHeadline: string;
@@ -33,49 +41,19 @@ export type TodayCompatibility = {
   compactDate: string;
 };
 
-/** 육합 */
-const ANIMAL_HARMONY: Record<ZodiacAnimal, ZodiacAnimal> = {
-  쥐: '소',
-  소: '쥐',
-  호랑이: '돼지',
-  돼지: '호랑이',
-  토끼: '개',
-  개: '토끼',
-  용: '닭',
-  닭: '용',
-  뱀: '원숭이',
-  원숭이: '뱀',
-  말: '양',
-  양: '말',
-};
-
-/** 육충 */
-const ANIMAL_CLASH: Record<ZodiacAnimal, ZodiacAnimal> = {
-  쥐: '말',
-  말: '쥐',
-  소: '양',
-  양: '소',
-  호랑이: '원숭이',
-  원숭이: '호랑이',
-  토끼: '닭',
-  닭: '토끼',
-  용: '개',
-  개: '용',
-  뱀: '돼지',
-  돼지: '뱀',
-};
-
-function hashSeed(input: string): number {
-  let h = 0;
-  for (let i = 0; i < input.length; i++) h = (h * 31 + input.charCodeAt(i)) >>> 0;
-  return h;
+function hasFinalConsonant(word: string): boolean {
+  const last = word.trim().slice(-1);
+  const code = last.charCodeAt(0);
+  if (Number.isNaN(code) || code < 0xac00 || code > 0xd7a3) return false;
+  return (code - 0xac00) % 28 !== 0;
 }
 
-function ymd(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
+function withGwa(word: string): string {
+  return `${word}${hasFinalConsonant(word) ? '과' : '와'}`;
+}
+
+function withEun(word: string): string {
+  return `${word}${hasFinalConsonant(word) ? '은' : '는'}`;
 }
 
 function formatCompactDate(date: Date) {
@@ -84,34 +62,6 @@ function formatCompactDate(date: Date) {
   const d = String(date.getDate()).padStart(2, '0');
   const w = date.toLocaleDateString('ko-KR', { weekday: 'short' });
   return `${y}.${m}.${d} (${w})`;
-}
-
-function animalBase(self: ZodiacAnimal, other: ZodiacAnimal): { score: number; label: string } {
-  if (self === other) {
-    return { score: 72, label: `같은 ${self} 기운` };
-  }
-  if (ANIMAL_HARMONY[self] === other) {
-    return { score: 86, label: `${self}·${other} 육합` };
-  }
-  if (ANIMAL_CLASH[self] === other) {
-    return { score: 48, label: `${self}·${other} 육충` };
-  }
-  return { score: 66, label: `${self}·${other} 흐름` };
-}
-
-function elementBase(self: Element, other: Element): { score: number; label: string } {
-  const relation = relateElements(self, other, '오늘');
-  switch (relation.kind) {
-    case '같음':
-      return { score: 74, label: relation.title };
-    case '생함':
-    case '생받음':
-      return { score: 82, label: relation.title };
-    case '극함':
-      return { score: 58, label: relation.title };
-    case '극받음':
-      return { score: 54, label: relation.title };
-  }
 }
 
 function gradeFromScore(score: number): CompatibilityGrade {
@@ -133,6 +83,14 @@ function notReady(reason: string, date: Date): TodayCompatibility {
     reason,
     score: 0,
     baseScore: 0,
+    todayScore: 0,
+    baseCorrectionFactor: 0,
+    baseCorrectionBonus: 0,
+    scoreOrigin: 10,
+    scoreScaleMax: 71,
+    maxPositiveSum: 61,
+    scoreParts: [],
+    rawTotal: 0,
     dailyDelta: 0,
     grade: '무난',
     moodHeadline: '아직 열리지 않은 궁합',
@@ -153,7 +111,7 @@ function notReady(reason: string, date: Date): TodayCompatibility {
 
 export function buildTodayCompatibility(
   self: Profile,
-  other: Pick<ContactProfile, 'name' | 'birthDate' | 'mbti' | 'bloodType'>,
+  other: Pick<ContactProfile, 'name' | 'birthDate' | 'birthTime' | 'mbti' | 'bloodType'>,
   date = new Date(),
 ): TodayCompatibility {
   if (!self.name?.trim() || !self.birthDate?.trim()) {
@@ -163,76 +121,79 @@ export function buildTodayCompatibility(
     return notReady('지인의 생년월일이 필요합니다.', date);
   }
 
-  const selfAnimal = getZodiacAnimal(self.birthDate);
-  const otherAnimal = getZodiacAnimal(other.birthDate);
-  const selfElement = getElement(self.birthDate);
-  const otherElement = getElement(other.birthDate);
-
-  if (!selfAnimal || !otherAnimal || !selfElement || !otherElement) {
+  const engine = computeCompatibility(
+    { birthDate: self.birthDate, birthTime: self.birthTime },
+    { birthDate: other.birthDate, birthTime: other.birthTime },
+    date,
+  );
+  if (!engine) {
     return notReady('생년월일을 확인해 주세요.', date);
   }
 
-  const animal = animalBase(selfAnimal, otherAnimal);
-  const element = elementBase(selfElement, otherElement);
-  const baseScore = Math.round(animal.score * 0.55 + element.score * 0.45);
-
-  const dateKey = ymd(date);
-  const seed = `${dateKey}:${self.birthDate}:${other.birthDate}`;
-  const dailyDelta = (hashSeed(`${seed}:delta`) % 17) - 8; // -8 ~ +8
-  const score = Math.max(35, Math.min(97, baseScore + dailyDelta));
-  const theme = pickDaily(
-    'gunghap',
-    `${selfAnimal}:${otherAnimal}:${selfElement}:${otherElement}`,
-    date,
+  const relation = relateElements(
+    engine.self.dayMasterElement as Element,
+    engine.other.dayMasterElement as Element,
+    '오늘',
   );
-
-  const selfRec = getZodiacAnimalRecord(selfAnimal);
-  const otherRec = getZodiacAnimalRecord(otherAnimal);
-  const relation = relateElements(selfElement, otherElement, '오늘');
+  const pair = pairCopy(engine.otherToSelfTenGod);
+  const meeting = meetingCopy(engine.selfTodayTenGod, engine.otherTodayTenGod);
+  const otherName = other.name.trim() || '상대';
+  const selfName = self.name.trim();
 
   const keywords = [
-    animal.label.includes('육합') ? '육합' : animal.label.includes('육충') ? '육충' : '흐름',
+    engine.animalKind === '육합' || engine.animalKind === '육충'
+      ? engine.animalKind
+      : engine.animalKind === '같음'
+        ? '같은 결'
+        : null,
+    meeting.keyword,
+    engine.otherToSelfTenGod,
+    ...tenGodKeywords(engine.otherToSelfTenGod),
     relation.title,
-    selfRec?.keywords?.[0],
-    otherRec?.keywords?.[0],
-  ].filter(Boolean) as string[];
+  ].filter((kw, i, all): kw is string => Boolean(kw) && all.indexOf(kw) === i);
 
-  const uniqueKeywords = keywords.filter((kw, i, all) => all.indexOf(kw) === i).slice(0, 4);
-
-  const otherName = other.name.trim() || '상대';
   const summary = [
-    `${self.name.trim()}과(와) ${otherName}은 ${animal.label}, 오행으로는 ${element.label} 결입니다.`,
-    `오늘은 ${theme.keyword}에 초점을 맞춰 보세요. ${theme.focus}`,
+    `${withGwa(selfName)} ${withEun(otherName)} ${engine.animalLabel} 관계이고, 오행으로는 ${engine.elementLabel}입니다.`,
+    pairLead(engine.otherToSelfTenGod),
+    pair.focus,
   ].join(' ');
 
-  const relationship = `${relation.blurb} ${theme.relationship}`;
-  const guidance = `${theme.action} ${
-    score >= 70
+  const relationship = `${meeting.lead} ${meeting.focus} ${relation.blurb}`;
+  const guidance = `${meeting.action} ${
+    engine.score >= 70
       ? '작은 호의를 먼저 건네면 관계가 더 부드러워집니다.'
       : '말의 속도와 거리감을 조금 늦추면 마찰이 줄어듭니다.'
   }`;
-  const caution = `${theme.caution}${
+  const caution = `${meeting.caution}${
     other.mbti || other.bloodType ? ' 성향 정보는 참고용으로만 두고, 오늘의 반응을 우선하세요.' : ''
   }`;
 
   return {
     ready: true,
-    score,
-    baseScore,
-    dailyDelta,
-    grade: gradeFromScore(score),
-    moodHeadline: `${theme.keyword} · ${moodFromScore(score)}`,
+    score: engine.score,
+    baseScore: engine.baseScore,
+    todayScore: engine.todayScore,
+    baseCorrectionFactor: engine.baseCorrectionFactor,
+    baseCorrectionBonus: engine.baseCorrectionBonus,
+    scoreOrigin: engine.scoreOrigin,
+    scoreScaleMax: engine.scoreScaleMax,
+    maxPositiveSum: engine.maxPositiveSum,
+    scoreParts: engine.scoreParts,
+    rawTotal: engine.rawTotal,
+    dailyDelta: engine.dailyDelta,
+    grade: gradeFromScore(engine.score),
+    moodHeadline: `${meeting.keyword} · ${moodFromScore(engine.score)}`,
     summary,
     relationship,
     guidance,
     caution,
-    keywords: uniqueKeywords,
-    selfAnimal,
-    otherAnimal,
-    selfElement,
-    otherElement,
-    animalLabel: animal.label,
-    elementLabel: element.label,
+    keywords: keywords.slice(0, 5),
+    selfAnimal: engine.self.animal as ZodiacAnimal,
+    otherAnimal: engine.other.animal as ZodiacAnimal,
+    selfElement: engine.self.dayMasterElement as Element,
+    otherElement: engine.other.dayMasterElement as Element,
+    animalLabel: engine.animalLabel,
+    elementLabel: engine.elementLabel,
     compactDate: formatCompactDate(date),
   };
 }

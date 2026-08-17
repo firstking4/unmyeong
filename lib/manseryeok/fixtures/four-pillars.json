@@ -1,0 +1,86 @@
+[
+  {
+    "id": "typical-1982",
+    "note": "앱 출생 연도 범위 안 일반 케이스",
+    "birthDate": "1982-12-11",
+    "birthTime": "09:50",
+    "expected": {
+      "year": { "stem": "임", "branch": "술", "korean": "임술", "hanja": "壬戌" },
+      "month": { "stem": "임", "branch": "자", "korean": "임자", "hanja": "壬子" },
+      "day": { "stem": "무", "branch": "진", "korean": "무진", "hanja": "戊辰" },
+      "hour": { "stem": "정", "branch": "사", "korean": "정사", "hanja": "丁巳" }
+    }
+  },
+  {
+    "id": "no-time-1982",
+    "note": "시각 없음 → 시주 null, 년·월·일주는 정오 대입",
+    "birthDate": "1982-12-11",
+    "birthTime": null,
+    "expected": {
+      "year": { "stem": "임", "branch": "술", "korean": "임술", "hanja": "壬戌" },
+      "month": { "stem": "임", "branch": "자", "korean": "임자", "hanja": "壬子" },
+      "day": { "stem": "무", "branch": "진", "korean": "무진", "hanja": "戊辰" },
+      "hour": null
+    }
+  },
+  {
+    "id": "jasi-2330",
+    "note": "야자시 23:30 → 다음날 일주(갑술)·시주(갑자)",
+    "birthDate": "2024-03-10",
+    "birthTime": "23:30",
+    "expected": {
+      "year": { "stem": "갑", "branch": "진", "korean": "갑진", "hanja": "甲辰" },
+      "month": { "stem": "정", "branch": "묘", "korean": "정묘", "hanja": "丁卯" },
+      "day": { "stem": "갑", "branch": "술", "korean": "갑술", "hanja": "甲戌" },
+      "hour": { "stem": "갑", "branch": "자", "korean": "갑자", "hanja": "甲子" }
+    }
+  },
+  {
+    "id": "lichun-before-2026",
+    "note": "2026 입춘 05:02 직전 → 을사년 기축월",
+    "birthDate": "2026-02-04",
+    "birthTime": "05:01",
+    "expected": {
+      "year": { "stem": "을", "branch": "사", "korean": "을사", "hanja": "乙巳" },
+      "month": { "stem": "기", "branch": "축", "korean": "기축", "hanja": "己丑" },
+      "day": { "stem": "기", "branch": "유", "korean": "기유", "hanja": "己酉" },
+      "hour": { "stem": "정", "branch": "묘", "korean": "정묘", "hanja": "丁卯" }
+    }
+  },
+  {
+    "id": "lichun-after-2026",
+    "note": "2026 입춘 05:02 직후 → 병오년 경인월",
+    "birthDate": "2026-02-04",
+    "birthTime": "05:03",
+    "expected": {
+      "year": { "stem": "병", "branch": "오", "korean": "병오", "hanja": "丙午" },
+      "month": { "stem": "경", "branch": "인", "korean": "경인", "hanja": "庚寅" },
+      "day": { "stem": "기", "branch": "유", "korean": "기유", "hanja": "己酉" },
+      "hour": { "stem": "정", "branch": "묘", "korean": "정묘", "hanja": "丁卯" }
+    }
+  },
+  {
+    "id": "ipha-before-2026",
+    "note": "2026 입하 20:49 직전 → 임진월",
+    "birthDate": "2026-05-05",
+    "birthTime": "20:48",
+    "expected": {
+      "year": { "stem": "병", "branch": "오", "korean": "병오", "hanja": "丙午" },
+      "month": { "stem": "임", "branch": "진", "korean": "임진", "hanja": "壬辰" },
+      "day": { "stem": "기", "branch": "묘", "korean": "기묘", "hanja": "己卯" },
+      "hour": { "stem": "갑", "branch": "술", "korean": "갑술", "hanja": "甲戌" }
+    }
+  },
+  {
+    "id": "ipha-after-2026",
+    "note": "2026 입하 20:49 직후 → 계사월",
+    "birthDate": "2026-05-05",
+    "birthTime": "20:50",
+    "expected": {
+      "year": { "stem": "병", "branch": "오", "korean": "병오", "hanja": "丙午" },
+      "month": { "stem": "계", "branch": "사", "korean": "계사", "hanja": "癸巳" },
+      "day": { "stem": "기", "branch": "묘", "korean": "기묘", "hanja": "己卯" },
+      "hour": { "stem": "갑", "branch": "술", "korean": "갑술", "hanja": "甲戌" }
+    }
+  }
+]

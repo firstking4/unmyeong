@@ -16,7 +16,6 @@ import { useContacts } from '@/context/ContactsContext';
 import { isFortuneReady, useProfile } from '@/context/ProfileContext';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { buildTodayCompatibility } from '@/lib/gunghap';
-import { getZodiacAnimal } from '@/lib/saju';
 import type { ContactProfile } from '@/lib/types';
 import { useTabScrollReset } from '@/lib/useTabScrollReset';
 
@@ -103,7 +102,7 @@ export default function GunghapScreen() {
         return {
           contact,
           reading,
-          animal: getZodiacAnimal(contact.birthDate),
+          animal: reading.ready ? reading.otherAnimal : null,
         };
       })
       .sort((a, b) => {
@@ -127,7 +126,7 @@ export default function GunghapScreen() {
         <Text style={[styles.title, { color: c.text, fontFamily: display }]}>지인</Text>
         <Text style={[styles.lead, { color: c.muted }]}>
           {ready
-            ? '지인 목록에서 오늘의 궁합 점수를 보고, 누르면 상세 풀이를 엽니다.'
+            ? '지인 목록에서 오늘의 궁합 점수를 보고, 누르면 상세 풀이를 엽니다. 점수는 일간·일지와 오늘의 일진을 기준으로 합니다.'
             : '내 프로필이 필요해요. 지도 탭 신분증에 이름과 생년월일을 입력하면 지인과의 궁합을 계산합니다.'}
         </Text>
 

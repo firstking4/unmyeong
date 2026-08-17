@@ -182,7 +182,7 @@ export function buildTodayKeywords(profile: Profile, date = new Date()): TodayKe
 
   // 사주 — 오늘의 사주 카드와 동일
   if (profile.birthDate) {
-    const today = buildSajuReading(profile.birthDate, date)?.today;
+    const today = buildSajuReading(profile.birthDate, date, profile.birthTime)?.today;
     if (today) {
       addWords(
         bag,

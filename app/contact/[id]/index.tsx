@@ -33,7 +33,8 @@ import { useProfile } from '@/context/ProfileContext';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { buildTodayCompatibility, type TodayCompatibility } from '@/lib/gunghap';
 import { recordCompatibilityView } from '@/lib/history';
-import { formatBirthDateDisplay } from '@/lib/lunar';
+import { birthCalendarLabel, resolveBirthParts } from '@/lib/lunar';
+import { formatSajuHourLabel } from '@/lib/saju';
 
 type Reading = TodayCompatibility;
 
@@ -126,13 +127,26 @@ function CompatibilityCardBody({
       {reading.ready ? (
         <>
           <View style={styles.cardSummary}>
-            <Text style={[styles.sectionLabel, { color: text }]}>기본 궁합</Text>
+            <Text style={[styles.sectionLabel, { color: text }]}>오늘의 궁합</Text>
             <Text style={[styles.body, { color: muted }]}>
-              {reading.animalLabel} · {reading.elementLabel}
-              {'\n'}기준 점수 {reading.baseScore}점
-              {reading.dailyDelta === 0
-                ? ''
-                : ` · 오늘 ${reading.dailyDelta > 0 ? '+' : ''}${reading.dailyDelta}`}
+              {[
+                reading.animalLabel,
+                reading.elementLabel,
+                ...reading.scoreParts
+                  .filter((part) => part.key === 'relation' || part.key.startsWith('today'))
+                  .map((part) => {
+                    if (part.key === 'relation') {
+                      return part.label.replace(/^관계\s+/, '');
+                    }
+                    if (part.key === 'todaySelf') {
+                      return `나 ${part.label.replace(/^오늘\(나\)\s+/, '')}`;
+                    }
+                    if (part.key === 'todayOther') {
+                      return `지인 ${part.label.replace(/^오늘\(지인\)\s+/, '')}`;
+                    }
+                    return part.label;
+                  }),
+              ].join(' · ')}
             </Text>
             {reading.keywords.length > 0 ? (
               <View style={styles.chips}>
@@ -200,7 +214,11 @@ export default function ContactDetailScreen() {
     return <View style={{ flex: 1, backgroundColor: c.background }} />;
   }
 
-  const birthLabel = formatBirthDateDisplay(contact) ?? contact.birthDate;
+  const birthParts = resolveBirthParts(contact);
+  const calendar = birthCalendarLabel(birthParts.calendar) ?? '양력';
+  const leap = birthParts.calendar === 'lunar' && birthParts.leap ? '윤' : '';
+  const birthLabel = `${calendar} ${birthParts.year}년 ${leap}${birthParts.month}월 ${birthParts.day}일`;
+  const hourLabel = formatSajuHourLabel(contact.birthTime);
   const myName = profile.name?.trim() || '나';
   const theirName = contact.name.trim();
   const cardTitle = `${myName}님과 ${theirName}님의 오늘은`;
@@ -268,9 +286,10 @@ export default function ContactDetailScreen() {
         <Text style={[styles.meta, { color: c.muted }]}>
           {[
             birthLabel,
+            hourLabel,
             contact.gender === 'male' ? '남성' : contact.gender === 'female' ? '여성' : null,
-            contact.mbti,
             contact.bloodType ? `${contact.bloodType}형` : null,
+            contact.mbti ? contact.mbti : null,
           ]
             .filter(Boolean)
             .join(' · ')}

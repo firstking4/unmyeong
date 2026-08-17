@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/Themed';
-import { UpcomingFeatures } from '@/components/tabs/UpcomingFeatures';
 import { KeywordBadge } from '@/components/ui/KeywordBadge';
 import { LockedContentCard } from '@/components/ui/LockedContentCard';
 import { PaperGrain } from '@/components/ui/PaperGrain';
@@ -14,6 +13,22 @@ import { isFortuneReady, useProfile } from '@/context/ProfileContext';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { birthCalendarLabel, resolveBirthParts } from '@/lib/lunar';
 import {
+  buildFourPillarsDetail,
+  buildLuckPillarsDetail,
+  buildSolarTermDetail,
+  computeFourPillars,
+  computeLuckPillars,
+  formatFourPillarsHeadline,
+  getMonthBoundaryTerm,
+  getSolarTermWindow,
+  type DetailHint,
+  type FourPillarsResult,
+  type LuckPillarsResult,
+  type ManseryeokPillar,
+  type SolarTermInfo,
+  type SolarTermWindow,
+} from '@/lib/manseryeok';
+import {
   buildSajuReading,
   formatSajuHourLabel,
   type PeriodReading,
@@ -21,12 +36,14 @@ import {
 } from '@/lib/saju';
 import { useTabScrollReset } from '@/lib/useTabScrollReset';
 
-const UPCOMING = [
-  { title: '사주팔자', blurb: '년·월·일·시 네 기둥' },
-  { title: '대운', blurb: '10년 단위 흐름' },
-  { title: '시주', blurb: '출생 시각 기준 시주' },
-  { title: '절기 만세력', blurb: '절기 보정 만세력' },
-];
+const PILLAR_SLOTS = [
+  { key: 'year', label: '년' },
+  { key: 'month', label: '월' },
+  { key: 'day', label: '일' },
+  { key: 'hour', label: '시' },
+] as const;
+
+const LUCK_PILLAR_LIMIT = 8;
 
 const DETAIL_LOCK = {
   title: '상세 풀이',
@@ -42,9 +59,36 @@ export default function SajuScreen() {
   const scrollRef = useTabScrollReset();
   const ready = isFortuneReady(profile);
   const reading = useMemo(
-    () => (ready && profile.birthDate ? buildSajuReading(profile.birthDate) : null),
-    [ready, profile.birthDate],
+    () =>
+      ready && profile.birthDate
+        ? buildSajuReading(profile.birthDate, undefined, profile.birthTime)
+        : null,
+    [ready, profile.birthDate, profile.birthTime],
   );
+  const pillars = useMemo(
+    () =>
+      ready && profile.birthDate
+        ? computeFourPillars({ birthDate: profile.birthDate, birthTime: profile.birthTime })
+        : null,
+    [ready, profile.birthDate, profile.birthTime],
+  );
+  const monthBoundary = useMemo(
+    () =>
+      ready && profile.birthDate
+        ? getMonthBoundaryTerm(profile.birthDate, profile.birthTime)
+        : null,
+    [ready, profile.birthDate, profile.birthTime],
+  );
+  const termWindow = useMemo(() => (ready ? getSolarTermWindow() : null), [ready]);
+  const luck = useMemo(() => {
+    if (!ready || !profile.birthDate) return null;
+    if (profile.gender !== 'male' && profile.gender !== 'female') return null;
+    return computeLuckPillars({
+      birthDate: profile.birthDate,
+      birthTime: profile.birthTime,
+      gender: profile.gender,
+    });
+  }, [ready, profile.birthDate, profile.birthTime, profile.gender]);
   const natalBirthLabel = useMemo(() => {
     if (!profile.birthDate) return null;
     const parts = resolveBirthParts(profile);
@@ -66,8 +110,8 @@ export default function SajuScreen() {
         <Text style={[styles.title, { color: c.text, fontFamily: display }]}>사주</Text>
         <Text style={[styles.lead, { color: c.muted }]}>
           {ready
-            ? '나의 띠·오행 위에 오늘·이번 주·이달·올해의 기운을 겹쳐 참고용 풀이를 보여 줍니다.'
-            : '내 프로필이 필요해요. 지도 탭 신분증에 이름과 생년월일을 입력하면 띠·오행과 오늘·이번 주·이달·올해 풀이가 열립니다.'}
+            ? '생년월일로 네 기둥을 세우고, 띠·오행 위에 오늘·이번 주·이달·올해의 참고용 풀이를 겹칩니다.'
+            : '내 프로필이 필요해요. 지도 탭 신분증에 이름과 생년월일을 입력하면 사주팔자와 오늘·이번 주·이달·올해 풀이가 열립니다.'}
         </Text>
 
         {reading ? (
@@ -99,8 +143,37 @@ export default function SajuScreen() {
             <PeriodBlock period={reading.year} tint={c.tint} text={c.text} muted={c.muted} hairline={c.hairline} />
           </>
         ) : null}
-
-        <UpcomingFeatures items={UPCOMING} />
+        {pillars ? (
+          <FourPillarsBlock
+            pillars={pillars}
+            birthLabel={natalBirthLabel}
+            monthBoundary={monthBoundary}
+            tint={c.tint}
+            text={c.text}
+            muted={c.muted}
+            hairline={c.hairline}
+          />
+        ) : null}
+        {termWindow ? (
+          <SolarTermBlock
+            window={termWindow}
+            tint={c.tint}
+            text={c.text}
+            muted={c.muted}
+            hairline={c.hairline}
+          />
+        ) : null}
+        {ready ? (
+          <LuckPillarsBlock
+            luck={luck}
+            birthDate={profile.birthDate}
+            hasGender={profile.gender === 'male' || profile.gender === 'female'}
+            tint={c.tint}
+            text={c.text}
+            muted={c.muted}
+            hairline={c.hairline}
+          />
+        ) : null}
 
         <Text style={[styles.disclaimer, { color: c.muted }]}>{ENTERTAINMENT_DISCLAIMER}</Text>
       </ScrollView>
@@ -251,6 +324,187 @@ function NatalSajuBlock({
   );
 }
 
+function DetailBody({
+  summary,
+  hints,
+  text,
+  muted,
+}: {
+  summary: string;
+  hints: DetailHint[];
+  text: string;
+  muted: string;
+}) {
+  return (
+    <>
+      <Text style={[styles.blockBody, { color: muted }]}>{summary}</Text>
+      {hints.map((hint, i) => (
+        <View key={`detail-${i}-${hint.label}`} style={styles.hintBlock}>
+          <Text style={[styles.hintLabel, { color: text }]}>{hint.label}</Text>
+          <Text style={[styles.hintText, { color: muted }]}>{hint.text}</Text>
+        </View>
+      ))}
+    </>
+  );
+}
+
+function pillarForSlot(
+  pillars: FourPillarsResult,
+  key: (typeof PILLAR_SLOTS)[number]['key'],
+): ManseryeokPillar | null {
+  return pillars[key];
+}
+
+function FourPillarsBlock({
+  pillars,
+  birthLabel,
+  monthBoundary,
+  tint,
+  text,
+  muted,
+  hairline,
+}: {
+  pillars: FourPillarsResult;
+  birthLabel: string | null;
+  monthBoundary: SolarTermInfo | null;
+  tint: string;
+  text: string;
+  muted: string;
+  hairline: string;
+}) {
+  const hourMissing = pillars.hour === null;
+  const detail = buildFourPillarsDetail(pillars, monthBoundary);
+  const metaParts = [
+    monthBoundary ? `월주 기준 · ${monthBoundary.name} 절입` : '절입 기준 네 기둥',
+    hourMissing ? '출생 시각을 넣으면 시주가 열립니다' : null,
+  ].filter(Boolean);
+  return (
+    <View style={[styles.block, { borderTopColor: hairline }]}>
+      <View style={styles.blockSummary}>
+        <Text style={[styles.sectionTitle, { color: text, fontFamily: display }]}>사주팔자</Text>
+        {birthLabel ? <Text style={[styles.blockMeta, { color: muted }]}>{birthLabel}</Text> : null}
+        <Text style={[styles.flowTitle, { color: tint }]}>{formatFourPillarsHeadline(pillars)}</Text>
+        <Text style={[styles.blockMeta, { color: muted }]}>{metaParts.join(' · ')}</Text>
+      </View>
+      <View style={[styles.cardSplit, { borderTopColor: hairline }]}>
+        <View style={styles.pillarRow}>
+          {PILLAR_SLOTS.map((slot) => {
+            const pillar = pillarForSlot(pillars, slot.key);
+            return (
+              <View key={slot.key} style={styles.pillarCol}>
+                <Text style={[styles.pillarSlot, { color: muted }]}>{slot.label}</Text>
+                <Text style={[styles.pillarKorean, { color: text, fontFamily: display }]}>
+                  {pillar?.korean ?? '—'}
+                </Text>
+                <Text style={[styles.pillarHanja, { color: muted }]}>{pillar?.hanja ?? '—'}</Text>
+              </View>
+            );
+          })}
+        </View>
+        <DetailBody summary={detail.summary} hints={detail.hints} text={text} muted={muted} />
+      </View>
+    </View>
+  );
+}
+
+function SolarTermBlock({
+  window,
+  tint,
+  text,
+  muted,
+  hairline,
+}: {
+  window: SolarTermWindow;
+  tint: string;
+  text: string;
+  muted: string;
+  hairline: string;
+}) {
+  const detail = buildSolarTermDetail(window);
+  return (
+    <View style={[styles.block, { borderTopColor: hairline }]}>
+      <View style={styles.blockSummary}>
+        <Text style={[styles.sectionTitle, { color: text, fontFamily: display }]}>절기</Text>
+        <Text style={[styles.blockMeta, { color: muted }]}>오늘 기준 · KST</Text>
+        <Text style={[styles.flowTitle, { color: tint }]}>
+          {window.current.name} · 다음 {window.next.name}
+        </Text>
+        <Text style={[styles.blockMeta, { color: muted }]}>
+          {window.current.name} {window.current.labelKst} · {window.next.name}{' '}
+          {window.next.labelKst}
+        </Text>
+      </View>
+      <View style={[styles.cardSplit, { borderTopColor: hairline }]}>
+        <DetailBody summary={detail.summary} hints={detail.hints} text={text} muted={muted} />
+      </View>
+    </View>
+  );
+}
+
+function LuckPillarsBlock({
+  luck,
+  birthDate,
+  hasGender,
+  tint,
+  text,
+  muted,
+  hairline,
+}: {
+  luck: LuckPillarsResult | null;
+  birthDate?: string;
+  hasGender: boolean;
+  tint: string;
+  text: string;
+  muted: string;
+  hairline: string;
+}) {
+  if (!hasGender) {
+    return (
+      <View style={[styles.block, { borderTopColor: hairline }]}>
+        <View style={styles.blockSummary}>
+          <Text style={[styles.sectionTitle, { color: text, fontFamily: display }]}>대운</Text>
+          <Text style={[styles.blockMeta, { color: muted }]}>
+            신분증에 성별을 넣으면 10년 단위 대운이 열립니다.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+  if (!luck || !birthDate) return null;
+  const shown = luck.pillars.slice(0, LUCK_PILLAR_LIMIT);
+  const detail = buildLuckPillarsDetail(luck, birthDate);
+  return (
+    <View style={[styles.block, { borderTopColor: hairline }]}>
+      <View style={styles.blockSummary}>
+        <Text style={[styles.sectionTitle, { color: text, fontFamily: display }]}>대운</Text>
+        <Text style={[styles.blockMeta, { color: muted }]}>
+          {luck.forward ? '순행' : '역행'} · {luck.startAge}세부터
+        </Text>
+        <Text style={[styles.flowTitle, { color: tint }]}>
+          {shown
+            .slice(0, 3)
+            .map((item) => `${item.age}세 ${item.korean}`)
+            .join(' · ')}
+        </Text>
+      </View>
+      <View style={[styles.cardSplit, { borderTopColor: hairline }]}>
+        <View style={styles.luckRow}>
+          {shown.map((item) => (
+            <View key={`luck-${item.age}-${item.korean}`} style={styles.luckCol}>
+              <Text style={[styles.pillarSlot, { color: muted }]}>{item.age}세</Text>
+              <Text style={[styles.luckKorean, { color: text, fontFamily: display }]}>
+                {item.korean}
+              </Text>
+              <Text style={[styles.pillarHanja, { color: muted }]}>{item.hanja}</Text>
+            </View>
+          ))}
+        </View>
+        <DetailBody summary={detail.summary} hints={detail.hints} text={text} muted={muted} />
+      </View>
+    </View>
+  );
+}
+
 function PeriodBlock({
   period,
   tint,
@@ -351,6 +605,44 @@ const styles = StyleSheet.create({
   blockMeta: {
     fontSize: 13,
     lineHeight: 18,
+  },
+  pillarRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  pillarCol: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  pillarSlot: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  pillarKorean: {
+    fontSize: 20,
+    lineHeight: 26,
+    letterSpacing: 0.4,
+  },
+  pillarHanja: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  luckRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  luckCol: {
+    width: '22%',
+    minWidth: 64,
+    alignItems: 'center',
+    gap: 2,
+  },
+  luckKorean: {
+    fontSize: 16,
+    lineHeight: 22,
+    letterSpacing: 0.3,
   },
   blockBody: {
     ...tabSection.detailBody,

@@ -25,6 +25,7 @@
     "expo-web-browser": "~57.0.2",
     "html2canvas": "^1.4.1",
     "kor-lunar": "^1.7.0",
+    "manseryeok": "^2.0.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.2",
@@ -58,7 +59,8 @@
     "icons:zodiac": "python3 scripts/generate-zodiac-watermarks.py",
     "gwansang:bases": "python3 scripts/build-gwansang-static-bases.py",
     "gwansang:warps": "python3 scripts/build-gwansang-warps.py",
-    "verify:saju-code": "python3 scripts/verify-saju-code.py"
+    "verify:saju-code": "python3 scripts/verify-saju-code.py",
+    "verify:manseryeok": "node scripts/verify-manseryeok.mjs"
   },
   "private": true
 }

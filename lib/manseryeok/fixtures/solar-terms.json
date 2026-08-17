@@ -1,0 +1,19 @@
+[
+  {
+    "id": "month-jie-1982",
+    "birthDate": "1982-12-11",
+    "birthTime": "09:50",
+    "expected": {
+      "name": "대설",
+      "labelKst": "1982년 12월 7일 19시 48분"
+    }
+  },
+  {
+    "id": "window-2026-08-17",
+    "atKst": "2026-08-17T12:00:00+09:00",
+    "expected": {
+      "current": { "name": "입추", "labelKst": "2026년 8월 7일 20시 43분" },
+      "next": { "name": "처서", "labelKst": "2026년 8월 23일 11시 19분" }
+    }
+  }
+]
