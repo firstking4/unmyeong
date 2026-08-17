@@ -7,6 +7,7 @@ import { useEffect, useMemo } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { BackIcon } from '@/components/ui/BackIcon';
 import Colors from '@/constants/Colors';
 import { ContactsProvider } from '@/context/ContactsContext';
 import { PersonalityResultsProvider } from '@/context/PersonalityResultsContext';
@@ -94,7 +95,13 @@ function RootLayoutNav() {
           <RewardUnlockProvider>
             <ThemeProvider value={navTheme}>
               <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-              <Stack>
+              <Stack
+                screenOptions={{
+                  headerBackImage: ({ tintColor }) => (
+                    <BackIcon color={tintColor ?? c.text} size={24} />
+                  ),
+                  headerBackTitleVisible: false,
+                }}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen
                 name="profile-edit"
@@ -159,6 +166,52 @@ function RootLayoutNav() {
                   headerShadowVisible: false,
                   headerTransparent: false,
                   headerStatusBarHeight: 8,
+                  headerTitleStyle: { fontSize: 17 },
+                }}
+              />
+              <Stack.Screen
+                name="settings"
+                options={{
+                  presentation: 'modal',
+                  title: '설정',
+                  headerBackVisible: true,
+                  headerShadowVisible: false,
+                  headerTransparent: false,
+                  headerStatusBarHeight: 8,
+                  headerTitleStyle: { fontSize: 17 },
+                }}
+              />
+              <Stack.Screen
+                name="tarot-cardbook"
+                options={{
+                  presentation: 'modal',
+                  title: '타로 덱',
+                  headerBackVisible: true,
+                  headerShadowVisible: false,
+                  headerTransparent: false,
+                  headerStatusBarHeight: 8,
+                  headerTitleStyle: { fontSize: 17 },
+                }}
+              />
+              <Stack.Screen
+                name="tarot-spread"
+                options={{
+                  presentation: 'modal',
+                  title: '질문 스프레드',
+                  headerBackVisible: true,
+                  headerShadowVisible: false,
+                  headerTransparent: false,
+                  headerTitleStyle: { fontSize: 17 },
+                }}
+              />
+              <Stack.Screen
+                name="tarot-spread-result"
+                options={{
+                  presentation: 'modal',
+                  title: '질문 스프레드',
+                  headerBackVisible: true,
+                  headerShadowVisible: false,
+                  headerTransparent: false,
                   headerTitleStyle: { fontSize: 17 },
                 }}
               />

@@ -47,6 +47,36 @@ export function getElement(birthDate?: string): Element | null {
   return ELEMENTS[Math.floor(index / 2)];
 }
 
+/**
+ * 프로필 `HH:mm` → 사주 시진 표기 (자시~해시).
+ * 정식 시주 계산이 아니라 표시용 참고 구분이다.
+ */
+export function formatSajuHourLabel(birthTime?: string): string | null {
+  if (!birthTime) return null;
+  const match = birthTime.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (!Number.isFinite(hour) || hour < 0 || hour > 23) return null;
+  if (!Number.isFinite(minute) || minute < 0 || minute > 59) return null;
+  const labels = [
+    '자시',
+    '축시',
+    '인시',
+    '묘시',
+    '진시',
+    '사시',
+    '오시',
+    '미시',
+    '신시',
+    '유시',
+    '술시',
+    '해시',
+  ] as const;
+  const index = Math.floor(((hour + 1) % 24) / 2);
+  return labels[index] ?? null;
+}
+
 export function formatSajuKeywords(birthDate?: string): string | null {
   const animal = getZodiacAnimal(birthDate);
   const element = getElement(birthDate);
@@ -74,7 +104,7 @@ export function formatSajuSummary(birthDate?: string): string | null {
 }
 
 export type ElementRelationKind = '같음' | '생함' | '생받음' | '극함' | '극받음';
-export type SajuPeriod = '오늘' | '이번 달' | '올해';
+export type SajuPeriod = '오늘' | '이번 주' | '이번 달' | '올해';
 
 export type ElementRelation = {
   kind: ElementRelationKind;
@@ -211,9 +241,12 @@ export type SajuReading = {
   birthYear: number;
   headline: string;
   keywords: string[];
+  summary: string;
+  hints: { label: string; text: string }[];
   animal: SeedRecord;
   element: SeedRecord;
   today: PeriodReading;
+  week: PeriodReading;
   month: PeriodReading;
   year: PeriodReading;
 };
@@ -248,8 +281,47 @@ function hintLines(
 
 function themeDateForPeriod(when: SajuPeriod, date: Date): Date {
   if (when === '오늘') return date;
+  if (when === '이번 주') return startOfWeek(date);
   if (when === '이번 달') return new Date(date.getFullYear(), date.getMonth(), 1);
   return new Date(date.getFullYear(), 0, 1);
+}
+
+/** 한국 달력 관례에 맞춘 월요일~일요일 주간. */
+function startOfWeek(date: Date): Date {
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const offset = (start.getDay() + 6) % 7;
+  start.setDate(start.getDate() - offset);
+  return start;
+}
+
+function formatWeekLabel(start: Date): string {
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const sameMonth = sameYear && start.getMonth() === end.getMonth();
+  const prefix = `${start.getFullYear()}년 `;
+  const startLabel = `${start.getMonth() + 1}월 ${start.getDate()}일`;
+  const endLabel = sameMonth
+    ? `${end.getDate()}일`
+    : `${sameYear ? '' : `${end.getFullYear()}년 `}${end.getMonth() + 1}월 ${end.getDate()}일`;
+  return `${prefix}${startLabel} – ${endLabel}`;
+}
+
+function mostFrequent<T>(items: T[], getKey: (item: T) => string): T | null {
+  if (items.length === 0) return null;
+  const counts = new Map<string, number>();
+  let winner = items[0];
+  let max = 0;
+  for (const item of items) {
+    const key = getKey(item);
+    const count = (counts.get(key) ?? 0) + 1;
+    counts.set(key, count);
+    if (count > max) {
+      winner = item;
+      max = count;
+    }
+  }
+  return winner;
 }
 
 function buildPeriod(input: {
@@ -313,6 +385,91 @@ function buildPeriod(input: {
   };
 }
 
+/**
+ * 월요일~일요일 일진을 모은 참고용 주간 흐름.
+ * 정식 주간 명리 해석이 아니라 현재 일진·오행 모델의 집계값이다.
+ */
+function buildWeekPeriod(input: {
+  selfElement: Element;
+  natalAnimal: SeedRecord;
+  natalElement: SeedRecord;
+  birthDate: string;
+  date: Date;
+}): PeriodReading | null {
+  const weekStart = startOfWeek(input.date);
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const day = new Date(weekStart);
+    day.setDate(day.getDate() + index);
+    return day;
+  });
+  const dayFlows = days.map((day) => {
+    const branch = getDayStemBranch(day);
+    return {
+      day,
+      branch,
+      relation: relateElements(input.selfElement, branch.element, '이번 주'),
+      tones: pickTones(`${ymd(day)}:${input.birthDate}:day`),
+      theme: pickDaily('saju', `${ymd(day)}:${input.birthDate}:day`, day),
+    };
+  });
+  const dominant = mostFrequent(dayFlows, (flow) => flow.relation.kind);
+  if (!dominant) return null;
+
+  const weeklyTheme = pickDaily(
+    'saju',
+    `${ymd(weekStart)}:${input.birthDate}:week`,
+    weekStart,
+  );
+  const tones = [...TONES]
+    .sort(
+      (left, right) =>
+        dayFlows.filter((flow) => flow.tones.includes(right)).length -
+        dayFlows.filter((flow) => flow.tones.includes(left)).length,
+    )
+    .slice(0, 2);
+  const keywords = [
+    weeklyTheme.keyword,
+    ...dayFlows.map((flow) => flow.theme.keyword),
+    ...(getFiveElement(dominant.branch.element)?.keywords ?? []),
+    ...(getZodiacAnimalRecord(dominant.branch.animal)?.keywords ?? []),
+  ].filter((keyword, index, all) => Boolean(keyword) && all.indexOf(keyword) === index);
+
+  if (dominant.relation.kind === '극함') keywords.push('마찰');
+  if (dominant.relation.kind === '극받음') keywords.push('시험');
+
+  const baseHints = hintLines(
+    input.natalAnimal,
+    input.natalElement,
+    tones,
+    `${ymd(weekStart)}:${input.birthDate}:week`,
+  ).map((hint) =>
+    hint.label === '관계'
+      ? { ...hint, text: `${hint.text} ${weeklyTheme.relationship}` }
+      : hint,
+  );
+
+  return {
+    eyebrow: '이번 주 기운',
+    when: '이번 주',
+    dateLabel: formatWeekLabel(weekStart),
+    headline: `${dominant.branch.element}의 기운, ${weeklyTheme.headline}`,
+    flowLabel: `주간 일진 · ${dominant.branch.animal}띠`,
+    relation: dominant.relation,
+    summary: [
+      `월요일부터 일요일까지의 참고용 일진을 모으면 ${dominant.branch.element} 기운이 가장 자주 나타납니다.`,
+      dominant.relation.blurb,
+      weeklyTheme.focus,
+    ].join(' '),
+    tones,
+    keywords: keywords.slice(0, 5),
+    hints: [
+      ...baseHints,
+      { label: '이번 주의 한 가지', text: weeklyTheme.action },
+      { label: '주의', text: weeklyTheme.caution },
+    ],
+  };
+}
+
 export function buildSajuReading(birthDate: string, date = new Date()): SajuReading | null {
   const birthYear = parseBirthYear(birthDate);
   const animalLabel = getZodiacAnimal(birthDate);
@@ -356,6 +513,11 @@ export function buildSajuReading(birthDate: string, date = new Date()): SajuRead
     seed: `${ymd(date)}:${birthDate}:day`,
     date,
   });
+  const week = buildWeekPeriod({
+    ...base,
+    birthDate,
+    date,
+  });
   const monthReading = buildPeriod({
     ...base,
     eyebrow: '이달의 사주',
@@ -378,15 +540,21 @@ export function buildSajuReading(birthDate: string, date = new Date()): SajuRead
     seed: `${year}:${birthDate}:year`,
     date,
   });
-  if (!today || !monthReading || !yearReading) return null;
+  if (!today || !week || !monthReading || !yearReading) return null;
+
+  const natalSummary = [animal.summary, element.summary].filter(Boolean).join(' ');
+  const natalHints = hintLines(animal, element, [...TONES], `${birthDate}:natal`);
 
   return {
     birthYear,
     headline: `${element.label}의 기운 · ${animal.label}띠`,
     keywords,
+    summary: natalSummary,
+    hints: natalHints,
     animal,
     element,
     today,
+    week,
     month: monthReading,
     year: yearReading,
   };

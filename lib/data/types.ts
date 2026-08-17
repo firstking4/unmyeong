@@ -26,6 +26,11 @@ export type SeedRecord = {
   upright?: string;
   reversed?: string;
   categoryId?: string;
+  /** 타로 마이너 이미지 연결 정보 */
+  image?: {
+    suit: 'wands' | 'cups' | 'swords' | 'pentacles';
+    file: string;
+  };
 };
 
 export type PhysiognomyCategory = {

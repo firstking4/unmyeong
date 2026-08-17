@@ -1,6 +1,6 @@
 import { getSeedInsightKeywords, getWesternZodiac } from '@/lib/data/catalog';
 import { formatBirthDateDisplay } from './lunar';
-import { getElement, getZodiacAnimal } from './saju';
+import { formatSajuHourLabel, getElement, getZodiacAnimal } from './saju';
 import type { BloodType, Gender, MbtiType, Profile } from './types';
 
 export type IDCardFieldKey = 'name' | 'birthDate' | 'gender' | 'bloodType' | 'mbti';
@@ -41,7 +41,9 @@ export function getFieldDisplayValue(key: IDCardFieldKey, profile: Profile): str
       const date = formatBirthDateDisplay(profile);
       if (!date) return null;
       const cal = profile.birthCalendar === 'lunar' ? '음력' : '양력';
-      return profile.birthTime ? `${date} · ${profile.birthTime} (${cal})` : `${date} (${cal})`;
+      return profile.birthTime
+        ? `${date} · ${formatSajuHourLabel(profile.birthTime) ?? profile.birthTime} (${cal})`
+        : `${date} (${cal})`;
     }
     case 'gender':
       if (profile.gender === 'male') return '남성';

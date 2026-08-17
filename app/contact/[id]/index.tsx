@@ -87,7 +87,6 @@ function CompatibilityCardBody({
   hairline,
   titlePadRight,
   staticRing,
-  lockDetail = true,
 }: {
   cardTitle: string;
   reading: Reading;
@@ -98,8 +97,6 @@ function CompatibilityCardBody({
   titlePadRight?: number;
   /** 공유 캡처용 — 점수 링 애니메이션 생략 */
   staticRing?: boolean;
-  /** false면 공유 캡처처럼 상세를 박스 없이 바로 노출 */
-  lockDetail?: boolean;
 }) {
   return (
     <>
@@ -146,25 +143,7 @@ function CompatibilityCardBody({
             ) : null}
           </View>
           <View style={[styles.cardSplit, { borderTopColor: hairline }]}>
-            {lockDetail ? (
-              <ContactDetailBody reading={reading} muted={muted} tint={tint} />
-            ) : (
-              <>
-                <Text style={[styles.body, { color: muted }]}>{reading.summary}</Text>
-                <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>
-                  관계 흐름
-                </Text>
-                <Text style={[styles.hintText, { color: muted }]}>{reading.relationship}</Text>
-                <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>
-                  행동 가이드
-                </Text>
-                <Text style={[styles.hintText, { color: muted }]}>{reading.guidance}</Text>
-                <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>
-                  오늘의 주의
-                </Text>
-                <Text style={[styles.hintText, { color: muted }]}>{reading.caution}</Text>
-              </>
-            )}
+            <ContactDetailBody reading={reading} muted={muted} tint={tint} />
           </View>
         </>
       ) : (
@@ -324,7 +303,7 @@ export default function ContactDetailScreen() {
                 paperShadow,
                 { width: cardW, backgroundColor: c.surface },
               ]}>
-              <CompatibilityCardBody {...bodyProps} staticRing lockDetail={false} />
+              <CompatibilityCardBody {...bodyProps} staticRing />
               <ShareCardBrandFooter tint={c.tint} text={c.text} hairline={c.hairline} />
             </View>
           </View>

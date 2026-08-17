@@ -13,12 +13,13 @@ import Colors from '@/constants/Colors';
 import { space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useProfile } from '@/context/ProfileContext';
+import { useTabScrollReset } from '@/lib/useTabScrollReset';
 
 export default function HomeScreen() {
   const scheme = useColorScheme() ?? 'light';
   const c = Colors[scheme];
   const { fortuneReady } = useProfile();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useTabScrollReset();
   const fortuneY = useRef(0);
 
   const scrollToFortune = () => {

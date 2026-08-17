@@ -12,7 +12,14 @@ import { paperShadow, tabSection } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { isFortuneReady, useProfile } from '@/context/ProfileContext';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
-import { buildSajuReading, type PeriodReading } from '@/lib/saju';
+import { birthCalendarLabel, resolveBirthParts } from '@/lib/lunar';
+import {
+  buildSajuReading,
+  formatSajuHourLabel,
+  type PeriodReading,
+  type SajuReading,
+} from '@/lib/saju';
+import { useTabScrollReset } from '@/lib/useTabScrollReset';
 
 const UPCOMING = [
   { title: '사주팔자', blurb: '년·월·일·시 네 기둥' },
@@ -32,24 +39,35 @@ export default function SajuScreen() {
   const scheme = useColorScheme() ?? 'light';
   const c = Colors[scheme];
   const { profile } = useProfile();
+  const scrollRef = useTabScrollReset();
   const ready = isFortuneReady(profile);
   const reading = useMemo(
     () => (ready && profile.birthDate ? buildSajuReading(profile.birthDate) : null),
     [ready, profile.birthDate],
   );
+  const natalBirthLabel = useMemo(() => {
+    if (!profile.birthDate) return null;
+    const parts = resolveBirthParts(profile);
+    const calendar = birthCalendarLabel(parts.calendar) ?? '양력';
+    const leap = parts.calendar === 'lunar' && parts.leap ? '윤' : '';
+    const datePart = `${calendar} ${parts.year}년 ${leap}${parts.month}월 ${parts.day}일`;
+    const hourLabel = formatSajuHourLabel(profile.birthTime);
+    return hourLabel ? `${datePart} · ${hourLabel}` : datePart;
+  }, [profile]);
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
       <PaperGrain color={c.grain} />
       <ScrollView
+        ref={scrollRef}
         style={{ flex: 1, backgroundColor: 'transparent' }}
         contentContainerStyle={styles.content}>
         <Text style={[styles.eyebrow, { color: c.tint, fontFamily: display }]}>SAJU</Text>
         <Text style={[styles.title, { color: c.text, fontFamily: display }]}>사주</Text>
         <Text style={[styles.lead, { color: c.muted }]}>
           {ready
-            ? '나의 띠·오행 위에 오늘·이달·올해의 기운을 겹쳐 참고용 풀이를 보여 줍니다.'
-            : '내 프로필이 필요해요. 지도 탭 신분증에 이름과 생년월일을 입력하면 띠·오행과 오늘·이달·올해 풀이가 열립니다.'}
+            ? '나의 띠·오행 위에 오늘·이번 주·이달·올해의 기운을 겹쳐 참고용 풀이를 보여 줍니다.'
+            : '내 프로필이 필요해요. 지도 탭 신분증에 이름과 생년월일을 입력하면 띠·오행과 오늘·이번 주·이달·올해 풀이가 열립니다.'}
         </Text>
 
         {reading ? (
@@ -62,22 +80,21 @@ export default function SajuScreen() {
               surface={c.surface}
               hairline={c.hairline}
             />
-            <View style={[styles.block, { borderTopColor: c.hairline }]}>
-              <Text style={[styles.natalTitle, { color: c.text, fontFamily: display }]}>나의 사주</Text>
-              <Text style={[styles.cardHeadline, { color: c.text, fontFamily: display }]}>
-                {reading.headline}
-              </Text>
-              <Text style={[styles.cardMeta, { color: c.muted }]}>
-                {reading.birthYear}년생 · {reading.element.mood}
-              </Text>
-              {(reading.keywords ?? []).length > 0 ? (
-                <View style={styles.keywordRow}>
-                  {(reading.keywords ?? []).map((kw, i) => (
-                    <KeywordBadge key={`natal-${i}-${kw}`} label={kw} />
-                  ))}
-                </View>
-              ) : null}
-            </View>
+            <NatalSajuBlock
+              reading={reading}
+              birthLabel={natalBirthLabel}
+              tint={c.tint}
+              text={c.text}
+              muted={c.muted}
+              hairline={c.hairline}
+            />
+            <PeriodBlock
+              period={reading.week}
+              tint={c.tint}
+              text={c.text}
+              muted={c.muted}
+              hairline={c.hairline}
+            />
             <PeriodBlock period={reading.month} tint={c.tint} text={c.text} muted={c.muted} hairline={c.hairline} />
             <PeriodBlock period={reading.year} tint={c.tint} text={c.text} muted={c.muted} hairline={c.hairline} />
           </>
@@ -141,8 +158,10 @@ function TodaySajuCard({
   return (
     <View style={[styles.todayCard, paperShadow, { backgroundColor: surface }]}>
       <View style={styles.cardSummary}>
-        <Text style={[styles.todayTitle, { color: text, fontFamily: display }]}>오늘의 사주</Text>
-        <Text style={[styles.todayDate, { color: muted }]}>{period.dateLabel}</Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.todayTitle, { color: text, fontFamily: display }]}>오늘의 사주</Text>
+          <Text style={[styles.todayDate, { color: muted }]}>{period.dateLabel}</Text>
+        </View>
         <Text style={[styles.flowTitle, { color: tint }]}>{period.headline}</Text>
         <Text style={[styles.blockMeta, { color: muted }]}>
           {period.flowLabel} · {period.relation.title}
@@ -182,6 +201,53 @@ function PeriodOpenBody({
         </View>
       ))}
     </>
+  );
+}
+
+function NatalSajuBlock({
+  reading,
+  birthLabel,
+  tint,
+  text,
+  muted,
+  hairline,
+}: {
+  reading: SajuReading;
+  birthLabel: string | null;
+  tint: string;
+  text: string;
+  muted: string;
+  hairline: string;
+}) {
+  return (
+    <View style={[styles.block, { borderTopColor: hairline }]}>
+      <View style={styles.blockSummary}>
+        <Text style={[styles.sectionTitle, { color: text, fontFamily: display }]}>나의 사주</Text>
+        {birthLabel ? <Text style={[styles.blockMeta, { color: muted }]}>{birthLabel}</Text> : null}
+        <Text style={[styles.flowTitle, { color: tint }]}>{reading.headline}</Text>
+        {reading.element.mood ? (
+          <Text style={[styles.blockMeta, { color: muted }]}>{reading.element.mood}</Text>
+        ) : null}
+        {(reading.keywords ?? []).length > 0 ? (
+          <View style={styles.toneRow}>
+            {reading.keywords.map((kw, i) => (
+              <KeywordBadge key={`natal-kw-${i}-${kw}`} label={kw} />
+            ))}
+          </View>
+        ) : null}
+      </View>
+      <View style={[styles.cardSplit, { borderTopColor: hairline }]}>
+        {reading.summary ? (
+          <Text style={[styles.blockBody, { color: muted }]}>{reading.summary}</Text>
+        ) : null}
+        {(reading.hints ?? []).map((hint, i) => (
+          <View key={`natal-hint-${i}-${hint.label}`} style={styles.hintBlock}>
+            <Text style={[styles.hintLabel, { color: text }]}>{hint.label}</Text>
+            <Text style={[styles.hintText, { color: muted }]}>{hint.text}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
   );
 }
 
@@ -250,23 +316,19 @@ const styles = StyleSheet.create({
   },
   todayTitle: {
     ...tabSection.cardTitle,
+    flexShrink: 1,
   },
-  natalTitle: {
-    ...tabSection.title,
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
   },
-  todayDate: { alignSelf: 'flex-start', fontSize: 12 },
-  cardHeadline: {
-    fontSize: 20,
-    lineHeight: 28,
-  },
-  cardMeta: {
+  todayDate: {
     fontSize: 13,
     lineHeight: 18,
-  },
-  keywordRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    flexShrink: 0,
+    textAlign: 'right',
   },
   toneRow: {
     flexDirection: 'row',

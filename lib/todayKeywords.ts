@@ -1,12 +1,9 @@
-import {
-  getBloodType,
-  getMbti,
-  getWesternZodiac,
-  pickTarotBySeed,
-} from '@/lib/data/catalog';
+import { getBloodType } from '@/lib/data/catalog';
 import { buildIntegratedFortune, luckTagForTone } from '@/lib/fortune';
 import { keywordPolarity, type KeywordPolarity } from '@/lib/keywordPolarity';
 import { buildSajuReading } from '@/lib/saju';
+import { buildSeonghyangReading } from '@/lib/seonghyang';
+import { buildTarotReading } from '@/lib/tarot';
 import type { Profile } from '@/lib/types';
 
 export type { KeywordPolarity };
@@ -111,50 +108,96 @@ function usedSources(bag: Map<string, TodayKeyword>): KeywordSource[] {
   return KEYWORD_SOURCE_ORDER.filter((source) => found.has(source));
 }
 
-/** 오늘의 운세 관련 키워드. 여러 축에서 겹치면 hits > 1. */
+/**
+ * 출처 라운드로빈으로 표시 순서를 잡는다 (상한 없음).
+ * 삽입 순서만 쓰면 뒤에 합쳐진 타로 시드가 뒤로만 몰린다.
+ */
+function pickDisplayKeywords(bag: Map<string, TodayKeyword>): TodayKeyword[] {
+  const pools = new Map<KeywordSource, TodayKeyword[]>();
+  for (const item of bag.values()) {
+    const home = item.sources[0] ?? '지도';
+    const list = pools.get(home) ?? [];
+    list.push(item);
+    pools.set(home, list);
+  }
+
+  for (const list of pools.values()) {
+    list.sort((a, b) => {
+      const an = a.polarity === 'negative' ? 0 : 1;
+      const bn = b.polarity === 'negative' ? 0 : 1;
+      return an - bn;
+    });
+  }
+
+  const order = KEYWORD_SOURCE_ORDER.filter((source) => (pools.get(source)?.length ?? 0) > 0);
+  const cursors = new Map<KeywordSource, number>(order.map((source) => [source, 0]));
+  const out: TodayKeyword[] = [];
+  const seen = new Set<string>();
+
+  while (true) {
+    let progressed = false;
+    for (const source of order) {
+      const list = pools.get(source) ?? [];
+      let cursor = cursors.get(source) ?? 0;
+      while (cursor < list.length && seen.has(list[cursor].label)) cursor += 1;
+      cursors.set(source, cursor);
+      if (cursor >= list.length) continue;
+      const next = list[cursor];
+      cursors.set(source, cursor + 1);
+      seen.add(next.label);
+      out.push(next);
+      progressed = true;
+    }
+    if (!progressed) break;
+  }
+
+  return out;
+}
+
+/**
+ * 지도 탭 「오늘의 키워드」.
+ * 각 탭의 오늘 카드 키워드와 같은 빌더 결과를 써야 한다 (운영 필수).
+ * @see .cursor/rules/today-keywords.mdc
+ */
 export function buildTodayKeywords(profile: Profile, date = new Date()): TodayKeywordSet {
   const dateKey = ymd(date);
   const seed = fortuneSeed(profile, dateKey);
   const bag = new Map<string, TodayKeyword>();
 
+  // 지도 — 오늘의 운세 luckTags
   const fortune = buildIntegratedFortune(profile, date);
   addWords(bag, fortune.insights?.luckTags ?? [], '지도');
   if (fortune.score < 62) addWords(bag, ['균형 필요'], '지도', true);
 
-  const mbti = getMbti(profile.mbti);
-  addWords(bag, pickBySeed(mbti?.keywords ?? [], `${seed}:mbti`, 2), '성향');
-  addWords(bag, pickBySeed(mbti?.watchouts ?? [], `${seed}:watch`, 1), '성향', true);
-  addWords(bag, pickBySeed(getBloodType(profile.bloodType)?.keywords ?? [], `${seed}:blood`, 1), '성향');
+  // 성향 — 오늘의 성향 카드와 동일 키워드 (+ 혈액형은 오늘 카드에 없어 보조)
+  const seonghyangToday = buildSeonghyangReading(profile, {}, date).today;
+  if (seonghyangToday) {
+    addWords(bag, seonghyangToday.keywords, '성향');
+  }
   addWords(
     bag,
-    pickBySeed(getWesternZodiac(profile.birthDate)?.keywords ?? [], `${seed}:west`, 1),
+    pickBySeed(getBloodType(profile.bloodType)?.keywords ?? [], `${seed}:blood`, 1),
     '성향',
   );
 
+  // 사주 — 오늘의 사주 카드와 동일
   if (profile.birthDate) {
     const today = buildSajuReading(profile.birthDate, date)?.today;
     if (today) {
-      // 톤은 지도 luckTags와 같은 라벨로 넣어 일↔결단 등이 합쳐지게 함
       addWords(
         bag,
         today.tones.map((tone) => luckTagForTone(tone)),
         '사주',
       );
-      addWords(bag, pickBySeed(today.keywords, `${seed}:saju`, 4), '사주');
+      addWords(bag, today.keywords, '사주');
     }
   }
 
-  const tarot = pickTarotBySeed(seed);
-  const tarotTitle = tarot.title ?? tarot.label;
-  addWords(bag, [tarotTitle, ...(tarot.keywords ?? []).slice(0, 2)], '타로');
-  if (CAUTION_TAROT.has(tarotTitle)) addWords(bag, [tarotTitle], '타로', true);
-  const reversed = hashSeed(`${seed}:rev`) % 2 === 1;
-  if (reversed) addWords(bag, ['지연'], '타로', true);
+  // 타로 — 오늘의 카드와 동일 키워드
+  const tarot = buildTarotReading(profile, date);
+  addWords(bag, tarot.keywords, '타로');
+  if (CAUTION_TAROT.has(tarot.title)) addWords(bag, [tarot.title], '타로', true);
+  if (tarot.reversed) addWords(bag, ['지연'], '타로', true);
 
-  const all = [...bag.values()];
-  const negative = all.filter((item) => item.polarity === 'negative');
-  const positive = all.filter((item) => item.polarity !== 'negative');
-  const keywords = [...negative, ...positive].slice(0, 14);
-
-  return { keywords, sources: usedSources(bag) };
+  return { keywords: pickDisplayKeywords(bag), sources: usedSources(bag) };
 }

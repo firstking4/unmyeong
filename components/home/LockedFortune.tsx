@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
+import { LockIcon } from '@/components/icons/AppIcon';
 import { BrushScoreRing } from '@/components/ink/BrushScoreRing';
 import { Text } from '@/components/Themed';
 import Colors from '@/constants/Colors';
@@ -8,15 +8,6 @@ import { display } from '@/constants/Fonts';
 import { paperShadow, radius, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { buildPlaceholderFortune } from '@/lib/fortune';
-
-function LockIcon({ color }: { color: string }) {
-  return (
-    <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
-      <Path d="M7 11V8a5 5 0 0 1 10 0v3" stroke={color} strokeWidth={1.6} strokeLinecap="round" />
-      <Path d="M6 11h12v9H6z" stroke={color} strokeWidth={1.6} strokeLinejoin="round" />
-    </Svg>
-  );
-}
 
 export function LockedFortune() {
   const c = Colors[useColorScheme() ?? 'light'];
@@ -41,7 +32,7 @@ export function LockedFortune() {
             이름과 생년월일을 채우면 오늘의 점수가 열립니다.
           </Text>
           <View style={styles.lockRow}>
-            <LockIcon color={c.tint} />
+            <LockIcon color={c.tint} size={14} />
             <Text style={[styles.lockText, { color: c.tint }]}>잠금</Text>
           </View>
         </View>

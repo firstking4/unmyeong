@@ -27,6 +27,7 @@ import { useProfile } from '@/context/ProfileContext';
 import { type IDCardFieldKey } from '@/lib/idCardFields';
 import { birthCalendarLabel, formatBirthDateDisplay } from '@/lib/lunar';
 import { hasPhysiognomyFace } from '@/lib/physiognomyFaceParams';
+import { formatSajuHourLabel } from '@/lib/saju';
 import type { PhysiognomySelection, Profile } from '@/lib/types';
 
 import { FieldEditorModal } from './FieldEditorModal';
@@ -58,16 +59,6 @@ const NAME_RIGHT_PAD = 28;
 const FIELDS_MIN_W = 140;
 const PHOTO_MIN_W = 84;
 const PHOTO_MAX_W = Math.round(PORTRAIT_W * 1.18);
-
-function formatBirthTime(t?: string) {
-  if (!t) return null;
-  const [hs, ms] = t.split(':');
-  const h = Number(hs);
-  if (Number.isNaN(h)) return t;
-  const am = h < 12;
-  const h12 = h % 12 || 12;
-  return `${am ? '오전' : '오후'} ${String(h12).padStart(2, '0')}:${ms ?? '00'}`;
-}
 
 function genderLabel(profile: Profile) {
   if (profile.gender === 'male') return '남성';
@@ -246,7 +237,7 @@ export function IdentityCard() {
         : null,
       field: 'birthDate',
     },
-    { label: '태어난 시간', value: formatBirthTime(profile.birthTime), field: 'birthDate' },
+    { label: '태어난 시간', value: formatSajuHourLabel(profile.birthTime), field: 'birthDate' },
     { label: '성별', value: genderLabel(profile), field: 'gender' },
     { label: 'MBTI', value: profile.mbti ?? null, field: 'mbti' },
     {

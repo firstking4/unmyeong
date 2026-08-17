@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { BrushScoreRing } from '@/components/ink/BrushScoreRing';
 import { SajuCodeImportModal } from '@/components/gunghap/SajuCodeImportModal';
 import { Text } from '@/components/Themed';
+import { ChevronRightIcon } from '@/components/icons/AppIcon';
 import { PaperGrain } from '@/components/ui/PaperGrain';
 import { StarIcon } from '@/components/ui/StarIcon';
 import Colors from '@/constants/Colors';
@@ -17,6 +18,7 @@ import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { buildTodayCompatibility } from '@/lib/gunghap';
 import { getZodiacAnimal } from '@/lib/saju';
 import type { ContactProfile } from '@/lib/types';
+import { useTabScrollReset } from '@/lib/useTabScrollReset';
 
 function ContactRow({
   contact,
@@ -79,7 +81,7 @@ function ContactRow({
           {[animal ? `${animal}띠` : null, summary].filter(Boolean).join(' · ')}
         </Text>
       </View>
-      <Text style={[styles.chevron, { color: muted }]}>›</Text>
+      <ChevronRightIcon color={muted} size={22} />
     </Pressable>
   );
 }
@@ -90,6 +92,7 @@ export default function GunghapScreen() {
   const router = useRouter();
   const { profile } = useProfile();
   const { contacts, loaded, togglePinned } = useContacts();
+  const scrollRef = useTabScrollReset();
   const ready = isFortuneReady(profile);
   const [importOpen, setImportOpen] = useState(false);
 
@@ -117,6 +120,7 @@ export default function GunghapScreen() {
     <View style={{ flex: 1, backgroundColor: c.background }}>
       <PaperGrain color={c.grain} />
       <ScrollView
+        ref={scrollRef}
         style={{ flex: 1, backgroundColor: 'transparent' }}
         contentContainerStyle={styles.content}>
         <Text style={[styles.eyebrow, { color: c.tint, fontFamily: display }]}>JIIN</Text>
@@ -195,7 +199,6 @@ export default function GunghapScreen() {
 const styles = StyleSheet.create({
   content: {
     ...tabSection.content,
-    gap: space.sm,
   },
   eyebrow: {
     ...tabSection.eyebrow,
@@ -216,6 +219,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    marginBottom: space.sm,
   },
   addBtnSecondary: {
     alignSelf: 'flex-start',
@@ -225,6 +229,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: 20,
     gap: 8,
+    marginBottom: space.sm,
   },
   emptyTitle: { fontSize: 20 },
   emptyBody: { fontSize: 14, lineHeight: 21 },
@@ -256,13 +261,6 @@ const styles = StyleSheet.create({
   scoreBox: {
     width: 68,
     alignItems: 'center',
-  },
-  chevron: {
-    flexShrink: 0,
-    fontSize: 26,
-    lineHeight: 28,
-    width: 20,
-    textAlign: 'right',
   },
   disclaimer: {
     ...tabSection.disclaimer,

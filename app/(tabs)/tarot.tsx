@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
 import { Text } from '@/components/Themed';
-import { UpcomingFeatures } from '@/components/tabs/UpcomingFeatures';
+import { ChevronRightIcon } from '@/components/icons/AppIcon';
 import { KeywordBadge } from '@/components/ui/KeywordBadge';
 import { LockedContentCard } from '@/components/ui/LockedContentCard';
 import { PaperGrain } from '@/components/ui/PaperGrain';
@@ -15,12 +16,7 @@ import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { recordTarotView } from '@/lib/history';
 import { buildTarotReading, type TarotReading } from '@/lib/tarot';
 import { tarotMajorImage } from '@/lib/tarotMajorImages';
-
-const UPCOMING = [
-  { title: '질문 스프레드', blurb: '연애·일·선택 등 상황에 맞는 배치' },
-  { title: '메이저 아르카나', blurb: '22장 의미와 나만의 카드 북마크' },
-  { title: '기록 모아보기', blurb: '메뉴의 기록에서 날짜별 타로·운세·궁합 확인' },
-];
+import { useTabScrollReset } from '@/lib/useTabScrollReset';
 
 const DETAIL_LOCK = {
   title: '상세 풀이',
@@ -36,7 +32,9 @@ const CARD_ART_H = 138;
 export default function TarotScreen() {
   const scheme = useColorScheme() ?? 'light';
   const c = Colors[scheme];
+  const router = useRouter();
   const { profile } = useProfile();
+  const scrollRef = useTabScrollReset();
   const ready = isFortuneReady(profile);
   const reading = useMemo(
     () => (ready ? buildTarotReading(profile) : null),
@@ -52,6 +50,7 @@ export default function TarotScreen() {
     <View style={{ flex: 1, backgroundColor: c.background }}>
       <PaperGrain color={c.grain} />
       <ScrollView
+        ref={scrollRef}
         style={{ flex: 1, backgroundColor: 'transparent' }}
         contentContainerStyle={styles.content}>
         <Text style={[styles.eyebrow, { color: c.tint, fontFamily: display }]}>TAROT</Text>
@@ -73,7 +72,40 @@ export default function TarotScreen() {
           />
         ) : null}
 
-        <UpcomingFeatures items={UPCOMING} />
+        <View style={[styles.featureList, { borderTopColor: c.hairline }]}>
+          <Pressable
+            onPress={() => router.push('/tarot-cardbook')}
+            style={({ pressed }) => [
+              styles.featureRow,
+              { borderBottomColor: c.hairline, opacity: pressed ? 0.6 : 1 },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="타로 덱 카드북">
+            <View style={styles.featureCopy}>
+              <Text style={[styles.featureTitle, { color: c.text }]}>타로 덱</Text>
+              <Text style={[styles.featureBlurb, { color: c.muted }]}>
+                78장 의미와 나만의 카드 북마크
+              </Text>
+            </View>
+            <ChevronRightIcon color={c.muted} size={22} />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/tarot-spread')}
+            style={({ pressed }) => [
+              styles.featureRow,
+              { borderBottomColor: c.hairline, opacity: pressed ? 0.6 : 1 },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="질문 스프레드">
+            <View style={styles.featureCopy}>
+              <Text style={[styles.featureTitle, { color: c.text }]}>질문 스프레드</Text>
+              <Text style={[styles.featureBlurb, { color: c.muted }]}>
+                연애·일·선택에 맞춰 세 장을 펼쳐 봅니다
+              </Text>
+            </View>
+            <ChevronRightIcon color={c.muted} size={22} />
+          </Pressable>
+        </View>
 
         <Text style={[styles.disclaimer, { color: c.muted }]}>{ENTERTAINMENT_DISCLAIMER}</Text>
       </ScrollView>
@@ -133,7 +165,10 @@ function TodayTarotCard({
   return (
     <View style={[styles.todayCard, paperShadow, { backgroundColor: surface }]}>
       <View style={styles.cardSummary}>
-        <Text style={[styles.todayTitle, { color: text, fontFamily: display }]}>오늘의 카드</Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.todayTitle, { color: text, fontFamily: display }]}>오늘의 카드</Text>
+          <Text style={[styles.cardMeta, { color: muted }]}>{reading.dateLabel}</Text>
+        </View>
         <View style={styles.summaryRow}>
           {art ? (
             <View style={[styles.artFrame, { borderColor: hairline, backgroundColor: surface }]}>
@@ -146,9 +181,9 @@ function TodayTarotCard({
             </View>
           ) : null}
           <View style={styles.summaryCopy}>
-            <Text style={[styles.cardMeta, { color: muted }]}>{reading.dateLabel}</Text>
             <Text style={[styles.cardNumber, { color: tint, fontFamily: display }]}>
               {reading.number === null ? 'MAJOR' : String(reading.number).padStart(2, '0')}
+              {reading.titleEn ? ` · ${reading.titleEn}` : ''}
             </Text>
             <Text style={[styles.cardHeadline, { color: text, fontFamily: display }]}>
               {reading.title}
@@ -223,6 +258,13 @@ const styles = StyleSheet.create({
   },
   todayTitle: {
     ...tabSection.cardTitle,
+    flexShrink: 1,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
   },
   cardNumber: {
     fontSize: 14,
@@ -242,18 +284,39 @@ const styles = StyleSheet.create({
   cardMeta: {
     fontSize: 13,
     lineHeight: 18,
+    flexShrink: 0,
+    textAlign: 'right',
   },
   keywordRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
+  featureList: {
+    marginTop: tabSection.summaryGap,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 18,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  featureCopy: {
+    flex: 1,
+    gap: 4,
+  },
+  featureTitle: {
+    fontSize: 16,
+    letterSpacing: 0.2,
+  },
+  featureBlurb: {
+    fontSize: 13,
+    lineHeight: 19,
+  },
   blockBody: {
     ...tabSection.detailBody,
-  },
-  blockMeta: {
-    fontSize: 13,
-    lineHeight: 18,
   },
   hintBlock: {
     ...tabSection.detailHintBlock,

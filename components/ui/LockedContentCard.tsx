@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-
+import { LockIcon } from '@/components/icons/AppIcon';
 import { Text } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { radius, tabSection } from '@/constants/Theme';
@@ -9,6 +9,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 type Props = {
   title: string;
   description?: string;
+  /** 접근성 라벨. 기본값: 내용 보기 */
   ctaLabel?: string;
   onPress?: () => void;
   /** 해금 후 본문. 있으면 같은 박스 안에 타이틀+본문만 보여 준다. */
@@ -24,7 +25,7 @@ type Props = {
 export function LockedContentCard({ title, description, ctaLabel, onPress, children }: Props) {
   const c = Colors[useColorScheme() ?? 'light'];
   const unlocked = Boolean(children);
-
+  const a11y = ctaLabel ?? '내용 보기';
   return (
     <View style={[styles.card, { borderColor: c.hairline, backgroundColor: c.card }]}>
       <View style={styles.copy}>
@@ -34,17 +35,16 @@ export function LockedContentCard({ title, description, ctaLabel, onPress, child
         ) : null}
       </View>
       {unlocked ? <View style={styles.body}>{children}</View> : null}
-      {!unlocked && ctaLabel ? (
+      {!unlocked && onPress ? (
         <Pressable
           onPress={onPress}
-          disabled={!onPress}
           accessibilityRole="button"
-          accessibilityLabel={ctaLabel}
+          accessibilityLabel={a11y}
           style={({ pressed }) => [
             styles.cta,
-            { borderColor: c.tint, opacity: !onPress ? 0.5 : pressed ? 0.7 : 1 },
+            { backgroundColor: c.tint, opacity: pressed ? 0.82 : 1 },
           ]}>
-          <Text style={[styles.ctaText, { color: c.tint }]}>{ctaLabel}</Text>
+          <LockIcon color="#F3EEE6" size={22} />
         </Pressable>
       ) : null}
     </View>
@@ -63,11 +63,10 @@ const styles = StyleSheet.create({
   description: { ...tabSection.detailHint, fontSize: 13, lineHeight: 19 },
   body: { ...tabSection.detailStack },
   cta: {
-    alignSelf: 'flex-start',
-    borderWidth: 1,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: radius.sm,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 12,
   },
-  ctaText: { fontSize: 13, fontWeight: '700' },
 });

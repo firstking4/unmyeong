@@ -15,6 +15,7 @@ import {
   type KeywordSource,
   type TodayKeyword,
 } from '@/lib/todayKeywords';
+import { requestTabScrollReset } from '@/lib/useTabScrollReset';
 
 const SOURCE_ROUTES: Record<KeywordSource, Href> = {
   지도: '/',
@@ -45,12 +46,22 @@ export function TodayKeywords({ onPressMapKeyword }: { onPressMapKeyword?: () =>
       onPressMapKeyword?.();
       return;
     }
+    if (source !== '관상') {
+      requestTabScrollReset();
+    }
     router.navigate(SOURCE_ROUTES[source]);
   };
 
   return (
     <View style={[styles.card, paperShadow, { backgroundColor: c.surface }]}>
-      <Text style={[styles.title, { color: c.text, fontFamily: display }]}>오늘의 키워드</Text>
+      <View style={styles.header}>
+        <Text style={[styles.title, { color: c.text, fontFamily: display }]}>오늘의 키워드</Text>
+        {ready && keywords.length > 0 ? (
+          <Text style={[styles.caption, { color: c.muted }]}>
+            키워드를 누르면 관련 위치로 이동합니다.
+          </Text>
+        ) : null}
+      </View>
       {ready && keywords.length > 0 ? (
         <>
           <View style={styles.chips}>
@@ -89,9 +100,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
     gap: 14,
   },
+  header: {
+    gap: 6,
+  },
   title: {
     fontSize: 22,
     lineHeight: 30,
+  },
+  caption: {
+    fontSize: 13,
+    lineHeight: 19,
   },
   chips: {
     flexDirection: 'row',

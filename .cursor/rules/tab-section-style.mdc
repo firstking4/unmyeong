@@ -1,25 +1,61 @@
 ---
-description: 성향·사주·타로 탭의 카드/섹션 타이틀·구분선 간격 공통 스타일
+description: 성향·사주·타로 탭의 카드/섹션 타이틀·구분선·요약 스택 공통 스타일
 alwaysApply: true
 ---
 
 # 탭 섹션 스타일 (사주 기준)
 
 성향·사주·타로·지인 화면은 `constants/Theme.ts`의 `tabSection`을 쓴다.
+새 섹션·기간 블록을 만들 때는 **사주 `PeriodBlock` / `NatalSajuBlock` / 오늘 카드** 리듬을 그대로 따른다.
+
+## 토큰
 
 - **페이지:** `content` · `eyebrow`(letterSpacing 3) · `pageTitle` 32 · `lead` 15 · `disclaimer`
 - **최상단 오늘 카드 타이틀** (`tabSection.cardTitle`): 26 / lineHeight 34, display 폰트
 - **카드 밖 섹션 타이틀** (`tabSection.title`): 동일 크기
 - **구분 밑줄** (`tabSection.rule`): `marginTop` = `paddingTop` = `space.sm`(16) — 위·아래 동일. 선 색은 `hairline`
 - **오늘 카드 셸** (`tabSection.card`): padding 18, radius.lg, marginBottom 0 (다음 섹션이 rule로 간격)
-- **카드 안 요약·상세** (`tabSection.cardSplit`): 헤드라인·부제·키워드(요약) 아래 hairline → 상세. 라인 위·아래 여백 동일 (`space.sm`)
-  - 요약 안 세로 간격: `summaryGap` 8 · 플로우 타이틀: `flowTitle` 16
+- **카드 안 요약·상세** (`tabSection.cardSplit`): 요약 아래 hairline → 상세. 라인 위·아래 여백 동일 (`space.sm`)
+  - 요약 안 세로 간격: `summaryGap` 8 · 플로우 타이틀: `flowTitle` 16 / tint
+  - 메타: 13 / muted (`blockMeta`)
   - 상세 풀이 타이포: `detailBody` 15/22 · `detailLabel` 13 · `detailHint` 14/21
-  - 사주 상세: `LockedContentCard`(잠금·설명·CTA). 광고 전 스탠드인은 CTA 탭 → `summary`·`hints` 노출
-  - 타로 상세: `LockedContentCard` → CTA 탭 시 blurb·summary·hints 노출
-  - 컴포넌트: `components/ui/LockedContentCard.tsx`
+- **선 없는 영역 여백**: 위·아래를 따로 주지 말고 `tabSection.band`(`marginVertical: space.xs`)를 쓴다. 여러 영역을 이을 때는 자식에 margin을 두지 않고 부모에 `tabSection.stack`(`gap: space.xs`).
 - **UpcomingFeatures:** `marginTop` = `space.sm`(16)
 
-명칭은 화면별: 사주 `오늘의 사주` / 타로 `오늘의 카드` / 성향 `오늘의 성향`.
-사주 잠금은 **오늘의 사주** 상세만. 이달·올해는 바로 본문·힌트 노출.
-성향은 최상단 `오늘의 성향` 카드 + 아래 `나의 성향`(비카드) + 지표 섹션.
+## 요약 스택 (확정 UI)
+
+카드 밖 섹션·기간 블록의 **요약** 순서는 고정이다.
+
+1. **섹션 타이틀** — `tabSection.title` + display + `text`
+2. **기간/신원 메타** — muted 13pt  
+   예: `2026년 8월 17일 – 23일` · `양력 1982년 12월 11일 · 사시`
+3. **플로우 헤드라인** — `flowTitle` + **tint(인장색)**  
+   예: `수의 기운 · 개띠` · `수의 기운, 대화 · …`
+4. **보조 메타** — muted 13pt (뱃지 아님)  
+   예: `유연함과 직관` · `주간 일진 · 개띠 · 같은 기운`
+5. **키워드** — `KeywordBadge` 가로 줄 (요약 정보). 주의/참고 키워드도 별도 ‘참고’ 행 말고 **여기로 합침**
+6. **`cardSplit` 상세** — 본문 + `label`/`hint` 행
+
+참고 구현: `app/(tabs)/saju.tsx`의 `NatalSajuBlock`, `PeriodBlock`, `TodaySajuCard`.
+
+## 잠금
+
+- 사주 잠금은 **오늘의 사주** 상세만 (`LockedContentCard`). 광고 전 스탠드인: CTA → `summary`·`hints`
+- **나의 사주 · 이번 주 · 이달 · 올해**는 잠금 없이 바로 본문·힌트
+- 타로 오늘 카드 상세도 `LockedContentCard` (성향 오늘 카드와 동일 패턴)
+
+## 사주 표기
+
+- 출생 시각은 시계 표기(오전 9시 50분)가 아니라 **시진** (`formatSajuHourLabel`, 자시~해시)
+- 신분증·나의 사주 메타 모두 동일 헬퍼 사용
+- `… 생` 접미사는 쓰지 않음 → `양력 1982년 12월 11일 · 사시`
+
+## 화면 구성
+
+| 탭 | 최상단 오늘 | 이어서 |
+|---|---|---|
+| 사주 | `오늘의 사주` 카드 | `나의 사주` → `이번 주 기운` → 이달 → 올해 → Upcoming(사주팔자·대운·시주·절기) |
+| 성향 | `오늘의 성향` 카드 | `성향 조합` → 별자리·열두 동물·MBTI·Big Five·혈액형 |
+| 타로 | `오늘의 카드` | 타로 덱 CTA → Upcoming(질문 스프레드) |
+
+명칭은 화면별 도메인 언어를 쓴다 (사주/성향/타로를 한 단어로 통일하지 않음).

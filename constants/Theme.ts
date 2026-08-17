@@ -33,6 +33,7 @@ export const paperShadow = Platform.select({
  * - 최상단 오늘 카드 타이틀 / 카드 밖 섹션 타이틀: 26pt
  * - 섹션 구분 밑줄: 위·아래 동일하게 space.sm (16)
  * - 카드/섹션 안 요약·상세 구분선도 위·아래 space.sm (부모 gap 없이 배치)
+ * - 선 없는 영역: tabSection.band(marginVertical) / 영역 나열은 tabSection.stack(gap)
  */
 export const tabSection = {
   /** 탭 스크롤 페이지 여백 */
@@ -86,6 +87,17 @@ export const tabSection = {
     paddingTop: space.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
     gap: 8,
+  },
+  /**
+   * 선 없는 영역(설명·본문·부가 블록).
+   * 위·아래 여백을 항상 같게 — marginVertical만 쓴다. 위/아래를 따로 주지 말 것.
+   */
+  band: {
+    marginVertical: space.xs,
+  },
+  /** 영역끼리 동일한 세로 간격 (자식에는 marginTop/Bottom을 두지 않음) */
+  stack: {
+    gap: space.xs,
   },
   lead: {
     fontSize: 15,

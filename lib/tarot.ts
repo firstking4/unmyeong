@@ -1,10 +1,13 @@
 import { pickTarotBySeed } from '@/lib/data/catalog';
 import { pickDaily } from '@/lib/daily/pick';
+import { tarotEnglishName } from '@/lib/tarotEnglishNames';
 import type { Profile } from '@/lib/types';
 
 export type TarotReading = {
   dateLabel: string;
   title: string;
+  /** Rider–Waite 영문 카드명 */
+  titleEn: string | null;
   /** 카드명과 별도로, 날짜·정/역에 따라 바뀌는 오늘 한 줄 */
   headline: string;
   number: number | null;
@@ -74,7 +77,7 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
     theme.keyword,
     reversed ? reverseWord : null,
     ...(card.keywords ?? []),
-  ]).slice(0, 4);
+  ]);
 
   const hints: { label: string; text: string }[] = reversed
     ? [
@@ -133,6 +136,7 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
       weekday: 'long',
     }),
     title,
+    titleEn: tarotEnglishName(card),
     headline,
     number: typeof card.number === 'number' ? card.number : null,
     reversed,

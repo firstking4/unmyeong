@@ -1,0 +1,35 @@
+---
+description: UI 아이콘은 Material Icons만 (탭·관상 등 브랜드는 예외)
+alwaysApply: true
+---
+
+# 아이콘 기본 세트
+
+의존성: `@expo/vector-icons` (`npx expo install @expo/vector-icons`).
+
+## 기본 세트
+
+| 용도 | 세트 | import |
+|---|---|---|
+| UI 크롬·채움·토글 | **Material Icons** (Apache-2.0) | `@expo/vector-icons/MaterialIcons` |
+
+공통 래퍼: `components/icons/AppIcon.tsx`.
+
+## 이 앱에서 벡터로 쓰는 것
+
+| 래퍼 | 글리프 |
+|---|---|
+| Close / Back / Menu / Copy | `close` / `arrow-back` / `menu` / `content-copy` |
+| Share / Reset / Chevron | `share_windows`(Symbols path) / `refresh` / `chevron-right` |
+| Lock / Star | `lock` / `star`·`star-border` |
+
+공유는 Material Symbols `share_windows`. 번들 폰트에 없는 글리프라 `AppIcon.tsx`에 path로 둔다.
+
+## PNG·그래픽 유지 (브랜드)
+
+- 하단 탭 PNG, 점수 링·관상·도장 등 제품 그래픽
+
+## 하지 말 것
+
+- Feather / Ionicons / FA 등을 기본으로 추가하지 않기 (폰트 세트 증가)
+- Pngtree 등 출처 불명 PNG를 UI 크롬에 쓰지 않기

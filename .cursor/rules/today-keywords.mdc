@@ -1,0 +1,36 @@
+---
+description: 지도 「오늘의 키워드」는 각 탭 오늘 카드 키워드와 동기화
+alwaysApply: true
+---
+
+# 오늘의 키워드 (운영 필수)
+
+지도 탭 `오늘의 키워드`(`lib/todayKeywords.ts` → `buildTodayKeywords`)는 **각 탭의 오늘 운세/오늘 카드에 보이는 키워드를 모은 허브**다.
+
+앱 운영에서 잊으면 안 된다.
+
+## 규칙
+
+1. 탭에 **오늘 카드**가 있고 키워드를 보여 주면, 그 키워드는 `buildTodayKeywords`에도 **같은 빌더 결과**로 들어가야 한다.
+2. 정적 시드만 따로 고르지 않는다. 화면과 지도가 어긋나면 버그다.
+3. 오늘 카드 키워드·헤드라인·테마 로직을 바꾸면 `buildTodayKeywords` 연동을 함께 확인한다.
+
+## 현재 연동
+
+| 출처 | 탭 오늘 카드 | `buildTodayKeywords` 입력 |
+|---|---|---|
+| 지도 | 오늘의 운세 (`buildIntegratedFortune`) | `luckTags` (+ 저점수 시 `균형 필요`) |
+| 성향 | 오늘의 성향 (`buildSeonghyangReading` → `today.keywords`) | 동일 `today.keywords` |
+| 사주 | 오늘의 사주 (`buildSajuReading` → `today`) | `today.keywords` + 톤 라벨 |
+| 타로 | 오늘의 카드 (`buildTarotReading`) | `tarot.keywords` (+ 역방향·주의 카드) |
+
+## 새 오늘 카드 / 키워드를 추가할 때
+
+1. 해당 탭에서 쓰는 빌더의 `keywords`(또는 동등 필드)를 정한다.
+2. `lib/todayKeywords.ts`에 **그 빌더를 import 해서** `addWords(..., '출처')`로 넣는다.
+3. `KeywordSource`·푸터·탭 이동 경로가 필요하면 `TodayKeywords.tsx`도 갱신한다.
+
+## 하지 말 것
+
+- 지도 키워드만 시드 JSON에서 임의 샘플링하고 탭 오늘 카드는 다른 목록을 쓰기
+- 성향/사주/타로 오늘 키워드를 바꾸면서 `todayKeywords`는 그대로 두기

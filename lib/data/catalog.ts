@@ -4,6 +4,7 @@ import mbti from '@/data/seed/mbti.json';
 import meta from '@/data/seed/meta.json';
 import physiognomy from '@/data/seed/physiognomy.json';
 import tarotMajor from '@/data/seed/tarot-major.json';
+import tarotMinor from '@/data/seed/tarot-minor.json';
 import westernZodiac from '@/data/seed/western-zodiac.json';
 import zodiacAnimals from '@/data/seed/zodiac-animals.json';
 
@@ -16,6 +17,7 @@ const zodiacCollection = westernZodiac as SeedCollection;
 const animalCollection = zodiacAnimals as SeedCollection;
 const elementCollection = fiveElements as SeedCollection;
 const tarotCollection = tarotMajor as SeedCollection;
+const tarotMinorCollection = tarotMinor as SeedCollection;
 const physiognomyCollection = physiognomy as { categories: { id: string; label: string }[]; items: SeedRecord[] };
 
 function byLabel(items: SeedRecord[], label: string): SeedRecord | undefined {
@@ -91,10 +93,20 @@ export function listTarotMajor(): SeedRecord[] {
   return tarotCollection.items;
 }
 
+/** 마이너 아르카나 56장 — 카드북·질문 스프레드용 */
+export function listTarotMinor(): SeedRecord[] {
+  return tarotMinorCollection.items;
+}
+
+/** 메이저 22장 + 마이너 56장 풀덱 */
+export function listTarotDeck(): SeedRecord[] {
+  return [...tarotCollection.items, ...tarotMinorCollection.items];
+}
+
 export function getTarotCard(idOrTitle?: string | null): SeedRecord | null {
   if (!idOrTitle) return null;
   return (
-    tarotCollection.items.find(
+    listTarotDeck().find(
       (item) => item.id === idOrTitle || item.title === idOrTitle || item.label === idOrTitle,
     ) ?? null
   );

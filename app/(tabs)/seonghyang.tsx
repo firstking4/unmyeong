@@ -1,16 +1,8 @@
 import { useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
-import {
-  Image,
-  type ImageSourcePropType,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { FieldEditorModal } from '@/components/id-card/FieldEditorModal';
-import { UpcomingFeatures } from '@/components/tabs/UpcomingFeatures';
 import { Text } from '@/components/Themed';
 import { KeywordBadge } from '@/components/ui/KeywordBadge';
 import { LockedContentCard } from '@/components/ui/LockedContentCard';
@@ -21,23 +13,19 @@ import { paperShadow, tabSection } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { usePersonalityResults } from '@/context/PersonalityResultsContext';
 import { isFortuneReady, useProfile } from '@/context/ProfileContext';
-import { getWesternZodiac } from '@/lib/data/catalog';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import type { IDCardFieldKey } from '@/lib/idCardFields';
 import { type BigFiveResult, type FourAxisResult } from '@/lib/personalityTest';
 import {
   bigFiveBlock,
+  buildPersonalityCombo,
   buildSeonghyangReading,
-  type ProfileField,
+  type PersonalityCombo,
+  type TodayMbtiResult,
   type TodaySeonghyang,
   type TraitBlock,
 } from '@/lib/seonghyang';
-import { zodiacWatermarkSource } from '@/lib/zodiacWatermarks';
-
-const UPCOMING = [
-  { title: 'MBTI 오늘', blurb: '유형별 강점·주의점을 오늘의 흐름에 연결' },
-  { title: '성향 조합', blurb: '여러 지표를 겹쳐 나만의 성향 지도 만들기' },
-];
+import { useTabScrollReset } from '@/lib/useTabScrollReset';
 
 const DETAIL_LOCK = {
   title: '상세 풀이',
@@ -45,126 +33,6 @@ const DETAIL_LOCK = {
     '광고를 보면 본문과 힌트를 열 수 있어요. 지금은 광고 준비 중이라 눌러서 바로 확인할 수 있습니다.',
   ctaLabel: '내용 보기',
 } as const;
-
-const PROFILE_EDIT_FIELD: Record<string, IDCardFieldKey | undefined> = {
-  별자리: 'birthDate',
-  '열두 동물': 'birthDate',
-  MBTI: 'mbti',
-  혈액형: 'bloodType',
-};
-
-type KeywordJump = {
-  label: string;
-  section: string;
-};
-
-function collectKeywordJumps(blocks: TraitBlock[]): KeywordJump[] {
-  const seen = new Set<string>();
-  const out: KeywordJump[] = [];
-  for (const block of blocks) {
-    for (const label of [...block.keywords, ...(block.watchouts ?? [])]) {
-      if (!label || seen.has(label)) continue;
-      seen.add(label);
-      out.push({ label, section: block.eyebrow });
-    }
-  }
-  return out;
-}
-
-function NatalSection({
-  profile,
-  keywordJumps,
-  zodiacMark,
-  scheme,
-  text,
-  muted,
-  hairline,
-  onFieldPress,
-  onKeywordPress,
-}: {
-  profile: ProfileField[];
-  keywordJumps: KeywordJump[];
-  zodiacMark: ImageSourcePropType | null;
-  scheme: 'light' | 'dark';
-  text: string;
-  muted: string;
-  hairline: string;
-  onFieldPress: (field: IDCardFieldKey) => void;
-  onKeywordPress: (section: string) => void;
-}) {
-  return (
-    <View style={[styles.natal, { borderTopColor: hairline }]}>
-      <Text style={[styles.natalTitle, { color: text, fontFamily: display }]}>나의 성향</Text>
-      <View style={styles.natalBody}>
-        {zodiacMark ? (
-          <View pointerEvents="none" style={styles.zodiacWatermark}>
-            <Image
-              source={zodiacMark}
-              accessibilityElementsHidden
-              importantForAccessibility="no"
-              style={[
-                styles.zodiacWatermarkImage,
-                {
-                  tintColor: muted,
-                  opacity: scheme === 'dark' ? 0.2 : 0.16,
-                },
-              ]}
-              resizeMode="contain"
-            />
-          </View>
-        ) : null}
-        {keywordJumps.length > 0 ? (
-          <View style={styles.keywordRow}>
-            {keywordJumps.map((item) => (
-              <Pressable
-                key={`${item.section}-${item.label}`}
-                onPress={() => onKeywordPress(item.section)}
-                accessibilityRole="button"
-                accessibilityLabel={`${item.label} 섹션으로 이동`}>
-                <KeywordBadge label={item.label} />
-              </Pressable>
-            ))}
-          </View>
-        ) : null}
-        <View style={styles.profileList}>
-          {profile.map((field) => {
-            const editField = PROFILE_EDIT_FIELD[field.label];
-            const row = (
-              <>
-                <Text style={[styles.profileLabel, { color: muted }]}>{field.label}</Text>
-                <Text style={[styles.profileValue, { color: field.value ? text : muted }]}>
-                  {field.value ?? '—'}
-                </Text>
-              </>
-            );
-
-            if (!editField) {
-              return (
-                <View key={field.label} style={[styles.profileRow, { borderBottomColor: hairline }]}>
-                  {row}
-                </View>
-              );
-            }
-
-            return (
-              <Pressable
-                key={field.label}
-                accessibilityRole="button"
-                accessibilityLabel={`${field.label} 수정`}
-                onPress={() => onFieldPress(editField)}
-                style={({ pressed }) => [
-                  styles.profileRow,
-                  { borderBottomColor: hairline, opacity: pressed ? 0.65 : 1 },
-                ]}>
-                {row}
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
-    </View>
-  );
-}
 
 function SectionHeader({
   title,
@@ -200,7 +68,6 @@ function MbtiSection({
   text,
   muted,
   hairline,
-  onLayoutY,
 }: {
   block: TraitBlock | null;
   fourAxis?: FourAxisResult;
@@ -208,14 +75,11 @@ function MbtiSection({
   text: string;
   muted: string;
   hairline: string;
-  onLayoutY: (y: number) => void;
 }) {
   const router = useRouter();
 
   return (
-    <View
-      style={[styles.block, { borderTopColor: hairline }]}
-      onLayout={(e) => onLayoutY(e.nativeEvent.layout.y)}>
+    <View style={[styles.block, { borderTopColor: hairline }]}>
       <View style={styles.blockSummary}>
         <SectionHeader
           title="MBTI"
@@ -259,16 +123,6 @@ function MbtiSection({
                 <Text style={[styles.hintText, { color: muted }]}>{hint.text}</Text>
               </View>
             ))}
-            {block.watchouts && block.watchouts.length > 0 ? (
-              <View style={styles.watchWrap}>
-                <Text style={[styles.watchLabel, { color: muted }]}>참고</Text>
-                <View style={styles.toneRow}>
-                  {block.watchouts.map((w, i) => (
-                    <KeywordBadge key={`w-mbti-${i}-${w}`} label={w} />
-                  ))}
-                </View>
-              </View>
-            ) : null}
           </>
         ) : (
           <Text style={[styles.body, { color: muted }]}>
@@ -286,22 +140,18 @@ function BigFiveSection({
   text,
   muted,
   hairline,
-  onLayoutY,
 }: {
   result?: BigFiveResult;
   tint: string;
   text: string;
   muted: string;
   hairline: string;
-  onLayoutY: (y: number) => void;
 }) {
   const router = useRouter();
   const block = result ? bigFiveBlock(result) : null;
 
   return (
-    <View
-      style={[styles.block, { borderTopColor: hairline }, !block ? styles.lockedBlock : null]}
-      onLayout={(e) => onLayoutY(e.nativeEvent.layout.y)}>
+    <View style={[styles.block, { borderTopColor: hairline }, !block ? styles.lockedBlock : null]}>
       <View style={styles.blockSummary}>
         <SectionHeader
           title="Big Five"
@@ -350,30 +200,20 @@ function BigFiveSection({
 export default function SeonghyangScreen() {
   const scheme = useColorScheme() ?? 'light';
   const c = Colors[scheme];
+  const router = useRouter();
   const { profile } = useProfile();
   const { results } = usePersonalityResults();
+  const scrollRef = useTabScrollReset();
   const ready = isFortuneReady(profile);
   const reading = useMemo(
     () => (ready ? buildSeonghyangReading(profile, results) : null),
     [profile, ready, results],
   );
-  const zodiacMark = useMemo(() => {
-    const west = getWesternZodiac(profile.birthDate);
-    return west ? zodiacWatermarkSource(west.id) : null;
-  }, [profile.birthDate]);
-  const keywordJumps = useMemo(
-    () => (reading ? collectKeywordJumps(reading.blocks) : []),
-    [reading],
+  const combo = useMemo(
+    () => (ready ? buildPersonalityCombo(profile, results) : null),
+    [profile, ready, results],
   );
   const [activeField, setActiveField] = useState<IDCardFieldKey | null>(null);
-  const scrollRef = useRef<ScrollView>(null);
-  const sectionY = useRef<Record<string, number>>({});
-
-  const scrollToSection = (section: string) => {
-    const y = sectionY.current[section];
-    if (y == null) return;
-    scrollRef.current?.scrollTo({ y: Math.max(0, y - 12), animated: true });
-  };
 
   const mbtiBlock = reading?.blocks.find((block) => block.eyebrow === 'MBTI') ?? null;
   const blocksBeforeMbti =
@@ -413,20 +253,23 @@ export default function SeonghyangScreen() {
                 muted={c.muted}
                 surface={c.surface}
                 hairline={c.hairline}
+                onEditMbti={() => setActiveField('mbti')}
+                onOpenTest={() => router.push('/personality-test')}
               />
             ) : null}
 
-            <NatalSection
-              profile={reading.profile}
-              keywordJumps={keywordJumps}
-              zodiacMark={zodiacMark}
-              scheme={scheme}
-              text={c.text}
-              muted={c.muted}
-              hairline={c.hairline}
-              onFieldPress={setActiveField}
-              onKeywordPress={scrollToSection}
-            />
+            {combo ? (
+              <PersonalityComboSection
+                combo={combo}
+                tint={c.tint}
+                text={c.text}
+                muted={c.muted}
+                hairline={c.hairline}
+                onEditMbti={() => setActiveField('mbti')}
+                onEditBlood={() => setActiveField('bloodType')}
+                onOpenTest={() => router.push('/personality-test')}
+              />
+            ) : null}
 
             {blocksBeforeMbti.map((block) => (
               <TraitSection
@@ -436,9 +279,6 @@ export default function SeonghyangScreen() {
                 text={c.text}
                 muted={c.muted}
                 hairline={c.hairline}
-                onLayoutY={(y) => {
-                  sectionY.current[block.eyebrow] = y;
-                }}
               />
             ))}
 
@@ -449,9 +289,6 @@ export default function SeonghyangScreen() {
               text={c.text}
               muted={c.muted}
               hairline={c.hairline}
-              onLayoutY={(y) => {
-                sectionY.current.MBTI = y;
-              }}
             />
 
             <BigFiveSection
@@ -460,9 +297,6 @@ export default function SeonghyangScreen() {
               text={c.text}
               muted={c.muted}
               hairline={c.hairline}
-              onLayoutY={(y) => {
-                sectionY.current['Big Five'] = y;
-              }}
             />
 
             {blocksAfterMbti.map((block) => (
@@ -473,20 +307,96 @@ export default function SeonghyangScreen() {
                 text={c.text}
                 muted={c.muted}
                 hairline={c.hairline}
-                onLayoutY={(y) => {
-                  sectionY.current[block.eyebrow] = y;
-                }}
               />
             ))}
           </>
         ) : null}
 
-        <UpcomingFeatures items={UPCOMING} />
-
         <Text style={[styles.disclaimer, { color: c.muted }]}>{ENTERTAINMENT_DISCLAIMER}</Text>
       </ScrollView>
 
       <FieldEditorModal field={activeField} onClose={() => setActiveField(null)} />
+    </View>
+  );
+}
+
+function PersonalityComboSection({
+  combo,
+  tint,
+  text,
+  muted,
+  hairline,
+  onEditMbti,
+  onEditBlood,
+  onOpenTest,
+}: {
+  combo: PersonalityCombo;
+  tint: string;
+  text: string;
+  muted: string;
+  hairline: string;
+  onEditMbti: () => void;
+  onEditBlood: () => void;
+  onOpenTest: () => void;
+}) {
+  return (
+    <View style={[styles.block, { borderTopColor: hairline }]}>
+      <View style={styles.blockSummary}>
+        <Text style={[styles.sectionTitle, { color: text, fontFamily: display }]}>성향 조합</Text>
+        <Text style={[styles.flowTitle, { color: tint }]}>{combo.headline}</Text>
+        {combo.meta ? <Text style={[styles.blockMeta, { color: muted }]}>{combo.meta}</Text> : null}
+        {combo.keywords.length > 0 ? (
+          <View style={styles.toneRow}>
+            {combo.keywords.map((kw, i) => (
+              <KeywordBadge key={`combo-kw-${i}-${kw}`} label={kw} />
+            ))}
+          </View>
+        ) : null}
+      </View>
+      <View style={[styles.cardSplit, styles.comboStack, { borderTopColor: hairline }]}>
+        <Text style={[styles.body, { color: muted }]}>{combo.summary}</Text>
+        {combo.strengths.length > 0 ? (
+          <View style={styles.watchWrap}>
+            <Text style={[styles.watchLabel, { color: text }]}>잘 드러나는 결</Text>
+            <Text style={[styles.hintText, { color: muted }]}>{combo.strengths.join(' · ')}</Text>
+          </View>
+        ) : null}
+        {combo.watchouts.length > 0 ? (
+          <View style={styles.watchWrap}>
+            <Text style={[styles.watchLabel, { color: text }]}>짧게 점검할 신호</Text>
+            <Text style={[styles.hintText, { color: muted }]}>{combo.watchouts.join(' · ')}</Text>
+          </View>
+        ) : null}
+        {combo.missing.length > 0 ? (
+          <View style={styles.watchWrap}>
+            <Text style={[styles.watchLabel, { color: muted }]}>더 채우면 좋은 것</Text>
+            <Text style={[styles.hintText, { color: muted }]}>{combo.missing.join(' · ')}</Text>
+            <View style={styles.ctaRow}>
+              {combo.missing.some((item) => item.includes('MBTI')) ? (
+                <Pressable
+                  onPress={onEditMbti}
+                  style={({ pressed }) => [{ opacity: pressed ? 0.65 : 1 }]}>
+                  <Text style={[styles.sectionAction, { color: tint }]}>MBTI</Text>
+                </Pressable>
+              ) : null}
+              {combo.missing.some((item) => item.includes('혈액형')) ? (
+                <Pressable
+                  onPress={onEditBlood}
+                  style={({ pressed }) => [{ opacity: pressed ? 0.65 : 1 }]}>
+                  <Text style={[styles.sectionAction, { color: tint }]}>혈액형</Text>
+                </Pressable>
+              ) : null}
+              {combo.missing.some((item) => item.includes('테스트') || item.includes('Big Five')) ? (
+                <Pressable
+                  onPress={onOpenTest}
+                  style={({ pressed }) => [{ opacity: pressed ? 0.65 : 1 }]}>
+                  <Text style={[styles.sectionAction, { color: tint }]}>성향 테스트</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          </View>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -523,6 +433,51 @@ function TodayDetailBody({
   );
 }
 
+function MbtiPromptRow({
+  mbti,
+  tint,
+  muted,
+  onEditMbti,
+  onOpenTest,
+}: {
+  mbti: TodayMbtiResult;
+  tint: string;
+  muted: string;
+  onEditMbti: () => void;
+  onOpenTest: () => void;
+}) {
+  if (mbti.status === 'ready') return null;
+
+  if (mbti.status === 'fourAxis') {
+    return (
+      <View style={styles.mbtiPrompt}>
+        <Text style={[styles.hintText, { color: muted }]}>
+          4축 코드({mbti.code})만 있어요. MBTI를 넣으면 유형 흐름도 오늘 카드에 같이 보여 줍니다.
+        </Text>
+        <Pressable onPress={onEditMbti} style={({ pressed }) => [{ opacity: pressed ? 0.65 : 1 }]}>
+          <Text style={[styles.sectionAction, { color: tint }]}>MBTI 입력</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.mbtiPrompt}>
+      <Text style={[styles.hintText, { color: muted }]}>
+        MBTI를 넣으면 유형 강점·주의점도 오늘의 흐름에 연결해 보여 줍니다.
+      </Text>
+      <View style={styles.ctaRow}>
+        <Pressable onPress={onEditMbti} style={({ pressed }) => [{ opacity: pressed ? 0.65 : 1 }]}>
+          <Text style={[styles.sectionAction, { color: tint }]}>MBTI 입력</Text>
+        </Pressable>
+        <Pressable onPress={onOpenTest} style={({ pressed }) => [{ opacity: pressed ? 0.65 : 1 }]}>
+          <Text style={[styles.sectionAction, { color: tint }]}>성향 테스트</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 function TodaySeonghyangCard({
   today,
   tint,
@@ -530,6 +485,8 @@ function TodaySeonghyangCard({
   muted,
   surface,
   hairline,
+  onEditMbti,
+  onOpenTest,
 }: {
   today: TodaySeonghyang;
   tint: string;
@@ -537,12 +494,16 @@ function TodaySeonghyangCard({
   muted: string;
   surface: string;
   hairline: string;
+  onEditMbti: () => void;
+  onOpenTest: () => void;
 }) {
   return (
     <View style={[styles.todayCard, paperShadow, { backgroundColor: surface }]}>
       <View style={styles.cardSummary}>
-        <Text style={[styles.todayTitle, { color: text, fontFamily: display }]}>오늘의 성향</Text>
-        <Text style={[styles.todayDate, { color: muted }]}>{today.dateLabel}</Text>
+        <View style={styles.todayTitleRow}>
+          <Text style={[styles.todayTitle, { color: text, fontFamily: display }]}>오늘의 성향</Text>
+          <Text style={[styles.todayDate, { color: muted }]}>{today.dateLabel}</Text>
+        </View>
         <Text style={[styles.flowTitle, { color: tint }]}>{today.headline}</Text>
         <Text style={[styles.blockMeta, { color: muted }]}>{today.meta}</Text>
         {today.keywords.length > 0 ? (
@@ -552,6 +513,13 @@ function TodaySeonghyangCard({
             ))}
           </View>
         ) : null}
+        <MbtiPromptRow
+          mbti={today.mbti}
+          tint={tint}
+          muted={muted}
+          onEditMbti={onEditMbti}
+          onOpenTest={onOpenTest}
+        />
       </View>
       <View style={[styles.cardSplit, { borderTopColor: hairline }]}>
         <TodayDetailBody today={today} text={text} muted={muted} />
@@ -566,19 +534,15 @@ function TraitSection({
   text,
   muted,
   hairline,
-  onLayoutY,
 }: {
   block: TraitBlock;
   tint: string;
   text: string;
   muted: string;
   hairline: string;
-  onLayoutY: (y: number) => void;
 }) {
   return (
-    <View
-      style={[styles.block, { borderTopColor: hairline }]}
-      onLayout={(e) => onLayoutY(e.nativeEvent.layout.y)}>
+    <View style={[styles.block, { borderTopColor: hairline }]}>
       <View style={styles.blockSummary}>
         <Text style={[styles.sectionTitle, { color: text, fontFamily: display }]}>
           {block.eyebrow}
@@ -638,45 +602,20 @@ const styles = StyleSheet.create({
   },
   todayTitle: {
     ...tabSection.cardTitle,
+    flexShrink: 1,
   },
-  todayDate: { alignSelf: 'flex-start', fontSize: 12 },
-  natal: {
-    ...tabSection.rule,
-    gap: tabSection.summaryGap,
-  },
-  natalTitle: {
-    ...tabSection.title,
-  },
-  natalBody: {
-    position: 'relative',
-    overflow: 'hidden',
-    gap: tabSection.summaryGap,
-  },
-  zodiacWatermark: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  zodiacWatermarkImage: {
-    width: 220,
-    height: 220,
-  },
-  profileList: { gap: 0 },
-  profileRow: {
+  todayTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
     gap: 12,
   },
-  profileLabel: { fontSize: 13 },
-  profileValue: { fontSize: 14, fontWeight: '600', flexShrink: 1, textAlign: 'right' },
-  keywordRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  todayDate: {
+    fontSize: 13,
+    lineHeight: 18,
+    flexShrink: 0,
+    textAlign: 'right',
+  },
   block: {
     ...tabSection.rule,
     gap: 0,
@@ -697,6 +636,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
+  ctaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    marginTop: 4,
+  },
+  mbtiPrompt: {
+    gap: 8,
+    marginTop: 4,
+  },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
@@ -714,12 +663,15 @@ const styles = StyleSheet.create({
   sectionTitle: { ...tabSection.title },
   flowTitle: { ...tabSection.flowTitle },
   blockMeta: { fontSize: 13, lineHeight: 18 },
+  comboStack: {
+    ...tabSection.stack,
+  },
   toneRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   body: { ...tabSection.detailBody },
   hintRow: { ...tabSection.detailHintBlock },
   hintLabel: { ...tabSection.detailLabel },
   hintText: { ...tabSection.detailHint },
-  watchWrap: { gap: 8, marginTop: 4 },
+  watchWrap: { gap: 8 },
   watchLabel: { fontSize: 12, fontWeight: '600' },
   disclaimer: { ...tabSection.disclaimer },
 });

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
 import { Text } from '@/components/Themed';
+import { ResetIcon } from '@/components/ui/ResetIcon';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -19,40 +19,6 @@ import type { Gender } from '@/lib/types';
 import { OPTION_TILE_W, PhysiognomyOptionTile } from './PhysiognomyOptionTile';
 import { PORTRAIT_W, PhysiognomyFacePreview } from './PhysiognomyFacePreview';
 
-function ResetIcon({ color, size = 20 }: { color: string; size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M4.5 12a7.5 7.5 0 0 1 12.7-5.4L19 9"
-        stroke={color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M19 4.5V9h-4.5"
-        stroke={color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M19.5 12a7.5 7.5 0 0 1-12.7 5.4L5 15"
-        stroke={color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M5 19.5V15h4.5"
-        stroke={color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
 type Props = {
   visible: boolean;
   initialSelection: PhysiognomySelection;
