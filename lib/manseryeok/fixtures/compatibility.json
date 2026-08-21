@@ -179,5 +179,77 @@
       "dailyDelta": 10,
       "score": 69
     }
+  },
+  {
+    "id": "pair-trine-1985",
+    "note": "일지 삼합 용·쥐",
+    "self": {
+      "birthDate": "1982-12-11",
+      "birthTime": "09:50"
+    },
+    "other": {
+      "birthDate": "1985-01-01",
+      "birthTime": null
+    },
+    "atKst": "2026-08-17T12:00:00+09:00",
+    "expected": {
+      "selfDay": "무진",
+      "otherDay": "경자",
+      "animalKind": "삼합",
+      "elementKind": "생함",
+      "otherToSelfTenGod": "식신",
+      "selfTodayTenGod": "정재",
+      "otherTodayTenGod": "상관",
+      "todayPillarKorean": "계해",
+      "baseScore": 78,
+      "partDeltas": [
+        8,
+        10,
+        10,
+        8,
+        -6
+      ],
+      "rawTotal": 30,
+      "todayScore": 65,
+      "baseCorrectionBonus": 21,
+      "dailyDelta": 30,
+      "score": 86
+    }
+  },
+  {
+    "id": "pair-direction-1985",
+    "note": "일지 방합 용·호랑이",
+    "self": {
+      "birthDate": "1982-12-11",
+      "birthTime": "09:50"
+    },
+    "other": {
+      "birthDate": "1985-01-03",
+      "birthTime": null
+    },
+    "atKst": "2026-08-17T12:00:00+09:00",
+    "expected": {
+      "selfDay": "무진",
+      "otherDay": "임인",
+      "animalKind": "방합",
+      "elementKind": "극함",
+      "otherToSelfTenGod": "편재",
+      "selfTodayTenGod": "정재",
+      "otherTodayTenGod": "겁재",
+      "todayPillarKorean": "계해",
+      "baseScore": 64,
+      "partDeltas": [
+        4,
+        -8,
+        4,
+        8,
+        -8
+      ],
+      "rawTotal": 0,
+      "todayScore": 26,
+      "baseCorrectionBonus": 35,
+      "dailyDelta": 0,
+      "score": 61
+    }
   }
 ]

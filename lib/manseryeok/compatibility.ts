@@ -45,6 +45,26 @@ const ANIMAL_CLASH: Record<string, string> = {
   돼지: '뱀',
 };
 
+/** 일지 삼합 (같은 조 두 글자면 성립) */
+const ANIMAL_TRINE_GROUPS: readonly (readonly string[])[] = [
+  ['돼지', '토끼', '양'], // 해묘미 · 목
+  ['호랑이', '말', '개'], // 인오술 · 화
+  ['뱀', '닭', '소'], // 사유축 · 금
+  ['원숭이', '쥐', '용'], // 신자진 · 수
+];
+
+/** 일지 방합 (같은 방위 두 글자면 성립) */
+const ANIMAL_DIRECTION_GROUPS: readonly (readonly string[])[] = [
+  ['호랑이', '토끼', '용'], // 인묘진 · 동
+  ['뱀', '말', '양'], // 사오미 · 남
+  ['원숭이', '닭', '개'], // 신유술 · 서
+  ['돼지', '쥐', '소'], // 해자축 · 북
+];
+
+function sameGroup(groups: readonly (readonly string[])[], self: string, other: string): boolean {
+  return groups.some((group) => group.includes(self) && group.includes(other));
+}
+
 const TEN_GOD_SCORE: Record<string, number> = {
   비견: 70,
   겁재: 52,
@@ -61,7 +81,9 @@ const TEN_GOD_SCORE: Record<string, number> = {
 /** 합산용 — 일지 관계 +/− */
 const ANIMAL_DELTA: Record<AnimalRelationKind, number> = {
   육합: 12,
+  삼합: 8,
   같음: 6,
+  방합: 4,
   흐름: 0,
   육충: -12,
 };
@@ -184,6 +206,12 @@ function animalRelation(self: string, other: string): {
   }
   if (ANIMAL_CLASH[self] === other) {
     return { kind: '육충', label: `${self}·${other} 육충`, score: 48 };
+  }
+  if (sameGroup(ANIMAL_TRINE_GROUPS, self, other)) {
+    return { kind: '삼합', label: `${self}·${other} 삼합`, score: 78 };
+  }
+  if (sameGroup(ANIMAL_DIRECTION_GROUPS, self, other)) {
+    return { kind: '방합', label: `${self}·${other} 방합`, score: 70 };
   }
   return { kind: '흐름', label: `${self}·${other} 흐름`, score: 66 };
 }

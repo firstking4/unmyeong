@@ -64,7 +64,7 @@ export type LuckPillarsResult = {
   pillars: LuckPillarItem[];
 };
 
-export type AnimalRelationKind = '같음' | '육합' | '육충' | '흐름';
+export type AnimalRelationKind = '같음' | '육합' | '삼합' | '방합' | '육충' | '흐름';
 
 export type ElementRelationKind = '같음' | '생함' | '생받음' | '극함' | '극받음';
 

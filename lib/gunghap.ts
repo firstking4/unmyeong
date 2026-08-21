@@ -141,7 +141,10 @@ export function buildTodayCompatibility(
   const selfName = self.name.trim();
 
   const keywords = [
-    engine.animalKind === '육합' || engine.animalKind === '육충'
+    engine.animalKind === '육합' ||
+    engine.animalKind === '삼합' ||
+    engine.animalKind === '방합' ||
+    engine.animalKind === '육충'
       ? engine.animalKind
       : engine.animalKind === '같음'
         ? '같은 결'

@@ -225,7 +225,19 @@ const TEN_GOD_SCORE = {
   편인: 68,
   정인: 78,
 };
-const ANIMAL_DELTA = { 육합: 12, 같음: 6, 흐름: 0, 육충: -12 };
+const ANIMAL_TRINE_GROUPS = [
+  ['돼지', '토끼', '양'],
+  ['호랑이', '말', '개'],
+  ['뱀', '닭', '소'],
+  ['원숭이', '쥐', '용'],
+];
+const ANIMAL_DIRECTION_GROUPS = [
+  ['호랑이', '토끼', '용'],
+  ['뱀', '말', '양'],
+  ['원숭이', '닭', '개'],
+  ['돼지', '쥐', '소'],
+];
+const ANIMAL_DELTA = { 육합: 12, 삼합: 8, 같음: 6, 방합: 4, 흐름: 0, 육충: -12 };
 const ELEMENT_DELTA = { 생함: 10, 생받음: 10, 같음: 5, 극함: -8, 극받음: -10 };
 const RELATION_TEN_GOD_DELTA = {
   정재: 12,
@@ -301,10 +313,16 @@ function natalOf(input) {
   };
 }
 
+function sameGroup(groups, self, other) {
+  return groups.some((group) => group.includes(self) && group.includes(other));
+}
+
 function animalRelation(self, other) {
   if (self === other) return { kind: '같음', score: 72 };
   if (ANIMAL_HARMONY[self] === other) return { kind: '육합', score: 86 };
   if (ANIMAL_CLASH[self] === other) return { kind: '육충', score: 48 };
+  if (sameGroup(ANIMAL_TRINE_GROUPS, self, other)) return { kind: '삼합', score: 78 };
+  if (sameGroup(ANIMAL_DIRECTION_GROUPS, self, other)) return { kind: '방합', score: 70 };
   return { kind: '흐름', score: 66 };
 }
 
