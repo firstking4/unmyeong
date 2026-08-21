@@ -6,7 +6,8 @@ export type RewardScreenId = 'seonghyang_today' | 'saju_today' | 'tarot_today' |
 
 export type RewardUnlockState = {
   date: string;
-  screens: Partial<Record<RewardScreenId, true>>;
+  /** 화면 id, 또는 `contact_today:<contactId>` 처럼 스코프가 붙은 키 */
+  screens: Partial<Record<string, true>>;
 };
 
 function localDateKey(date = new Date()): string {
@@ -14,6 +15,11 @@ function localDateKey(date = new Date()): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+/** 지인 상세처럼 대상이 여럿이면 scopeId를 붙인다. */
+export function rewardUnlockKey(screen: RewardScreenId, scopeId?: string): string {
+  return scopeId ? `${screen}:${scopeId}` : screen;
 }
 
 export function emptyRewardUnlockState(): RewardUnlockState {
@@ -41,11 +47,22 @@ export async function saveRewardUnlockState(state: RewardUnlockState) {
   await appStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-export function isRewardUnlocked(state: RewardUnlockState, screen: RewardScreenId) {
-  return state.date === localDateKey() && state.screens[screen] === true;
+export function isRewardUnlocked(
+  state: RewardUnlockState,
+  screen: RewardScreenId,
+  scopeId?: string,
+) {
+  return state.date === localDateKey() && state.screens[rewardUnlockKey(screen, scopeId)] === true;
 }
 
-export function grantRewardUnlock(state: RewardUnlockState, screen: RewardScreenId): RewardUnlockState {
+export function grantRewardUnlock(
+  state: RewardUnlockState,
+  screen: RewardScreenId,
+  scopeId?: string,
+): RewardUnlockState {
   const base = state.date === localDateKey() ? state : emptyRewardUnlockState();
-  return { ...base, screens: { ...base.screens, [screen]: true } };
+  return {
+    ...base,
+    screens: { ...base.screens, [rewardUnlockKey(screen, scopeId)]: true },
+  };
 }

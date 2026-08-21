@@ -13,6 +13,7 @@ import { paperShadow, tabSection } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { usePersonalityResults } from '@/context/PersonalityResultsContext';
 import { isFortuneReady, useProfile } from '@/context/ProfileContext';
+import { useRewardUnlock } from '@/context/RewardUnlockContext';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import type { IDCardFieldKey } from '@/lib/idCardFields';
 import { type BigFiveResult, type FourAxisResult } from '@/lib/personalityTest';
@@ -30,7 +31,7 @@ import { useTabScrollReset } from '@/lib/useTabScrollReset';
 const DETAIL_LOCK = {
   title: '상세 풀이',
   description:
-    '광고를 보면 본문과 힌트를 열 수 있어요. 지금은 광고 준비 중이라 눌러서 바로 확인할 수 있습니다.',
+    '광고를 보면 본문과 힌트를 열 수 있어요. 한 번 열면 오늘 자정까지 유지됩니다. 지금은 광고 준비 중이라 눌러서 바로 확인할 수 있습니다.',
   ctaLabel: '내용 보기',
 } as const;
 
@@ -410,14 +411,17 @@ function TodayDetailBody({
   text: string;
   muted: string;
 }) {
-  const [unlocked, setUnlocked] = useState(false);
+  const { isUnlocked, grantUnlock } = useRewardUnlock();
+  const unlocked = isUnlocked('seonghyang_today');
 
   return (
     <LockedContentCard
       title={DETAIL_LOCK.title}
       description={DETAIL_LOCK.description}
       ctaLabel={DETAIL_LOCK.ctaLabel}
-      onPress={() => setUnlocked(true)}>
+      onPress={() => {
+        void grantUnlock('seonghyang_today');
+      }}>
       {unlocked ? (
         <>
           <Text style={[styles.body, { color: muted }]}>{today.summary}</Text>

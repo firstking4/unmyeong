@@ -12,9 +12,9 @@ import {
 
 type RewardUnlockContextValue = {
   loaded: boolean;
-  isUnlocked: (screen: RewardScreenId) => boolean;
-  /** 실제 보상형 광고의 reward earned 콜백에서만 호출한다. */
-  grantUnlock: (screen: RewardScreenId) => Promise<void>;
+  isUnlocked: (screen: RewardScreenId, scopeId?: string) => boolean;
+  /** 실제 보상형 광고의 reward earned 콜백(또는 스탠드인 CTA)에서만 호출한다. */
+  grantUnlock: (screen: RewardScreenId, scopeId?: string) => Promise<void>;
 };
 
 const RewardUnlockContext = createContext<RewardUnlockContextValue | null>(null);
@@ -37,9 +37,9 @@ export function RewardUnlockProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const grantUnlock = useCallback(async (screen: RewardScreenId) => {
+  const grantUnlock = useCallback(async (screen: RewardScreenId, scopeId?: string) => {
     setState((current) => {
-      const next = grantRewardUnlock(current, screen);
+      const next = grantRewardUnlock(current, screen, scopeId);
       void saveRewardUnlockState(next);
       return next;
     });
@@ -48,7 +48,8 @@ export function RewardUnlockProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       loaded,
-      isUnlocked: (screen: RewardScreenId) => isRewardUnlocked(state, screen),
+      isUnlocked: (screen: RewardScreenId, scopeId?: string) =>
+        isRewardUnlocked(state, screen, scopeId),
       grantUnlock,
     }),
     [grantUnlock, loaded, state],

@@ -30,6 +30,7 @@ import { paperShadow, radius, space, tabSection } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useContacts } from '@/context/ContactsContext';
 import { useProfile } from '@/context/ProfileContext';
+import { useRewardUnlock } from '@/context/RewardUnlockContext';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { buildTodayCompatibility, type TodayCompatibility } from '@/lib/gunghap';
 import { recordCompatibilityView } from '@/lib/history';
@@ -41,7 +42,7 @@ type Reading = TodayCompatibility;
 const DETAIL_LOCK = {
   title: '상세 풀이',
   description:
-    '광고를 보면 상세 풀이와 행동 가이드를 열 수 있어요. 지금은 광고 준비 중이라 눌러서 바로 확인할 수 있습니다.',
+    '광고를 보면 상세 풀이와 행동 가이드를 열 수 있어요. 한 번 열면 오늘 자정까지 유지됩니다. 지금은 광고 준비 중이라 눌러서 바로 확인할 수 있습니다.',
   ctaLabel: '내용 보기',
 } as const;
 
@@ -187,10 +188,11 @@ export default function ContactDetailScreen() {
   const { width: windowW } = useWindowDimensions();
   const { profile } = useProfile();
   const { getContact, deleteContact, loaded } = useContacts();
+  const { isUnlocked, grantUnlock } = useRewardUnlock();
   const contact = id ? getContact(id) : undefined;
   const shareRef = useRef<View>(null);
   const [sharing, setSharing] = useState(false);
-  const [detailUnlocked, setDetailUnlocked] = useState(false);
+  const detailUnlocked = contact ? isUnlocked('contact_today', contact.id) : false;
   const cardW = windowW - space.md * 2;
 
   const reading = useMemo(
@@ -326,7 +328,9 @@ export default function ContactDetailScreen() {
           <CompatibilityCardBody
             {...bodyProps}
             titlePadRight={28}
-            onUnlockDetail={() => setDetailUnlocked(true)}
+            onUnlockDetail={() => {
+              if (contact) void grantUnlock('contact_today', contact.id);
+            }}
           />
         </View>
 
