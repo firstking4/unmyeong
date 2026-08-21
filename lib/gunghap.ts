@@ -288,20 +288,18 @@ export function buildTodayCompatibility(
     .filter(Boolean)
     .join(' ');
 
-  // 카드 한 줄: 오늘 만남을 조금 격식 있게 — 칩(결·기운·초점)과 겹치지 않음
-  const selfTodayPlain = tenGodPlain(engine.selfTodayTenGod);
-  const otherTodayPlain = tenGodPlain(engine.otherTodayTenGod);
+  // 카드 한 줄: 격식체 · 십신 이름만 (쉬운 말 풀이·칩과 겹치지 않음)
   const meetTone = meetingTone(engine.selfTodayTenGod, engine.otherTodayTenGod);
   const meetClause =
     meetTone === '주의'
-      ? '말과 거리를 한 번 더 살필'
+      ? '언사와 거리를 살필'
       : meetTone === '조율'
-        ? '서로의 속도를 맞춰 갈'
-        : '기운을 보태기 쉬운';
+        ? '호흡을 맞출'
+        : '기운이 호응하기 쉬운';
   const summaryLine =
     engine.selfTodayTenGod === engine.otherTodayTenGod
-      ? `${withGwa(selfName)} ${withEun(otherName)} 오늘의 만남은 ${selfTodayPlain}(${engine.selfTodayTenGod})으로 호흡이 맞닿고, 흐름은 ${grade}에 가깝습니다.`
-      : `${withGwa(selfName)} ${withEun(otherName)} 오늘은 나는 ${selfTodayPlain}(${engine.selfTodayTenGod}), 상대는 ${otherTodayPlain}(${engine.otherTodayTenGod})이라 ${meetClause} 하루이며, 기운은 ${grade}입니다.`;
+      ? `${withGwa(selfName)} ${withEun(otherName)} 오늘의 만남은 ${engine.selfTodayTenGod}으로 맞닿으며, 흐름은 ${grade}에 가깝습니다.`
+      : `${withGwa(selfName)} ${withEun(otherName)} 오늘은 나 ${engine.selfTodayTenGod}, 상대 ${engine.otherTodayTenGod}이라 ${meetClause} 하루이며, 기운은 ${grade}입니다.`;
 
   const relationship = [
     dualEasyLine('오늘', engine.selfTodayTenGod, engine.otherTodayTenGod),
