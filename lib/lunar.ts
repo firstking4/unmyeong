@@ -104,6 +104,45 @@ export function formatBirthDateDisplay(profile: Pick<Profile, 'birthCalendar' | 
   return `${solar.year}. ${pad2(solar.month)}. ${pad2(solar.day)}`;
 }
 
+/**
+ * 지인 상세용 — 양력·음력 병기.
+ * 예: `양력 1982. 12. 11. · 음력 1982. 11. 07.` / 윤달 `음력 1982. 윤11. 07.`
+ * `birthLunarDate`가 없으면 양력 정본에서 표시 시점에 변환한다.
+ */
+export function formatDualBirthDateLabel(
+  profile: Pick<Profile, 'birthDate' | 'birthLunarDate' | 'birthLeapMonth'>,
+): string | null {
+  const solar = parseYmd(profile.birthDate);
+  if (!solar) return null;
+
+  let lunarYear: number | null = null;
+  let lunarMonth: number | null = null;
+  let lunarDay: number | null = null;
+  let leap = false;
+
+  const stored = parseYmd(profile.birthLunarDate);
+  if (stored) {
+    lunarYear = stored.year;
+    lunarMonth = stored.month;
+    lunarDay = stored.day;
+    leap = !!profile.birthLeapMonth;
+  } else {
+    const converted = solarToLunar(solar.year, solar.month, solar.day);
+    if (converted) {
+      lunarYear = converted.year;
+      lunarMonth = converted.month;
+      lunarDay = converted.day;
+      leap = converted.leap;
+    }
+  }
+
+  const solarPart = `양력 ${solar.year}. ${pad2(solar.month)}. ${pad2(solar.day)}.`;
+  if (lunarYear == null || lunarMonth == null || lunarDay == null) return solarPart;
+  const leapMark = leap ? '윤' : '';
+  const lunarPart = `음력 ${lunarYear}. ${leapMark}${pad2(lunarMonth)}. ${pad2(lunarDay)}.`;
+  return `${solarPart} · ${lunarPart}`;
+}
+
 export function birthCalendarLabel(calendar?: BirthCalendar | null): string | null {
   if (calendar === 'lunar') return '음력';
   if (calendar === 'solar') return '양력';

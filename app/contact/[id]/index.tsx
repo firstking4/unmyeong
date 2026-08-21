@@ -34,7 +34,7 @@ import { useRewardUnlock } from '@/context/RewardUnlockContext';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { buildTodayCompatibility, type TodayCompatibility } from '@/lib/gunghap';
 import { recordCompatibilityView } from '@/lib/history';
-import { birthCalendarLabel, resolveBirthParts } from '@/lib/lunar';
+import { formatDualBirthDateLabel } from '@/lib/lunar';
 import { formatSajuHourLabel } from '@/lib/saju';
 
 type Reading = TodayCompatibility;
@@ -210,10 +210,7 @@ export default function ContactDetailScreen() {
     return <View style={{ flex: 1, backgroundColor: c.background }} />;
   }
 
-  const birthParts = resolveBirthParts(contact);
-  const calendar = birthCalendarLabel(birthParts.calendar) ?? '양력';
-  const leap = birthParts.calendar === 'lunar' && birthParts.leap ? '윤' : '';
-  const birthLabel = `${calendar} ${birthParts.year}년 ${leap}${birthParts.month}월 ${birthParts.day}일`;
+  const birthLabel = formatDualBirthDateLabel(contact);
   const hourLabel = formatSajuHourLabel(contact.birthTime);
   const myName = profile.name?.trim() || '나';
   const theirName = contact.name.trim();
