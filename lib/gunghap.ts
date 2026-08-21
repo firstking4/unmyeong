@@ -1,8 +1,6 @@
 import {
   computeCompatibility,
-  meetingCopy,
-  pairCopy,
-  pairLead,
+  meetingTone,
   tenGodKeywords,
   tenGodPlain,
   type CompatibilityScorePart,
@@ -50,6 +48,8 @@ export type TodayCompatibility = {
   compactDate: string;
 };
 
+const HARD_GODS = new Set(['겁재', '상관', '편관']);
+
 function hasFinalConsonant(word: string): boolean {
   const last = word.trim().slice(-1);
   const code = last.charCodeAt(0);
@@ -80,19 +80,63 @@ function gradeFromScore(score: number): CompatibilityGrade {
   return '주의';
 }
 
-function moodFromGrade(grade: CompatibilityGrade): string {
-  if (grade === '좋음') return '흐름이 열리는 하루입니다';
-  if (grade === '무난') return '조율하면 편안한 하루입니다';
-  return '거리와 호흡을 살필 하루입니다';
+function uniqueWords(words: string[]): string[] {
+  return words.filter((w, i, all) => Boolean(w) && all.indexOf(w) === i);
+}
+
+function joinFocus(words: string[], limit = 3): string {
+  return uniqueWords(words).slice(0, limit).join('·');
 }
 
 /** 나·상대 십신을 한 줄로 — 같은 십신이면 짧게 */
 function dualTenGodLine(scope: '오늘' | '이달' | '올해', selfGod: string, otherGod: string): string {
   const topic = withEun(scope);
   if (selfGod === otherGod) {
-    return `${topic} 둘이 ${tenGodPlain(selfGod)} 쪽에 가깝습니다(${selfGod}).`;
+    return `${topic} 둘이 ${tenGodPlain(selfGod)}(${selfGod}).`;
   }
-  return `${topic} 나는 ${tenGodPlain(selfGod)}, 상대는 ${tenGodPlain(otherGod)} 쪽입니다(${selfGod}·${otherGod}).`;
+  return `${topic} 나 ${tenGodPlain(selfGod)}(${selfGod}) · 상대 ${tenGodPlain(otherGod)}(${otherGod}).`;
+}
+
+function toneKeyword(selfGod: string, otherGod: string): string {
+  const tone = meetingTone(selfGod, otherGod);
+  if (tone === '주의') return '호흡';
+  if (tone === '조율') return '조율';
+  return '맞춤';
+}
+
+function buildGuidance(selfGod: string, otherGod: string): string {
+  const tone = meetingTone(selfGod, otherGod);
+  const focus = joinFocus([...tenGodKeywords(selfGod), ...tenGodKeywords(otherGod)]);
+  if (!focus) {
+    return tone === '주의' ? '오늘은 짧은 안부만.' : '오늘은 작은 한 가지만.';
+  }
+  if (tone === '주의') return `오늘은 ${focus} 쪽을 줄이고 짧게.`;
+  if (tone === '조율') return `오늘은 ${focus} 사이에서 한 박자 늦추기.`;
+  return `오늘은 ${focus} 쪽으로 작은 한 가지.`;
+}
+
+function buildCaution(
+  selfGod: string,
+  otherGod: string,
+  pairGod: string,
+  animalKind: string,
+): string {
+  const hard = HARD_GODS.has(selfGod)
+    ? selfGod
+    : HARD_GODS.has(otherGod)
+      ? otherGod
+      : HARD_GODS.has(pairGod)
+        ? pairGod
+        : null;
+  if (hard) {
+    const tip = tenGodKeywords(hard)[2] ?? tenGodKeywords(hard)[0] ?? hard;
+    return `${hard}의 ${tip}이(가) 과해지지 않게.`;
+  }
+  if (animalKind === '육충') {
+    return `${tenGodPlain(pairGod)} 관계에서 말이 세지지 않게.`;
+  }
+  const tip = tenGodKeywords(pairGod)[0] ?? pairGod;
+  return `관계 십신 ${pairGod}의 ${tip} 과잉만 살피기.`;
 }
 
 function notReady(reason: string, date: Date): TodayCompatibility {
@@ -160,13 +204,14 @@ export function buildTodayCompatibility(
     engine.other.dayMasterElement as Element,
     '오늘',
   );
-  const pair = pairCopy(engine.otherToSelfTenGod);
-  const meeting = meetingCopy(engine.selfTodayTenGod, engine.otherTodayTenGod);
   const otherName = other.name.trim() || '상대';
   const selfName = self.name.trim();
   const grade = gradeFromScore(engine.score);
+  const pairGod = engine.otherToSelfTenGod;
+  const toneKw = toneKeyword(engine.selfTodayTenGod, engine.otherTodayTenGod);
+  const pairFocus = joinFocus(tenGodKeywords(pairGod), 2);
 
-  const keywords = [
+  const keywords = uniqueWords([
     engine.animalKind === '육합' ||
     engine.animalKind === '삼합' ||
     engine.animalKind === '방합' ||
@@ -174,31 +219,37 @@ export function buildTodayCompatibility(
       ? engine.animalKind
       : engine.animalKind === '같음'
         ? '같은 결'
-        : null,
-    meeting.keyword,
-    engine.otherToSelfTenGod,
-    ...tenGodKeywords(engine.otherToSelfTenGod),
+        : '',
+    toneKw,
+    pairGod,
+    ...tenGodKeywords(pairGod),
     relation.title,
-  ].filter((kw, i, all): kw is string => Boolean(kw) && all.indexOf(kw) === i);
+  ]).slice(0, 5);
 
-  // 요약: 고정 관계(일지·오행·관계 십신)만 — 점수대 고정 톤 없음
+  // 요약: 이름·일지·오행·관계 십신·키워드만
   const summary = [
-    `${withGwa(selfName)} ${withEun(otherName)} ${engine.animalLabel} 관계이고, 오행으로는 ${engine.elementLabel}입니다.`,
-    pairLead(engine.otherToSelfTenGod),
-    pair.focus,
-  ].join(' ');
+    `${withGwa(selfName)} ${withEun(otherName)} ${engine.animalLabel} · ${engine.elementLabel}.`,
+    `상대→나 ${tenGodPlain(pairGod)}(${pairGod}).`,
+    pairFocus ? `초점 ${pairFocus}.` : null,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
-  // 관계 흐름: 오늘·이달·올해 십신 + 오행 한 줄 (요인 조합)
+  // 관계 흐름: 오늘·이달·올해 + 오행 관계명
   const relationship = [
     dualTenGodLine('오늘', engine.selfTodayTenGod, engine.otherTodayTenGod),
     dualTenGodLine('이달', engine.selfMonthTenGod, engine.otherMonthTenGod),
     dualTenGodLine('올해', engine.selfYearTenGod, engine.otherYearTenGod),
-    relation.blurb,
+    `기운 ${relation.title}.`,
   ].join(' ');
 
-  // 행동·주의: 오늘 만남 톤만 (점수대·MBTI 고정 덧붙임 제거)
-  const guidance = meeting.action;
-  const caution = meeting.caution;
+  const guidance = buildGuidance(engine.selfTodayTenGod, engine.otherTodayTenGod);
+  const caution = buildCaution(
+    engine.selfTodayTenGod,
+    engine.otherTodayTenGod,
+    pairGod,
+    engine.animalKind,
+  );
 
   return {
     ready: true,
@@ -214,12 +265,12 @@ export function buildTodayCompatibility(
     rawTotal: engine.rawTotal,
     dailyDelta: engine.dailyDelta,
     grade,
-    moodHeadline: `${meeting.keyword} · ${moodFromGrade(grade)}`,
+    moodHeadline: `${toneKw} · ${grade}`,
     summary,
     relationship,
     guidance,
     caution,
-    keywords: keywords.slice(0, 5),
+    keywords,
     selfAnimal: engine.self.animal as ZodiacAnimal,
     otherAnimal: engine.other.animal as ZodiacAnimal,
     selfElement: engine.self.dayMasterElement as Element,
