@@ -4,6 +4,7 @@ import {
   pairCopy,
   pairLead,
   tenGodKeywords,
+  tenGodPlain,
   type CompatibilityScorePart,
 } from '@/lib/manseryeok';
 import { relateElements, type Element, type ZodiacAnimal } from '@/lib/saju';
@@ -79,11 +80,19 @@ function gradeFromScore(score: number): CompatibilityGrade {
   return '주의';
 }
 
-function moodFromScore(score: number): string {
-  if (score >= 90) return '서로 잘 맞는 하루입니다';
-  if (score >= 80) return '흐름이 부드러운 하루입니다';
-  if (score >= 50) return '조율하면 편안한 하루입니다';
+function moodFromGrade(grade: CompatibilityGrade): string {
+  if (grade === '좋음') return '흐름이 열리는 하루입니다';
+  if (grade === '무난') return '조율하면 편안한 하루입니다';
   return '거리와 호흡을 살필 하루입니다';
+}
+
+/** 나·상대 십신을 한 줄로 — 같은 십신이면 짧게 */
+function dualTenGodLine(scope: '오늘' | '이달' | '올해', selfGod: string, otherGod: string): string {
+  const topic = withEun(scope);
+  if (selfGod === otherGod) {
+    return `${topic} 둘이 ${tenGodPlain(selfGod)} 쪽에 가깝습니다(${selfGod}).`;
+  }
+  return `${topic} 나는 ${tenGodPlain(selfGod)}, 상대는 ${tenGodPlain(otherGod)} 쪽입니다(${selfGod}·${otherGod}).`;
 }
 
 function notReady(reason: string, date: Date): TodayCompatibility {
@@ -155,6 +164,7 @@ export function buildTodayCompatibility(
   const meeting = meetingCopy(engine.selfTodayTenGod, engine.otherTodayTenGod);
   const otherName = other.name.trim() || '상대';
   const selfName = self.name.trim();
+  const grade = gradeFromScore(engine.score);
 
   const keywords = [
     engine.animalKind === '육합' ||
@@ -171,21 +181,24 @@ export function buildTodayCompatibility(
     relation.title,
   ].filter((kw, i, all): kw is string => Boolean(kw) && all.indexOf(kw) === i);
 
+  // 요약: 고정 관계(일지·오행·관계 십신)만 — 점수대 고정 톤 없음
   const summary = [
     `${withGwa(selfName)} ${withEun(otherName)} ${engine.animalLabel} 관계이고, 오행으로는 ${engine.elementLabel}입니다.`,
     pairLead(engine.otherToSelfTenGod),
     pair.focus,
   ].join(' ');
 
-  const relationship = `${meeting.lead} ${meeting.focus} ${relation.blurb}`;
-  const guidance = `${meeting.action} ${
-    engine.score >= 70
-      ? '작은 호의를 먼저 건네면 관계가 더 부드러워집니다.'
-      : '말의 속도와 거리감을 조금 늦추면 마찰이 줄어듭니다.'
-  }`;
-  const caution = `${meeting.caution}${
-    other.mbti || other.bloodType ? ' 성향 정보는 참고용으로만 두고, 오늘의 반응을 우선하세요.' : ''
-  }`;
+  // 관계 흐름: 오늘·이달·올해 십신 + 오행 한 줄 (요인 조합)
+  const relationship = [
+    dualTenGodLine('오늘', engine.selfTodayTenGod, engine.otherTodayTenGod),
+    dualTenGodLine('이달', engine.selfMonthTenGod, engine.otherMonthTenGod),
+    dualTenGodLine('올해', engine.selfYearTenGod, engine.otherYearTenGod),
+    relation.blurb,
+  ].join(' ');
+
+  // 행동·주의: 오늘 만남 톤만 (점수대·MBTI 고정 덧붙임 제거)
+  const guidance = meeting.action;
+  const caution = meeting.caution;
 
   return {
     ready: true,
@@ -200,8 +213,8 @@ export function buildTodayCompatibility(
     scoreParts: engine.scoreParts,
     rawTotal: engine.rawTotal,
     dailyDelta: engine.dailyDelta,
-    grade: gradeFromScore(engine.score),
-    moodHeadline: `${meeting.keyword} · ${moodFromScore(engine.score)}`,
+    grade,
+    moodHeadline: `${meeting.keyword} · ${moodFromGrade(grade)}`,
     summary,
     relationship,
     guidance,

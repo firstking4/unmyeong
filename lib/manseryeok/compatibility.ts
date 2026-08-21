@@ -316,7 +316,7 @@ function formatDelta(delta: number): string {
 }
 
 /**
- * 원점수 = (시작 20 + 오늘·이달·올해 십신 합산) ÷ 분모 × 100.
+ * 원점수 = (시작점 + 오늘·이달·올해 십신 합산) ÷ 분모 × 100.
  * 고정 궁합(일지·오행·관계)은 넣지 않는다.
  */
 export function buildCompatibilityScoreParts(input: {
