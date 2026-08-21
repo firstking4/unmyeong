@@ -78,87 +78,55 @@ const TEN_GOD_SCORE: Record<string, number> = {
   정인: 78,
 };
 
-/** 합산용 — 일지 관계 +/− */
-const ANIMAL_DELTA: Record<AnimalRelationKind, number> = {
-  육합: 12,
-  삼합: 8,
-  같음: 6,
-  방합: 4,
-  흐름: 0,
-  육충: -12,
-};
-
-/** 합산용 — 오행 관계 +/− */
-const ELEMENT_DELTA: Record<ElementRelationKind, number> = {
-  생함: 10,
-  생받음: 10,
-  같음: 5,
-  극함: -8,
-  극받음: -10,
-};
-
-/** 합산용 — 상대 일간→내 일간 십신 +/− */
-const RELATION_TEN_GOD_DELTA: Record<string, number> = {
-  정재: 12,
-  식신: 10,
-  정인: 8,
-  정관: 6,
-  편재: 4,
-  비견: 2,
-  편인: -2,
-  상관: -6,
-  겁재: -8,
-  편관: -10,
-};
-
-/** 합산용 — 오늘 일진 십신(지인) +/−. 관계 항목과 맞춤(±12). */
-const TODAY_OTHER_TEN_GOD_DELTA: Record<string, number> = {
-  정재: 12,
-  식신: 10,
-  정인: 8,
-  정관: 6,
-  편재: 4,
-  비견: 0,
-  편인: -4,
-  상관: -6,
-  겁재: -8,
-  편관: -12,
-};
-
 /**
- * 합산용 — 오늘 일진 십신(나) +/−.
- * 공통 항목이라 목록 전체를 끌어내리지 않게 지인 대비 약 2/3.
+ * 오늘 원점수 = 오늘 일진 십신만 (×2).
+ * 일지·오행·관계 고정은 기본 궁합 보정에만 쓴다.
  */
-const TODAY_SELF_TEN_GOD_DELTA: Record<string, number> = {
-  정재: 8,
-  식신: 7,
-  정인: 5,
-  정관: 4,
-  편재: 3,
+const TODAY_OTHER_TEN_GOD_DELTA: Record<string, number> = {
+  정재: 24,
+  식신: 20,
+  정인: 16,
+  정관: 12,
+  편재: 8,
   비견: 0,
-  편인: -3,
-  상관: -4,
-  겁재: -5,
-  편관: -8,
+  편인: -8,
+  상관: -12,
+  겁재: -16,
+  편관: -24,
 };
 
-const SAME_TODAY_TEN_GOD_BONUS = 3;
+/** 오늘(나) — 지인 대비 약 2/3, ×2 */
+const TODAY_SELF_TEN_GOD_DELTA: Record<string, number> = {
+  정재: 16,
+  식신: 14,
+  정인: 10,
+  정관: 8,
+  편재: 6,
+  비견: 0,
+  편인: -6,
+  상관: -8,
+  겁재: -10,
+  편관: -16,
+};
+
+const SAME_TODAY_TEN_GOD_BONUS = 6;
 /** 기본(시작) 점수 */
 const SCORE_ORIGIN = 20;
-/** 항목 +/− 만점(육합12+생함10+정재12+나8+지인12+같은십신3). 환산 분모 = 시작 + 이 값 */
-const MAX_POSITIVE_SUM = 57;
-const SCORE_SCALE_MAX = SCORE_ORIGIN + MAX_POSITIVE_SUM; // 77
+/** 오늘 항목만점 (나16+지인24+같은십신6) */
+const MAX_POSITIVE_SUM = 46;
+/** 환산 분모 — 만점의 ~85%로 타이트해 좋은 날 원점수 천장 확대 */
+const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 59
 const SCORE_FLOOR = 0;
 const SCORE_CEILING = 100;
 
-/** 기존 기본 궁합(가중) 이론 범위 → 보정 수치 35…65 → 계수 0.35…0.65 */
-const BASE_RAW_MIN = 51;
+/** 기본 궁합 → 보정 수치 20…40 → 계수 0.20…0.40 */
+const BASE_RAW_MIN = 45;
 const BASE_RAW_MAX = 84;
-const BASE_MAP_MIN = 35;
-const BASE_MAP_MAX = 65;
+const BASE_MAP_MIN = 20;
+const BASE_MAP_MAX = 40;
 
 /**
- * 기본 궁합 → 보정 계수 (0.35…0.65).
+ * 기본 궁합 → 보정 계수 (0.20…0.40).
  * (100 − 오늘점수) × 계수 를 오늘 점수에 더한다.
  */
 export function baseCorrectionFactor(baseScore: number): number {
@@ -252,10 +220,6 @@ function tenGodScore(god: string): number {
   return TEN_GOD_SCORE[god] ?? 66;
 }
 
-function relationTenGodDelta(god: string): number {
-  return RELATION_TEN_GOD_DELTA[god] ?? 0;
-}
-
 function todaySelfTenGodDelta(god: string): number {
   return TODAY_SELF_TEN_GOD_DELTA[god] ?? 0;
 }
@@ -270,34 +234,14 @@ function formatDelta(delta: number): string {
 }
 
 /**
- * 오늘의 궁합 = (기본 20 + 항목합산) ÷ (20 + 항목만점) × 100.
- * 항목만점 = 전부 최고 플러스(현재 57). 그때 정확히 100.
+ * 오늘의 원점수 = (시작 20 + 오늘 십신 합산) ÷ 분모(59) × 100.
+ * 고정 궁합(일지·오행·관계)은 넣지 않는다.
  */
 export function buildCompatibilityScoreParts(input: {
-  animalKind: AnimalRelationKind;
-  animalLabel: string;
-  elementKind: ElementRelationKind;
-  elementLabel: string;
-  otherToSelfTenGod: string;
   selfTodayTenGod: string;
   otherTodayTenGod: string;
 }): { parts: CompatibilityScorePart[]; rawTotal: number; score: number } {
   const parts: CompatibilityScorePart[] = [
-    {
-      key: 'animal',
-      label: `일지 ${input.animalLabel}`,
-      delta: ANIMAL_DELTA[input.animalKind],
-    },
-    {
-      key: 'element',
-      label: `오행 ${input.elementLabel}`,
-      delta: ELEMENT_DELTA[input.elementKind],
-    },
-    {
-      key: 'relation',
-      label: `관계 ${input.otherToSelfTenGod}`,
-      delta: relationTenGodDelta(input.otherToSelfTenGod),
-    },
     {
       key: 'todaySelf',
       label: `오늘(나) ${input.selfTodayTenGod}`,
@@ -353,7 +297,7 @@ export function dailyDeltaFromTenGods(
 }
 
 /**
- * 일간·일지 관계 항목 + 오늘 일진 십신 항목을 +/−로 합산.
+ * 기본 궁합(일지·오행·십신)으로 보정하고, 오늘 원점수는 일진 십신만 합산.
  * 출생 시각이 없으면 정오로 계산하고 시주는 비교하지 않는다.
  */
 export function computeCompatibility(
@@ -385,15 +329,10 @@ export function computeCompatibility(
   const godScore = Math.round(
     (tenGodScore(otherToSelfTenGod) + tenGodScore(selfToOtherTenGod)) / 2,
   );
-  /** 참고용 관계 점수(목록·카피). 오늘 합산 점수와는 별개 */
+  /** 참고용 관계 점수 + 보정 계수 입력. 오늘 원점수와는 별개 */
   const baseScore = Math.round(animal.score * 0.4 + element.score * 0.35 + godScore * 0.25);
 
   const { parts, rawTotal, score: todayRawScore } = buildCompatibilityScoreParts({
-    animalKind: animal.kind,
-    animalLabel: animal.label,
-    elementKind: element.kind,
-    elementLabel: element.label,
-    otherToSelfTenGod,
     selfTodayTenGod: selfToday.stemTenGod,
     otherTodayTenGod: otherToday.stemTenGod,
   });

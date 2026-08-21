@@ -237,52 +237,38 @@ const ANIMAL_DIRECTION_GROUPS = [
   ['원숭이', '닭', '개'],
   ['돼지', '쥐', '소'],
 ];
-const ANIMAL_DELTA = { 육합: 12, 삼합: 8, 같음: 6, 방합: 4, 흐름: 0, 육충: -12 };
-const ELEMENT_DELTA = { 생함: 10, 생받음: 10, 같음: 5, 극함: -8, 극받음: -10 };
-const RELATION_TEN_GOD_DELTA = {
-  정재: 12,
-  식신: 10,
-  정인: 8,
-  정관: 6,
-  편재: 4,
-  비견: 2,
-  편인: -2,
-  상관: -6,
-  겁재: -8,
-  편관: -10,
-};
 const TODAY_OTHER_TEN_GOD_DELTA = {
-  정재: 12,
-  식신: 10,
-  정인: 8,
-  정관: 6,
-  편재: 4,
+  정재: 24,
+  식신: 20,
+  정인: 16,
+  정관: 12,
+  편재: 8,
   비견: 0,
-  편인: -4,
-  상관: -6,
-  겁재: -8,
-  편관: -12,
+  편인: -8,
+  상관: -12,
+  겁재: -16,
+  편관: -24,
 };
 const TODAY_SELF_TEN_GOD_DELTA = {
-  정재: 8,
-  식신: 7,
-  정인: 5,
-  정관: 4,
-  편재: 3,
+  정재: 16,
+  식신: 14,
+  정인: 10,
+  정관: 8,
+  편재: 6,
   비견: 0,
-  편인: -3,
-  상관: -4,
-  겁재: -5,
-  편관: -8,
+  편인: -6,
+  상관: -8,
+  겁재: -10,
+  편관: -16,
 };
-const SAME_TODAY_TEN_GOD_BONUS = 3;
+const SAME_TODAY_TEN_GOD_BONUS = 6;
 const SCORE_ORIGIN = 20;
-const MAX_POSITIVE_SUM = 12 + 10 + 12 + 8 + 12 + 3; // 57
-const SCORE_SCALE_MAX = SCORE_ORIGIN + MAX_POSITIVE_SUM; // 77
-const BASE_RAW_MIN = 51;
+const MAX_POSITIVE_SUM = 16 + 24 + 6; // 46
+const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 59
+const BASE_RAW_MIN = 45;
 const BASE_RAW_MAX = 84;
-const BASE_MAP_MIN = 35;
-const BASE_MAP_MAX = 65;
+const BASE_MAP_MIN = 20;
+const BASE_MAP_MAX = 40;
 
 function baseCorrectionFactor(baseScore) {
   const clamped = Math.max(BASE_RAW_MIN, Math.min(BASE_RAW_MAX, baseScore));
@@ -367,9 +353,6 @@ function computeCompatibility(self, other, at) {
   );
   const baseScore = Math.round(animal.score * 0.4 + elementScore(elementKind) * 0.35 + godScore * 0.25);
   const parts = [
-    { key: 'animal', delta: ANIMAL_DELTA[animal.kind] },
-    { key: 'element', delta: ELEMENT_DELTA[elementKind] },
-    { key: 'relation', delta: RELATION_TEN_GOD_DELTA[otherToSelfTenGod] ?? 0 },
     { key: 'todaySelf', delta: TODAY_SELF_TEN_GOD_DELTA[selfTodayTenGod] ?? 0 },
     { key: 'todayOther', delta: TODAY_OTHER_TEN_GOD_DELTA[otherTodayTenGod] ?? 0 },
   ];

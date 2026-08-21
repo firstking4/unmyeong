@@ -38,6 +38,8 @@ export type TodayCompatibility = {
   otherElement: Element | null;
   animalLabel: string;
   elementLabel: string;
+  /** 관계 십신(상대→나) — 점수 합산 제외, 표시용 */
+  otherToSelfTenGod: string;
   compactDate: string;
 };
 
@@ -87,8 +89,8 @@ function notReady(reason: string, date: Date): TodayCompatibility {
     baseCorrectionFactor: 0,
     baseCorrectionBonus: 0,
     scoreOrigin: 20,
-    scoreScaleMax: 77,
-    maxPositiveSum: 57,
+    scoreScaleMax: 59,
+    maxPositiveSum: 46,
     scoreParts: [],
     rawTotal: 0,
     dailyDelta: 0,
@@ -105,6 +107,7 @@ function notReady(reason: string, date: Date): TodayCompatibility {
     otherElement: null,
     animalLabel: '',
     elementLabel: '',
+    otherToSelfTenGod: '',
     compactDate: formatCompactDate(date),
   };
 }
@@ -197,6 +200,7 @@ export function buildTodayCompatibility(
     otherElement: engine.other.dayMasterElement as Element,
     animalLabel: engine.animalLabel,
     elementLabel: engine.elementLabel,
+    otherToSelfTenGod: engine.otherToSelfTenGod,
     compactDate: formatCompactDate(date),
   };
 }

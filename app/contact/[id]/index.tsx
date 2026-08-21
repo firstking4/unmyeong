@@ -139,12 +139,10 @@ function CompatibilityCardBody({
               {[
                 reading.animalLabel,
                 reading.elementLabel,
+                reading.otherToSelfTenGod || null,
                 ...reading.scoreParts
-                  .filter((part) => part.key === 'relation' || part.key.startsWith('today'))
+                  .filter((part) => part.key.startsWith('today'))
                   .map((part) => {
-                    if (part.key === 'relation') {
-                      return part.label.replace(/^관계\s+/, '');
-                    }
                     if (part.key === 'todaySelf') {
                       return `나 ${part.label.replace(/^오늘\(나\)\s+/, '')}`;
                     }
@@ -153,7 +151,9 @@ function CompatibilityCardBody({
                     }
                     return part.label;
                   }),
-              ].join(' · ')}
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </Text>
             {reading.keywords.length > 0 ? (
               <View style={styles.chips}>
