@@ -32,14 +32,14 @@
         -12,
         -3,
         -12,
-        -3,
-        -12
+        -2,
+        -6
       ],
-      "rawTotal": -26,
-      "todayScore": 0,
-      "baseCorrectionBonus": 36,
-      "dailyDelta": -26,
-      "score": 36
+      "rawTotal": -19,
+      "todayScore": 16,
+      "baseCorrectionBonus": 30,
+      "dailyDelta": -19,
+      "score": 46
     }
   },
   {
@@ -77,15 +77,15 @@
         -3,
         -4,
         3,
-        -3,
-        -4,
-        3
+        -2,
+        -2,
+        2
       ],
-      "rawTotal": 38,
-      "todayScore": 59,
-      "baseCorrectionBonus": 14,
-      "dailyDelta": 38,
-      "score": 73
+      "rawTotal": 40,
+      "todayScore": 72,
+      "baseCorrectionBonus": 9,
+      "dailyDelta": 40,
+      "score": 81
     }
   },
   {
@@ -121,14 +121,14 @@
         -12,
         -3,
         -12,
-        -3,
-        -12
+        -2,
+        -6
       ],
-      "rawTotal": -26,
-      "todayScore": 0,
-      "baseCorrectionBonus": 36,
-      "dailyDelta": -26,
-      "score": 36
+      "rawTotal": -19,
+      "todayScore": 16,
+      "baseCorrectionBonus": 30,
+      "dailyDelta": -19,
+      "score": 46
     }
   },
   {
@@ -164,14 +164,14 @@
         -8,
         -3,
         -6,
-        -3,
-        -6
+        -2,
+        -3
       ],
-      "rawTotal": -10,
-      "todayScore": 10,
-      "baseCorrectionBonus": 31,
-      "dailyDelta": -10,
-      "score": 41
+      "rawTotal": -6,
+      "todayScore": 29,
+      "baseCorrectionBonus": 24,
+      "dailyDelta": -6,
+      "score": 53
     }
   },
   {
@@ -207,14 +207,14 @@
         12,
         -3,
         0,
-        -3,
+        -2,
         0
       ],
-      "rawTotal": 22,
-      "todayScore": 43,
-      "baseCorrectionBonus": 18,
-      "dailyDelta": 22,
-      "score": 61
+      "rawTotal": 23,
+      "todayScore": 56,
+      "baseCorrectionBonus": 14,
+      "dailyDelta": 23,
+      "score": 70
     }
   },
   {
@@ -250,14 +250,14 @@
         -12,
         -3,
         -12,
-        -3,
-        -12
+        -2,
+        -6
       ],
-      "rawTotal": -26,
-      "todayScore": 0,
-      "baseCorrectionBonus": 37,
-      "dailyDelta": -26,
-      "score": 37
+      "rawTotal": -19,
+      "todayScore": 16,
+      "baseCorrectionBonus": 31,
+      "dailyDelta": -19,
+      "score": 47
     }
   },
   {
@@ -293,14 +293,14 @@
         -16,
         -3,
         4,
-        -3,
-        4
+        -2,
+        2
       ],
-      "rawTotal": 2,
-      "todayScore": 22,
-      "baseCorrectionBonus": 23,
-      "dailyDelta": 2,
-      "score": 45
+      "rawTotal": 1,
+      "todayScore": 35,
+      "baseCorrectionBonus": 19,
+      "dailyDelta": 1,
+      "score": 54
     }
   }
 ]

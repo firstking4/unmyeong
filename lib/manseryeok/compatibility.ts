@@ -79,7 +79,7 @@ const TEN_GOD_SCORE: Record<string, number> = {
 };
 
 /**
- * 원점수 = 오늘 일진 십신(×2) + 이달 월주·올해 세운 십신(각 약 1/2).
+ * 원점수 = 오늘 일진 십신(×2) + 이달 월주(약 1/2) + 올해 세운(약 1/4).
  * 일지·오행·관계 고정은 기본 궁합 보정에만 쓴다.
  */
 const TODAY_OTHER_TEN_GOD_DELTA: Record<string, number> = {
@@ -143,17 +143,41 @@ const MONTH_SELF_TEN_GOD_DELTA: Record<string, number> = {
 
 const SAME_MONTH_TEN_GOD_BONUS = 3;
 
-/** 올해 세운(년주) 십신 — 월주와 같은 소가중. 해 전체에 같은 방향으로 깐다. */
-const YEAR_OTHER_TEN_GOD_DELTA = MONTH_OTHER_TEN_GOD_DELTA;
-const YEAR_SELF_TEN_GOD_DELTA = MONTH_SELF_TEN_GOD_DELTA;
-const SAME_YEAR_TEN_GOD_BONUS = SAME_MONTH_TEN_GOD_BONUS;
+/** 올해 세운(년주) 십신 — 월주의 약 1/2. 해 전체 톤을 흔들되 평균을 과도하게 누르지 않음. */
+const YEAR_OTHER_TEN_GOD_DELTA: Record<string, number> = {
+  정재: 6,
+  식신: 5,
+  정인: 4,
+  정관: 3,
+  편재: 2,
+  비견: 0,
+  편인: -2,
+  상관: -3,
+  겁재: -4,
+  편관: -6,
+};
 
-/** 기본(시작) 점수 */
-const SCORE_ORIGIN = 20;
-/** 항목만점: 오늘(46) + 이달(23) + 올해(23) */
-const MAX_POSITIVE_SUM = 46 + 23 + 23; // 92
+const YEAR_SELF_TEN_GOD_DELTA: Record<string, number> = {
+  정재: 4,
+  식신: 4,
+  정인: 3,
+  정관: 2,
+  편재: 2,
+  비견: 0,
+  편인: -2,
+  상관: -2,
+  겁재: -3,
+  편관: -4,
+};
+
+const SAME_YEAR_TEN_GOD_BONUS = 2;
+
+/** 기본(시작) 점수 — 월·세운 합산 후 전체 평균이 ~60 근처가 되도록 상향 */
+const SCORE_ORIGIN = 36;
+/** 항목만점: 오늘(46) + 이달(23) + 올해(4+6+2=12) */
+const MAX_POSITIVE_SUM = 46 + 23 + 12; // 81
 /** 환산 분모 — 만점의 ~85% */
-const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 98
+const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 105
 const SCORE_FLOOR = 0;
 const SCORE_CEILING = 100;
 

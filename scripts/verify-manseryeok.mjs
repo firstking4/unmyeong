@@ -287,12 +287,34 @@ const MONTH_SELF_TEN_GOD_DELTA = {
   편관: -8,
 };
 const SAME_MONTH_TEN_GOD_BONUS = 3;
-const YEAR_OTHER_TEN_GOD_DELTA = MONTH_OTHER_TEN_GOD_DELTA;
-const YEAR_SELF_TEN_GOD_DELTA = MONTH_SELF_TEN_GOD_DELTA;
-const SAME_YEAR_TEN_GOD_BONUS = SAME_MONTH_TEN_GOD_BONUS;
-const SCORE_ORIGIN = 20;
-const MAX_POSITIVE_SUM = 46 + 23 + 23; // 92
-const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 98
+const YEAR_OTHER_TEN_GOD_DELTA = {
+  정재: 6,
+  식신: 5,
+  정인: 4,
+  정관: 3,
+  편재: 2,
+  비견: 0,
+  편인: -2,
+  상관: -3,
+  겁재: -4,
+  편관: -6,
+};
+const YEAR_SELF_TEN_GOD_DELTA = {
+  정재: 4,
+  식신: 4,
+  정인: 3,
+  정관: 2,
+  편재: 2,
+  비견: 0,
+  편인: -2,
+  상관: -2,
+  겁재: -3,
+  편관: -4,
+};
+const SAME_YEAR_TEN_GOD_BONUS = 2;
+const SCORE_ORIGIN = 36;
+const MAX_POSITIVE_SUM = 46 + 23 + 12; // 81
+const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 105
 const BASE_RAW_MIN = 45;
 const BASE_RAW_MAX = 84;
 const BASE_MAP_MIN = 20;
