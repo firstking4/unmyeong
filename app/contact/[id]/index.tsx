@@ -40,9 +40,9 @@ import { formatSajuHourLabel } from '@/lib/saju';
 type Reading = TodayCompatibility;
 
 const DETAIL_LOCK = {
-  title: '상세 풀이',
+  title: '자세한 풀이',
   description:
-    '광고를 보면 상세 풀이와 행동 가이드를 열 수 있어요. 한 번 열면 오늘 자정까지 유지됩니다. 지금은 광고 준비 중이라 눌러서 바로 확인할 수 있습니다.',
+    '광고를 보면 자세한 풀이와 오늘 해보기를 열 수 있어요. 한 번 열면 오늘 자정까지 유지됩니다. 지금은 광고 준비 중이라 눌러서 바로 확인할 수 있습니다.',
   ctaLabel: '내용 보기',
 } as const;
 
@@ -68,13 +68,13 @@ function ContactDetailBody({
       {unlocked ? (
         <>
           <Text style={[styles.body, { color: muted }]}>{reading.summary}</Text>
-          <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>관계 흐름</Text>
+          <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>오늘·이달·올해</Text>
           <Text style={[styles.hintText, { color: muted }]}>{reading.relationship}</Text>
           <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>
-            행동 가이드
+            오늘 해보기
           </Text>
           <Text style={[styles.hintText, { color: muted }]}>{reading.guidance}</Text>
-          <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>오늘의 주의</Text>
+          <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>오늘 조심</Text>
           <Text style={[styles.hintText, { color: muted }]}>{reading.caution}</Text>
         </>
       ) : null}
@@ -136,40 +136,9 @@ function CompatibilityCardBody({
           <View style={styles.cardSummary}>
             <Text style={[styles.sectionLabel, { color: text }]}>오늘의 궁합</Text>
             <Text style={[styles.body, { color: muted }]}>
-              {[
-                reading.animalLabel,
-                reading.elementLabel,
-                reading.otherToSelfTenGod || null,
-                ...reading.scoreParts
-                  .filter(
-                    (part) =>
-                      part.key.startsWith('today') ||
-                      part.key.startsWith('month') ||
-                      part.key.startsWith('year'),
-                  )
-                  .map((part) => {
-                    if (part.key === 'todaySelf') {
-                      return `나 ${part.label.replace(/^오늘\(나\)\s+/, '')}`;
-                    }
-                    if (part.key === 'todayOther') {
-                      return `지인 ${part.label.replace(/^오늘\(지인\)\s+/, '')}`;
-                    }
-                    if (part.key === 'monthSelf') {
-                      return `이달 나 ${part.label.replace(/^이달\(나\)\s+/, '')}`;
-                    }
-                    if (part.key === 'monthOther') {
-                      return `이달 지인 ${part.label.replace(/^이달\(지인\)\s+/, '')}`;
-                    }
-                    if (part.key === 'yearSelf') {
-                      return `올해 나 ${part.label.replace(/^올해\(나\)\s+/, '')}`;
-                    }
-                    if (part.key === 'yearOther') {
-                      return `올해 지인 ${part.label.replace(/^올해\(지인\)\s+/, '')}`;
-                    }
-                    return part.label;
-                  }),
-              ]
-                .filter(Boolean)
+              {[reading.animalLabel, reading.elementLabel, ...reading.keywords]
+                .filter((v, i, all) => Boolean(v) && all.indexOf(v) === i)
+                .slice(0, 5)
                 .join(' · ')}
             </Text>
             {reading.keywords.length > 0 ? (

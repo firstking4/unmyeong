@@ -1,7 +1,6 @@
 import {
   computeCompatibility,
   meetingTone,
-  tenGodKeywords,
   tenGodPlain,
   type CompatibilityScorePart,
 } from '@/lib/manseryeok';
@@ -50,6 +49,51 @@ export type TodayCompatibility = {
 
 const HARD_GODS = new Set(['겁재', '상관', '편관']);
 
+/** 궁합 화면용 쉬운 초점 말 (전문 키워드 대신) */
+const EASY_FOCUS: Record<string, string[]> = {
+  비견: ['같은 속도', '같이하기'],
+  겁재: ['서두름', '다툼'],
+  식신: ['표현', '나누기'],
+  상관: ['직설', '날카로움'],
+  편재: ['움직임', '기회'],
+  정재: ['챙기기', '약속'],
+  편관: ['압박', '부담'],
+  정관: ['규칙', '약속'],
+  편인: ['혼자 시간', '생각'],
+  정인: ['배움', '돌봄'],
+};
+
+/** 조심할 점 — 십신 이름 없이 */
+const EASY_CAUTION: Record<string, string> = {
+  비견: '같은 자리에서 겨루지 않기.',
+  겁재: '서두르거나 다투지 않기.',
+  식신: '완성만 따지다 만남을 미루지 않기.',
+  상관: '말이 너무 세지지 않게.',
+  편재: '약속을 너무 많이 잡지 않기.',
+  정재: '완벽하려다 만남을 미루지 않기.',
+  편관: '상대를 몰아붙이지 않기.',
+  정관: '형식만 챙기다 마음을 놓치지 않기.',
+  편인: '답을 재촉해 밀어내지 않기.',
+  정인: '결정을 전부 맡기지 않기.',
+};
+
+const EASY_ANIMAL: Record<string, string> = {
+  같음: '같은 결',
+  육합: '잘 맞는 결',
+  삼합: '한팀 같은 결',
+  방합: '가까운 결',
+  육충: '부딪치기 쉬운 결',
+  흐름: '평범한 결',
+};
+
+const EASY_ELEMENT: Record<string, string> = {
+  같음: '같은 기운',
+  생함: '서로 돕는 기운',
+  생받음: '서로 돕는 기운',
+  극함: '힘겨루기 쉬운 기운',
+  극받음: '힘겨루기 쉬운 기운',
+};
+
 function hasFinalConsonant(word: string): boolean {
   const last = word.trim().slice(-1);
   const code = last.charCodeAt(0);
@@ -89,47 +133,49 @@ function uniqueWords(words: string[]): string[] {
   return words.filter((w, i, all) => Boolean(w) && all.indexOf(w) === i);
 }
 
-function joinFocus(words: string[], limit = 3): string {
-  return uniqueWords(words).slice(0, limit).join('·');
+function easyFocus(god: string, limit = 2): string {
+  return (EASY_FOCUS[god] ?? []).slice(0, limit).join('·');
 }
 
-/** 나·상대 십신을 한 줄로 — 같은 십신이면 짧게 */
-function dualTenGodLine(scope: '오늘' | '이달' | '올해', selfGod: string, otherGod: string): string {
+function easyPlain(god: string): string {
+  // tenGodPlain이 길면 첫 덩어리만
+  const plain = tenGodPlain(god);
+  const cut = plain.split('과')[0]?.split('와')[0]?.trim();
+  return cut || plain;
+}
+
+function dualEasyLine(scope: '오늘' | '이달' | '올해', selfGod: string, otherGod: string): string {
   const topic = withEun(scope);
   if (selfGod === otherGod) {
-    return `${topic} 둘이 ${tenGodPlain(selfGod)}(${selfGod}).`;
+    return `${topic} 둘이 ${easyPlain(selfGod)} 쪽.`;
   }
-  return `${topic} 나 ${tenGodPlain(selfGod)}(${selfGod}) · 상대 ${tenGodPlain(otherGod)}(${otherGod}).`;
+  return `${topic} 나는 ${easyPlain(selfGod)}, 상대는 ${easyPlain(otherGod)} 쪽.`;
 }
 
 function toneKeyword(selfGod: string, otherGod: string): string {
   const tone = meetingTone(selfGod, otherGod);
-  if (tone === '주의') return '호흡';
-  if (tone === '조율') return '조율';
-  return '맞춤';
+  if (tone === '주의') return '천천히';
+  if (tone === '조율') return '맞추기';
+  return '잘 맞음';
 }
 
 function buildGuidance(selfGod: string, otherGod: string): string {
   const tone = meetingTone(selfGod, otherGod);
-  const focus = joinFocus([...tenGodKeywords(selfGod), ...tenGodKeywords(otherGod)]);
+  const focus = uniqueWords([
+    ...(EASY_FOCUS[selfGod] ?? []),
+    ...(EASY_FOCUS[otherGod] ?? []),
+  ])
+    .slice(0, 3)
+    .join('·');
   if (!focus) {
-    return tone === '주의' ? '오늘은 짧은 안부만.' : '오늘은 작은 한 가지만.';
+    return tone === '주의' ? '오늘은 짧은 안부만 나누기.' : '오늘은 작은 일 하나만.';
   }
-  if (tone === '주의') return `오늘은 ${focus} 쪽을 줄이고 짧게.`;
-  if (tone === '조율') return `오늘은 ${focus} 사이에서 한 박자 늦추기.`;
-  return `오늘은 ${focus} 쪽으로 작은 한 가지.`;
+  if (tone === '주의') return `오늘은 ${focus}을(를) 줄이고, 짧게 만나기.`;
+  if (tone === '조율') return `오늘은 ${focus} 속도를 서로 맞추기.`;
+  return `오늘은 ${focus} 쪽으로 작은 일 하나.`;
 }
 
-function withIga(word: string): string {
-  return `${word}${hasFinalConsonant(word) ? '이' : '가'}`;
-}
-
-function buildCaution(
-  selfGod: string,
-  otherGod: string,
-  pairGod: string,
-  animalKind: string,
-): string {
+function buildCaution(selfGod: string, otherGod: string, pairGod: string, animalKind: string): string {
   const hard = HARD_GODS.has(selfGod)
     ? selfGod
     : HARD_GODS.has(otherGod)
@@ -137,15 +183,14 @@ function buildCaution(
       : HARD_GODS.has(pairGod)
         ? pairGod
         : null;
-  if (hard) {
-    const tip = tenGodKeywords(hard)[2] ?? tenGodKeywords(hard)[0] ?? hard;
-    return `${hard}의 ${withIga(tip)} 과해지지 않게.`;
-  }
-  if (animalKind === '육충') {
-    return `${tenGodPlain(pairGod)} 관계에서 말이 세지지 않게.`;
-  }
-  const tip = tenGodKeywords(pairGod)[0] ?? pairGod;
-  return `관계 십신 ${pairGod}의 ${tip} 과잉만 살피기.`;
+  if (hard && EASY_CAUTION[hard]) return EASY_CAUTION[hard];
+  if (animalKind === '육충') return '말투가 세지지 않게 조심하기.';
+  return EASY_CAUTION[pairGod] ?? '너무 밀어붙이지만 않기.';
+}
+
+function fixObjectParticle(text: string): string {
+  // "A·B을(를)" → 조사 정리: 복합이면 "를" 고정이 자연스러움
+  return text.replace(/을\(를\)/g, '를').replace(/이\(가\)/g, '가');
 }
 
 function notReady(reason: string, date: Date): TodayCompatibility {
@@ -218,47 +263,31 @@ export function buildTodayCompatibility(
   const grade = gradeFromScore(engine.score);
   const pairGod = engine.otherToSelfTenGod;
   const toneKw = toneKeyword(engine.selfTodayTenGod, engine.otherTodayTenGod);
-  const pairFocus = joinFocus(tenGodKeywords(pairGod), 2);
+  const animalEasy = EASY_ANIMAL[engine.animalKind] ?? '평범한 결';
+  const elementEasy = EASY_ELEMENT[engine.elementKind] ?? '기운';
+  const pairFocus = easyFocus(pairGod, 2);
 
   const keywords = uniqueWords([
-    engine.animalKind === '육합' ||
-    engine.animalKind === '삼합' ||
-    engine.animalKind === '방합' ||
-    engine.animalKind === '육충'
-      ? engine.animalKind
-      : engine.animalKind === '같음'
-        ? '같은 결'
-        : '',
+    animalEasy,
     toneKw,
-    pairGod,
-    ...tenGodKeywords(pairGod),
-    relation.title,
+    ...((EASY_FOCUS[pairGod] ?? []).slice(0, 2)),
+    elementEasy,
   ]).slice(0, 5);
 
-  // 요약: 이름·일지·오행·관계 십신·키워드만
   const summary = [
-    `${withGwa(selfName)} ${withEun(otherName)} ${engine.animalLabel} · ${engine.elementLabel}.`,
-    `상대→나 ${tenGodPlain(pairGod)}(${pairGod}).`,
-    pairFocus ? `초점 ${pairFocus}.` : null,
+    `${withGwa(selfName)} ${withEun(otherName)} ${animalEasy}이고, ${elementEasy}입니다.`,
+    `상대는 나에게 ${easyPlain(pairGod)} 쪽.`,
+    pairFocus ? `오늘은 ${pairFocus}이 보이기 쉽습니다.` : null,
   ]
     .filter(Boolean)
     .join(' ');
 
-  // 관계 흐름: 오늘·이달·올해 + 오행 관계명
   const relationship = [
-    dualTenGodLine('오늘', engine.selfTodayTenGod, engine.otherTodayTenGod),
-    dualTenGodLine('이달', engine.selfMonthTenGod, engine.otherMonthTenGod),
-    dualTenGodLine('올해', engine.selfYearTenGod, engine.otherYearTenGod),
-    `기운 ${relation.title}.`,
+    dualEasyLine('오늘', engine.selfTodayTenGod, engine.otherTodayTenGod),
+    dualEasyLine('이달', engine.selfMonthTenGod, engine.otherMonthTenGod),
+    dualEasyLine('올해', engine.selfYearTenGod, engine.otherYearTenGod),
+    `둘의 기운은 ${elementEasy}.`,
   ].join(' ');
-
-  const guidance = buildGuidance(engine.selfTodayTenGod, engine.otherTodayTenGod);
-  const caution = buildCaution(
-    engine.selfTodayTenGod,
-    engine.otherTodayTenGod,
-    pairGod,
-    engine.animalKind,
-  );
 
   return {
     ready: true,
@@ -275,17 +304,23 @@ export function buildTodayCompatibility(
     dailyDelta: engine.dailyDelta,
     grade,
     moodHeadline: `${toneKw} · ${grade}`,
-    summary,
+    summary: fixObjectParticle(summary),
     relationship,
-    guidance,
-    caution,
+    guidance: fixObjectParticle(buildGuidance(engine.selfTodayTenGod, engine.otherTodayTenGod)),
+    caution: buildCaution(
+      engine.selfTodayTenGod,
+      engine.otherTodayTenGod,
+      pairGod,
+      engine.animalKind,
+    ),
     keywords,
     selfAnimal: engine.self.animal as ZodiacAnimal,
     otherAnimal: engine.other.animal as ZodiacAnimal,
     selfElement: engine.self.dayMasterElement as Element,
     otherElement: engine.other.dayMasterElement as Element,
-    animalLabel: engine.animalLabel,
-    elementLabel: engine.elementLabel,
+    // 카드 요약에도 쉬운 말
+    animalLabel: animalEasy,
+    elementLabel: elementEasy,
     otherToSelfTenGod: engine.otherToSelfTenGod,
     selfMonthTenGod: engine.selfMonthTenGod,
     otherMonthTenGod: engine.otherMonthTenGod,
