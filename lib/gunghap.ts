@@ -115,6 +115,10 @@ function buildGuidance(selfGod: string, otherGod: string): string {
   return `오늘은 ${focus} 쪽으로 작은 한 가지.`;
 }
 
+function withIga(word: string): string {
+  return `${word}${hasFinalConsonant(word) ? '이' : '가'}`;
+}
+
 function buildCaution(
   selfGod: string,
   otherGod: string,
@@ -130,7 +134,7 @@ function buildCaution(
         : null;
   if (hard) {
     const tip = tenGodKeywords(hard)[2] ?? tenGodKeywords(hard)[0] ?? hard;
-    return `${hard}의 ${tip}이(가) 과해지지 않게.`;
+    return `${hard}의 ${withIga(tip)} 과해지지 않게.`;
   }
   if (animalKind === '육충') {
     return `${tenGodPlain(pairGod)} 관계에서 말이 세지지 않게.`;
