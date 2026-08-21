@@ -43,6 +43,9 @@ export type TodayCompatibility = {
   selfMonthTenGod: string;
   otherMonthTenGod: string;
   monthPillarKorean: string;
+  selfYearTenGod: string;
+  otherYearTenGod: string;
+  yearPillarKorean: string;
   compactDate: string;
 };
 
@@ -92,8 +95,8 @@ function notReady(reason: string, date: Date): TodayCompatibility {
     baseCorrectionFactor: 0,
     baseCorrectionBonus: 0,
     scoreOrigin: 20,
-    scoreScaleMax: 79,
-    maxPositiveSum: 69,
+    scoreScaleMax: 98,
+    maxPositiveSum: 92,
     scoreParts: [],
     rawTotal: 0,
     dailyDelta: 0,
@@ -114,6 +117,9 @@ function notReady(reason: string, date: Date): TodayCompatibility {
     selfMonthTenGod: '',
     otherMonthTenGod: '',
     monthPillarKorean: '',
+    selfYearTenGod: '',
+    otherYearTenGod: '',
+    yearPillarKorean: '',
     compactDate: formatCompactDate(date),
   };
 }
@@ -210,6 +216,9 @@ export function buildTodayCompatibility(
     selfMonthTenGod: engine.selfMonthTenGod,
     otherMonthTenGod: engine.otherMonthTenGod,
     monthPillarKorean: engine.monthPillarKorean,
+    selfYearTenGod: engine.selfYearTenGod,
+    otherYearTenGod: engine.otherYearTenGod,
+    yearPillarKorean: engine.yearPillarKorean,
     compactDate: formatCompactDate(date),
   };
 }

@@ -287,9 +287,12 @@ const MONTH_SELF_TEN_GOD_DELTA = {
   편관: -8,
 };
 const SAME_MONTH_TEN_GOD_BONUS = 3;
+const YEAR_OTHER_TEN_GOD_DELTA = MONTH_OTHER_TEN_GOD_DELTA;
+const YEAR_SELF_TEN_GOD_DELTA = MONTH_SELF_TEN_GOD_DELTA;
+const SAME_YEAR_TEN_GOD_BONUS = SAME_MONTH_TEN_GOD_BONUS;
 const SCORE_ORIGIN = 20;
-const MAX_POSITIVE_SUM = 46 + 23; // 69
-const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 79
+const MAX_POSITIVE_SUM = 46 + 23 + 23; // 92
+const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 98
 const BASE_RAW_MIN = 45;
 const BASE_RAW_MAX = 84;
 const BASE_MAP_MIN = 20;
@@ -371,6 +374,8 @@ function computeCompatibility(self, other, at) {
   const otherTodayTenGod = getTenGod(otherNatal.dayStem, today.day.heavenlyStem);
   const selfMonthTenGod = getTenGod(selfNatal.dayStem, today.month.heavenlyStem);
   const otherMonthTenGod = getTenGod(otherNatal.dayStem, today.month.heavenlyStem);
+  const selfYearTenGod = getTenGod(selfNatal.dayStem, today.year.heavenlyStem);
+  const otherYearTenGod = getTenGod(otherNatal.dayStem, today.year.heavenlyStem);
   const animal = animalRelation(selfNatal.animal, otherNatal.animal);
   const elementKind = elementRelationKind(selfNatal.dayMasterElement, otherNatal.dayMasterElement);
   const otherToSelfTenGod = getTenGod(selfNatal.dayStem, otherNatal.dayStem);
@@ -393,6 +398,13 @@ function computeCompatibility(self, other, at) {
   if (selfMonthTenGod === otherMonthTenGod) {
     parts.push({ key: 'monthSame', delta: SAME_MONTH_TEN_GOD_BONUS });
   }
+  parts.push(
+    { key: 'yearSelf', delta: YEAR_SELF_TEN_GOD_DELTA[selfYearTenGod] ?? 0 },
+    { key: 'yearOther', delta: YEAR_OTHER_TEN_GOD_DELTA[otherYearTenGod] ?? 0 },
+  );
+  if (selfYearTenGod === otherYearTenGod) {
+    parts.push({ key: 'yearSame', delta: SAME_YEAR_TEN_GOD_BONUS });
+  }
   const rawTotal = parts.reduce((s, p) => s + p.delta, 0);
   const todayScore = Math.max(
     0,
@@ -411,8 +423,11 @@ function computeCompatibility(self, other, at) {
     otherTodayTenGod,
     selfMonthTenGod,
     otherMonthTenGod,
+    selfYearTenGod,
+    otherYearTenGod,
     todayPillarKorean: today.dayString,
     monthPillarKorean: today.monthString,
+    yearPillarKorean: today.yearString,
     baseScore,
     partDeltas: parts.map((p) => p.delta),
     rawTotal,

@@ -107,6 +107,10 @@ export type CompatibilityEngineResult = {
   monthPillarKorean: string;
   selfMonthTenGod: string;
   otherMonthTenGod: string;
+  /** 세운(년주) */
+  yearPillarKorean: string;
+  selfYearTenGod: string;
+  otherYearTenGod: string;
   /** +/− 합산 항목 */
   scoreParts: CompatibilityScorePart[];
   /** 시작점(기본 20) */

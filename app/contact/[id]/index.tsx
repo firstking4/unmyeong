@@ -142,7 +142,10 @@ function CompatibilityCardBody({
                 reading.otherToSelfTenGod || null,
                 ...reading.scoreParts
                   .filter(
-                    (part) => part.key.startsWith('today') || part.key.startsWith('month'),
+                    (part) =>
+                      part.key.startsWith('today') ||
+                      part.key.startsWith('month') ||
+                      part.key.startsWith('year'),
                   )
                   .map((part) => {
                     if (part.key === 'todaySelf') {
@@ -156,6 +159,12 @@ function CompatibilityCardBody({
                     }
                     if (part.key === 'monthOther') {
                       return `이달 지인 ${part.label.replace(/^이달\(지인\)\s+/, '')}`;
+                    }
+                    if (part.key === 'yearSelf') {
+                      return `올해 나 ${part.label.replace(/^올해\(나\)\s+/, '')}`;
+                    }
+                    if (part.key === 'yearOther') {
+                      return `올해 지인 ${part.label.replace(/^올해\(지인\)\s+/, '')}`;
                     }
                     return part.label;
                   }),
