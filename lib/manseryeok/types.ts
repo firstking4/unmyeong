@@ -103,6 +103,10 @@ export type CompatibilityEngineResult = {
   todayPillarKorean: string;
   selfTodayTenGod: string;
   otherTodayTenGod: string;
+  /** 절기 기준 당월 월주 */
+  monthPillarKorean: string;
+  selfMonthTenGod: string;
+  otherMonthTenGod: string;
   /** +/− 합산 항목 */
   scoreParts: CompatibilityScorePart[];
   /** 시작점(기본 20) */

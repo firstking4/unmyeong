@@ -79,7 +79,7 @@ const TEN_GOD_SCORE: Record<string, number> = {
 };
 
 /**
- * 오늘 원점수 = 오늘 일진 십신만 (×2).
+ * 원점수 = 오늘 일진 십신(×2) + 이달 월주 십신(약 1/2).
  * 일지·오행·관계 고정은 기본 궁합 보정에만 쓴다.
  */
 const TODAY_OTHER_TEN_GOD_DELTA: Record<string, number> = {
@@ -110,12 +110,45 @@ const TODAY_SELF_TEN_GOD_DELTA: Record<string, number> = {
 };
 
 const SAME_TODAY_TEN_GOD_BONUS = 6;
+
+/**
+ * 이달 월주 십신 — 오늘(×2)의 약 1/2.
+ * 절기 월주가 해·달마다 바뀌어 연간 톤을 조금 흔든다.
+ */
+const MONTH_OTHER_TEN_GOD_DELTA: Record<string, number> = {
+  정재: 12,
+  식신: 10,
+  정인: 8,
+  정관: 6,
+  편재: 4,
+  비견: 0,
+  편인: -4,
+  상관: -6,
+  겁재: -8,
+  편관: -12,
+};
+
+const MONTH_SELF_TEN_GOD_DELTA: Record<string, number> = {
+  정재: 8,
+  식신: 7,
+  정인: 5,
+  정관: 4,
+  편재: 3,
+  비견: 0,
+  편인: -3,
+  상관: -4,
+  겁재: -5,
+  편관: -8,
+};
+
+const SAME_MONTH_TEN_GOD_BONUS = 3;
+
 /** 기본(시작) 점수 */
 const SCORE_ORIGIN = 20;
-/** 오늘 항목만점 (나16+지인24+같은십신6) */
-const MAX_POSITIVE_SUM = 46;
-/** 환산 분모 — 만점의 ~85%로 타이트해 좋은 날 원점수 천장 확대 */
-const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 59
+/** 항목만점: 오늘(16+24+6) + 이달(8+12+3) */
+const MAX_POSITIVE_SUM = 46 + 23; // 69
+/** 환산 분모 — 만점의 ~85% */
+const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 79
 const SCORE_FLOOR = 0;
 const SCORE_CEILING = 100;
 
@@ -228,18 +261,28 @@ function todayOtherTenGodDelta(god: string): number {
   return TODAY_OTHER_TEN_GOD_DELTA[god] ?? 0;
 }
 
+function monthSelfTenGodDelta(god: string): number {
+  return MONTH_SELF_TEN_GOD_DELTA[god] ?? 0;
+}
+
+function monthOtherTenGodDelta(god: string): number {
+  return MONTH_OTHER_TEN_GOD_DELTA[god] ?? 0;
+}
+
 function formatDelta(delta: number): string {
   if (delta > 0) return `+${delta}`;
   return `${delta}`;
 }
 
 /**
- * 오늘의 원점수 = (시작 20 + 오늘 십신 합산) ÷ 분모(59) × 100.
+ * 원점수 = (시작 20 + 오늘·이달 십신 합산) ÷ 분모 × 100.
  * 고정 궁합(일지·오행·관계)은 넣지 않는다.
  */
 export function buildCompatibilityScoreParts(input: {
   selfTodayTenGod: string;
   otherTodayTenGod: string;
+  selfMonthTenGod: string;
+  otherMonthTenGod: string;
 }): { parts: CompatibilityScorePart[]; rawTotal: number; score: number } {
   const parts: CompatibilityScorePart[] = [
     {
@@ -259,6 +302,27 @@ export function buildCompatibilityScoreParts(input: {
       key: 'todaySame',
       label: '오늘 같은 십신',
       delta: SAME_TODAY_TEN_GOD_BONUS,
+    });
+  }
+
+  parts.push(
+    {
+      key: 'monthSelf',
+      label: `이달(나) ${input.selfMonthTenGod}`,
+      delta: monthSelfTenGodDelta(input.selfMonthTenGod),
+    },
+    {
+      key: 'monthOther',
+      label: `이달(지인) ${input.otherMonthTenGod}`,
+      delta: monthOtherTenGodDelta(input.otherMonthTenGod),
+    },
+  );
+
+  if (input.selfMonthTenGod === input.otherMonthTenGod) {
+    parts.push({
+      key: 'monthSame',
+      label: '이달 같은 십신',
+      delta: SAME_MONTH_TEN_GOD_BONUS,
     });
   }
 
@@ -297,7 +361,7 @@ export function dailyDeltaFromTenGods(
 }
 
 /**
- * 기본 궁합(일지·오행·십신)으로 보정하고, 오늘 원점수는 일진 십신만 합산.
+ * 기본 궁합(일지·오행·십신)으로 보정하고, 원점수는 일진·월주 십신을 합산.
  * 출생 시각이 없으면 정오로 계산하고 시주는 비교하지 않는다.
  */
 export function computeCompatibility(
@@ -311,7 +375,9 @@ export function computeCompatibility(
 
   const selfToday = getManseryeokPeriod(self, at, 'day');
   const otherToday = getManseryeokPeriod(other, at, 'day');
-  if (!selfToday || !otherToday) return null;
+  const selfMonth = getManseryeokPeriod(self, at, 'month');
+  const otherMonth = getManseryeokPeriod(other, at, 'month');
+  if (!selfToday || !otherToday || !selfMonth || !otherMonth) return null;
 
   const selfNatal = natalFromPillars(selfPillars);
   const otherNatal = natalFromPillars(otherPillars);
@@ -329,12 +395,14 @@ export function computeCompatibility(
   const godScore = Math.round(
     (tenGodScore(otherToSelfTenGod) + tenGodScore(selfToOtherTenGod)) / 2,
   );
-  /** 참고용 관계 점수 + 보정 계수 입력. 오늘 원점수와는 별개 */
+  /** 참고용 관계 점수 + 보정 계수 입력. 원점수와는 별개 */
   const baseScore = Math.round(animal.score * 0.4 + element.score * 0.35 + godScore * 0.25);
 
   const { parts, rawTotal, score: todayRawScore } = buildCompatibilityScoreParts({
     selfTodayTenGod: selfToday.stemTenGod,
     otherTodayTenGod: otherToday.stemTenGod,
+    selfMonthTenGod: selfMonth.stemTenGod,
+    otherMonthTenGod: otherMonth.stemTenGod,
   });
   const { factor, bonus, score } = applyBaseCorrection(todayRawScore, baseScore);
 
@@ -356,6 +424,9 @@ export function computeCompatibility(
     todayPillarKorean: selfToday.pillar.korean,
     selfTodayTenGod: selfToday.stemTenGod,
     otherTodayTenGod: otherToday.stemTenGod,
+    monthPillarKorean: selfMonth.pillar.korean,
+    selfMonthTenGod: selfMonth.stemTenGod,
+    otherMonthTenGod: otherMonth.stemTenGod,
     scoreParts: parts,
     scoreOrigin: SCORE_ORIGIN,
     scoreScaleMax: SCORE_SCALE_MAX,

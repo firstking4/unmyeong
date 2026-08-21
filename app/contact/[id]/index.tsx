@@ -141,13 +141,21 @@ function CompatibilityCardBody({
                 reading.elementLabel,
                 reading.otherToSelfTenGod || null,
                 ...reading.scoreParts
-                  .filter((part) => part.key.startsWith('today'))
+                  .filter(
+                    (part) => part.key.startsWith('today') || part.key.startsWith('month'),
+                  )
                   .map((part) => {
                     if (part.key === 'todaySelf') {
                       return `나 ${part.label.replace(/^오늘\(나\)\s+/, '')}`;
                     }
                     if (part.key === 'todayOther') {
                       return `지인 ${part.label.replace(/^오늘\(지인\)\s+/, '')}`;
+                    }
+                    if (part.key === 'monthSelf') {
+                      return `이달 나 ${part.label.replace(/^이달\(나\)\s+/, '')}`;
+                    }
+                    if (part.key === 'monthOther') {
+                      return `이달 지인 ${part.label.replace(/^이달\(지인\)\s+/, '')}`;
                     }
                     return part.label;
                   }),

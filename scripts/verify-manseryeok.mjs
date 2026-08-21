@@ -262,9 +262,34 @@ const TODAY_SELF_TEN_GOD_DELTA = {
   편관: -16,
 };
 const SAME_TODAY_TEN_GOD_BONUS = 6;
+const MONTH_OTHER_TEN_GOD_DELTA = {
+  정재: 12,
+  식신: 10,
+  정인: 8,
+  정관: 6,
+  편재: 4,
+  비견: 0,
+  편인: -4,
+  상관: -6,
+  겁재: -8,
+  편관: -12,
+};
+const MONTH_SELF_TEN_GOD_DELTA = {
+  정재: 8,
+  식신: 7,
+  정인: 5,
+  정관: 4,
+  편재: 3,
+  비견: 0,
+  편인: -3,
+  상관: -4,
+  겁재: -5,
+  편관: -8,
+};
+const SAME_MONTH_TEN_GOD_BONUS = 3;
 const SCORE_ORIGIN = 20;
-const MAX_POSITIVE_SUM = 16 + 24 + 6; // 46
-const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 59
+const MAX_POSITIVE_SUM = 46 + 23; // 69
+const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 79
 const BASE_RAW_MIN = 45;
 const BASE_RAW_MAX = 84;
 const BASE_MAP_MIN = 20;
@@ -344,6 +369,8 @@ function computeCompatibility(self, other, at) {
   });
   const selfTodayTenGod = getTenGod(selfNatal.dayStem, today.day.heavenlyStem);
   const otherTodayTenGod = getTenGod(otherNatal.dayStem, today.day.heavenlyStem);
+  const selfMonthTenGod = getTenGod(selfNatal.dayStem, today.month.heavenlyStem);
+  const otherMonthTenGod = getTenGod(otherNatal.dayStem, today.month.heavenlyStem);
   const animal = animalRelation(selfNatal.animal, otherNatal.animal);
   const elementKind = elementRelationKind(selfNatal.dayMasterElement, otherNatal.dayMasterElement);
   const otherToSelfTenGod = getTenGod(selfNatal.dayStem, otherNatal.dayStem);
@@ -358,6 +385,13 @@ function computeCompatibility(self, other, at) {
   ];
   if (selfTodayTenGod === otherTodayTenGod) {
     parts.push({ key: 'todaySame', delta: SAME_TODAY_TEN_GOD_BONUS });
+  }
+  parts.push(
+    { key: 'monthSelf', delta: MONTH_SELF_TEN_GOD_DELTA[selfMonthTenGod] ?? 0 },
+    { key: 'monthOther', delta: MONTH_OTHER_TEN_GOD_DELTA[otherMonthTenGod] ?? 0 },
+  );
+  if (selfMonthTenGod === otherMonthTenGod) {
+    parts.push({ key: 'monthSame', delta: SAME_MONTH_TEN_GOD_BONUS });
   }
   const rawTotal = parts.reduce((s, p) => s + p.delta, 0);
   const todayScore = Math.max(
@@ -375,7 +409,10 @@ function computeCompatibility(self, other, at) {
     otherToSelfTenGod,
     selfTodayTenGod,
     otherTodayTenGod,
+    selfMonthTenGod,
+    otherMonthTenGod,
     todayPillarKorean: today.dayString,
+    monthPillarKorean: today.monthString,
     baseScore,
     partDeltas: parts.map((p) => p.delta),
     rawTotal,

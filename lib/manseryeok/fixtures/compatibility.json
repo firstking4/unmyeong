@@ -19,17 +19,22 @@
       "otherToSelfTenGod": "식신",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "상관",
+      "selfMonthTenGod": "편인",
+      "otherMonthTenGod": "편관",
       "todayPillarKorean": "계해",
+      "monthPillarKorean": "병신",
       "baseScore": 76,
       "partDeltas": [
         16,
+        -12,
+        -3,
         -12
       ],
-      "rawTotal": 4,
-      "todayScore": 41,
-      "baseCorrectionBonus": 21,
-      "dailyDelta": 4,
-      "score": 62
+      "rawTotal": -11,
+      "todayScore": 11,
+      "baseCorrectionBonus": 32,
+      "dailyDelta": -11,
+      "score": 43
     }
   },
   {
@@ -52,18 +57,24 @@
       "otherToSelfTenGod": "비견",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "정재",
+      "selfMonthTenGod": "편인",
+      "otherMonthTenGod": "편인",
       "todayPillarKorean": "계해",
+      "monthPillarKorean": "병신",
       "baseScore": 72,
       "partDeltas": [
         16,
         24,
-        6
+        6,
+        -3,
+        -4,
+        3
       ],
-      "rawTotal": 46,
-      "todayScore": 100,
-      "baseCorrectionBonus": 0,
-      "dailyDelta": 46,
-      "score": 100
+      "rawTotal": 42,
+      "todayScore": 78,
+      "baseCorrectionBonus": 7,
+      "dailyDelta": 42,
+      "score": 85
     }
   },
   {
@@ -86,17 +97,22 @@
       "otherToSelfTenGod": "식신",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "상관",
+      "selfMonthTenGod": "편인",
+      "otherMonthTenGod": "편관",
       "todayPillarKorean": "계해",
+      "monthPillarKorean": "병신",
       "baseScore": 76,
       "partDeltas": [
         16,
+        -12,
+        -3,
         -12
       ],
-      "rawTotal": 4,
-      "todayScore": 41,
-      "baseCorrectionBonus": 21,
-      "dailyDelta": 4,
-      "score": 62
+      "rawTotal": -11,
+      "todayScore": 11,
+      "baseCorrectionBonus": 32,
+      "dailyDelta": -11,
+      "score": 43
     }
   },
   {
@@ -119,17 +135,22 @@
       "otherToSelfTenGod": "정관",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "편인",
+      "selfMonthTenGod": "편인",
+      "otherMonthTenGod": "상관",
       "todayPillarKorean": "계해",
+      "monthPillarKorean": "병신",
       "baseScore": 73,
       "partDeltas": [
         16,
-        -8
+        -8,
+        -3,
+        -6
       ],
-      "rawTotal": 8,
-      "todayScore": 47,
-      "baseCorrectionBonus": 18,
-      "dailyDelta": 8,
-      "score": 65
+      "rawTotal": -1,
+      "todayScore": 24,
+      "baseCorrectionBonus": 26,
+      "dailyDelta": -1,
+      "score": 50
     }
   },
   {
@@ -152,17 +173,22 @@
       "otherToSelfTenGod": "편인",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "정관",
+      "selfMonthTenGod": "편인",
+      "otherMonthTenGod": "비견",
       "todayPillarKorean": "계해",
+      "monthPillarKorean": "병신",
       "baseScore": 66,
       "partDeltas": [
         16,
-        12
+        12,
+        -3,
+        0
       ],
-      "rawTotal": 28,
-      "todayScore": 81,
-      "baseCorrectionBonus": 6,
-      "dailyDelta": 28,
-      "score": 87
+      "rawTotal": 25,
+      "todayScore": 57,
+      "baseCorrectionBonus": 13,
+      "dailyDelta": 25,
+      "score": 70
     }
   },
   {
@@ -185,17 +211,22 @@
       "otherToSelfTenGod": "식신",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "상관",
+      "selfMonthTenGod": "편인",
+      "otherMonthTenGod": "편관",
       "todayPillarKorean": "계해",
+      "monthPillarKorean": "병신",
       "baseScore": 78,
       "partDeltas": [
         16,
+        -12,
+        -3,
         -12
       ],
-      "rawTotal": 4,
-      "todayScore": 41,
-      "baseCorrectionBonus": 22,
-      "dailyDelta": 4,
-      "score": 63
+      "rawTotal": -11,
+      "todayScore": 11,
+      "baseCorrectionBonus": 33,
+      "dailyDelta": -11,
+      "score": 44
     }
   },
   {
@@ -218,17 +249,22 @@
       "otherToSelfTenGod": "편재",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "겁재",
+      "selfMonthTenGod": "편인",
+      "otherMonthTenGod": "편재",
       "todayPillarKorean": "계해",
+      "monthPillarKorean": "병신",
       "baseScore": 64,
       "partDeltas": [
         16,
-        -16
+        -16,
+        -3,
+        4
       ],
-      "rawTotal": 0,
-      "todayScore": 34,
-      "baseCorrectionBonus": 20,
-      "dailyDelta": 0,
-      "score": 54
+      "rawTotal": 1,
+      "todayScore": 27,
+      "baseCorrectionBonus": 22,
+      "dailyDelta": 1,
+      "score": 49
     }
   }
 ]
