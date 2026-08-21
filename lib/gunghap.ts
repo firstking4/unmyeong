@@ -72,16 +72,17 @@ function formatCompactDate(date: Date) {
   return `${y}.${m}.${d} (${w})`;
 }
 
+/** 전체 표본 목표 대략 주의 15 · 무난 65 · 좋음 20 */
 function gradeFromScore(score: number): CompatibilityGrade {
-  if (score >= 75) return '좋음';
-  if (score >= 60) return '무난';
+  if (score >= 74) return '좋음';
+  if (score >= 46) return '무난';
   return '주의';
 }
 
 function moodFromScore(score: number): string {
   if (score >= 80) return '서로 잘 맞는 하루입니다';
-  if (score >= 70) return '흐름이 부드러운 하루입니다';
-  if (score >= 60) return '조율하면 편안한 하루입니다';
+  if (score >= 74) return '흐름이 부드러운 하루입니다';
+  if (score >= 46) return '조율하면 편안한 하루입니다';
   return '거리와 호흡을 살필 하루입니다';
 }
 
