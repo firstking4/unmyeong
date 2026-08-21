@@ -170,7 +170,7 @@ function buildGuidance(selfGod: string, otherGod: string): string {
   if (!focus) {
     return tone === '주의' ? '오늘은 짧은 안부만 나누기.' : '오늘은 작은 일 하나만.';
   }
-  if (tone === '주의') return `오늘은 ${focus}을(를) 줄이고, 짧게 만나기.`;
+  if (tone === '주의') return `오늘은 ${focus}를 줄이고, 짧게 만나기.`;
   if (tone === '조율') return `오늘은 ${focus} 속도를 서로 맞추기.`;
   return `오늘은 ${focus} 쪽으로 작은 일 하나.`;
 }
@@ -188,8 +188,11 @@ function buildCaution(selfGod: string, otherGod: string, pairGod: string, animal
   return EASY_CAUTION[pairGod] ?? '너무 밀어붙이지만 않기.';
 }
 
+function withIga(word: string): string {
+  return `${word}${hasFinalConsonant(word) ? '이' : '가'}`;
+}
+
 function fixObjectParticle(text: string): string {
-  // "A·B을(를)" → 조사 정리: 복합이면 "를" 고정이 자연스러움
   return text.replace(/을\(를\)/g, '를').replace(/이\(가\)/g, '가');
 }
 
@@ -277,7 +280,7 @@ export function buildTodayCompatibility(
   const summary = [
     `${withGwa(selfName)} ${withEun(otherName)} ${animalEasy}이고, ${elementEasy}입니다.`,
     `상대는 나에게 ${easyPlain(pairGod)} 쪽.`,
-    pairFocus ? `오늘은 ${pairFocus}이 보이기 쉽습니다.` : null,
+    pairFocus ? `오늘은 ${withIga(pairFocus)} 보이기 쉽습니다.` : null,
   ]
     .filter(Boolean)
     .join(' ');
