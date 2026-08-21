@@ -312,9 +312,9 @@ const YEAR_SELF_TEN_GOD_DELTA = {
   편관: -4,
 };
 const SAME_YEAR_TEN_GOD_BONUS = 2;
-const SCORE_ORIGIN = 36;
+const SCORE_ORIGIN = 39;
 const MAX_POSITIVE_SUM = 46 + 23 + 12; // 81
-const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 105
+const SCORE_SCALE_MAX = 94;
 const BASE_RAW_MIN = 45;
 const BASE_RAW_MAX = 84;
 const BASE_MAP_MIN = 20;

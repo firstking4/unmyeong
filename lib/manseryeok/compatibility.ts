@@ -172,12 +172,16 @@ const YEAR_SELF_TEN_GOD_DELTA: Record<string, number> = {
 
 const SAME_YEAR_TEN_GOD_BONUS = 2;
 
-/** 기본(시작) 점수 — 월·세운 합산 후 전체 평균이 ~60 근처가 되도록 상향 */
-const SCORE_ORIGIN = 36;
+/**
+ * 기본(시작) 점수·환산 분모.
+ * 등급 컷 주의&lt;50 · 무난 50~79 · 좋음≥80 기준 전체 표본이
+ * 대략 15/65/20이 되고, 지인 한 해 최고가 90대에 들어가도록 맞춤.
+ */
+const SCORE_ORIGIN = 39;
 /** 항목만점: 오늘(46) + 이달(23) + 올해(4+6+2=12) */
 const MAX_POSITIVE_SUM = 46 + 23 + 12; // 81
-/** 환산 분모 — 만점의 ~85% */
-const SCORE_SCALE_MAX = Math.round(SCORE_ORIGIN + MAX_POSITIVE_SUM * 0.85); // 105
+/** 환산 분모 — 만점 비율보다 타이트하게 잡아 상단(80·90대)을 연다 */
+const SCORE_SCALE_MAX = 94;
 const SCORE_FLOOR = 0;
 const SCORE_CEILING = 100;
 
