@@ -8,7 +8,7 @@ import {
 import { relateElements, type Element, type ZodiacAnimal } from '@/lib/saju';
 import type { ContactProfile, Profile } from '@/lib/types';
 
-export type CompatibilityGrade = '좋음' | '무난' | '주의';
+export type CompatibilityGrade = '주의' | '조심' | '무난' | '좋음' | '최고';
 
 export type TodayCompatibility = {
   ready: boolean;
@@ -73,10 +73,15 @@ function formatCompactDate(date: Date) {
   return `${y}.${m}.${d} (${w})`;
 }
 
-/** 컷 50/80 · 전체 표본 목표 대략 주의 15 · 무난 65 · 좋음 20 */
+/**
+ * 5등급: 주의 · 조심 · 무난 · 좋음 · 최고
+ * 컷: &lt;50 · 50~59 · 60~74 · 75~89 · ≥90
+ */
 function gradeFromScore(score: number): CompatibilityGrade {
-  if (score >= 80) return '좋음';
-  if (score >= 50) return '무난';
+  if (score >= 90) return '최고';
+  if (score >= 75) return '좋음';
+  if (score >= 60) return '무난';
+  if (score >= 50) return '조심';
   return '주의';
 }
 
