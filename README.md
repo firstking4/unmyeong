@@ -4,6 +4,7 @@
 
 - 표시명: **운명人지도** (가운데 사람人)
 - 슬러그: `unmyeong-injido`
+- **별칭:** 인생인지도 · 운명인지도 (같은 앱, 별도 프로젝트 아님)
 - 경로: `/Volumes/Netac 2TB/Dev/Expo/unmyeong-injido`  
   (편의 링크: `~/Projects/unmyeong-injido`)
 

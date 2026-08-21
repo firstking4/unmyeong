@@ -1,6 +1,8 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useCallback } from 'react';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
 
+import { LockIcon } from '@/components/icons/AppIcon';
 import { Text } from '@/components/Themed';
 import { PaperGrain } from '@/components/ui/PaperGrain';
 import Colors from '@/constants/Colors';
@@ -9,14 +11,36 @@ import { paperShadow, tabSection } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { TAROT_SPREADS, type TarotSpreadKind } from '@/lib/tarotSpread';
+import { clearTarotSpreadTickets, issueTarotSpreadTicket } from '@/lib/tarotSpreadUnlock';
 
 export default function TarotSpreadScreen() {
   const scheme = useColorScheme() ?? 'light';
   const c = Colors[scheme];
   const router = useRouter();
 
-  const openSpread = (kind: TarotSpreadKind) => {
-    router.push({ pathname: '/tarot-spread-result', params: { kind } });
+  useFocusEffect(
+    useCallback(() => {
+      clearTarotSpreadTickets();
+    }, []),
+  );
+
+  const openAfterAd = (kind: TarotSpreadKind) => {
+    const ticket = issueTarotSpreadTicket(kind);
+    router.push({ pathname: '/tarot-spread-result', params: { kind, ticket } });
+  };
+
+  const requestUnlock = (kind: TarotSpreadKind, title: string) => {
+    Alert.alert(
+      `${title} 스프레드`,
+      '광고를 보면 이 스프레드를 한 번 볼 수 있어요. 지금은 광고 준비 중이라 바로 열 수 있습니다.',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '광고 보고 열기',
+          onPress: () => openAfterAd(kind),
+        },
+      ],
+    );
   };
 
   return (
@@ -26,7 +50,7 @@ export default function TarotSpreadScreen() {
         <Text style={[styles.eyebrow, { color: c.tint, fontFamily: display }]}>TAROT SPREAD</Text>
         <Text style={[styles.title, { color: c.text, fontFamily: display }]}>질문 스프레드</Text>
         <Text style={[styles.lead, { color: c.muted }]}>
-          지금 살펴보고 싶은 상황을 고르면 78장 풀덱에서 세 장을 펼칩니다.
+          연애·일·선택은 광고를 본 뒤 한 번씩 펼칠 수 있어요. 지금 살펴보고 싶은 상황을 고르세요.
         </Text>
 
         <View style={styles.typeList}>
@@ -34,22 +58,29 @@ export default function TarotSpreadScreen() {
             <Pressable
               key={spread.id}
               accessibilityRole="button"
-              accessibilityLabel={`${spread.title} 질문 스프레드`}
-              onPress={() => openSpread(spread.id)}
+              accessibilityLabel={`${spread.title} 질문 스프레드 · 잠김 · 광고 후 열기`}
+              accessibilityHint="광고를 보면 한 번 열 수 있습니다"
+              onPress={() => requestUnlock(spread.id, spread.title)}
               style={({ pressed }) => [
                 styles.typeCard,
                 paperShadow,
                 {
                   backgroundColor: c.surface,
                   borderColor: c.hairline,
-                  opacity: pressed ? 0.72 : 1,
+                  opacity: pressed ? 0.72 : 0.88,
                 },
               ]}>
-              <Text style={[styles.typeTitle, { color: c.text, fontFamily: display }]}>{spread.title}</Text>
+              <View style={styles.typeHeader}>
+                <Text style={[styles.typeTitle, { color: c.text, fontFamily: display }]}>
+                  {spread.title}
+                </Text>
+                <LockIcon color={c.muted} size={20} />
+              </View>
               <Text style={[styles.typeDescription, { color: c.muted }]}>{spread.description}</Text>
               <Text style={[styles.typePositions, { color: c.muted }]}>
                 {spread.positions.join(' · ')}
               </Text>
+              <Text style={[styles.lockHint, { color: c.tint }]}>광고 1회 · 1번 열람</Text>
             </Pressable>
           ))}
         </View>
@@ -81,7 +112,14 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     gap: tabSection.summaryGap,
   },
+  typeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
   typeTitle: {
+    flex: 1,
     fontSize: 22,
     lineHeight: 28,
     letterSpacing: 0.3,
@@ -92,6 +130,11 @@ const styles = StyleSheet.create({
   typePositions: {
     fontSize: 13,
     lineHeight: 18,
+  },
+  lockHint: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '600',
   },
   disclaimer: {
     ...tabSection.disclaimer,

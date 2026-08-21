@@ -19,23 +19,34 @@ import {
   type TarotSpreadCard,
   type TarotSpreadKind,
 } from '@/lib/tarotSpread';
+import { tarotSpreadTicketAllows } from '@/lib/tarotSpreadUnlock';
 
 function parseKind(value: string | string[] | undefined): TarotSpreadKind | null {
   const raw = Array.isArray(value) ? value[0] : value;
   return isTarotSpreadKind(raw) ? raw : null;
 }
 
+function parseTicket(value: string | string[] | undefined): string | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return raw && raw.length > 0 ? raw : null;
+}
+
 export default function TarotSpreadResultScreen() {
   const scheme = useColorScheme() ?? 'light';
   const c = Colors[scheme];
   const { width } = useWindowDimensions();
-  const { kind: kindParam } = useLocalSearchParams<{ kind?: string }>();
+  const { kind: kindParam, ticket: ticketParam } = useLocalSearchParams<{
+    kind?: string;
+    ticket?: string;
+  }>();
   const kind = parseKind(kindParam);
+  const ticket = parseTicket(ticketParam);
+  const allowed = Boolean(kind && ticket && tarotSpreadTicketAllows(ticket, kind));
 
-  const reading = useMemo(() => (kind ? drawTarotSpread(kind) : null), [kind]);
+  const reading = useMemo(() => (kind && allowed ? drawTarotSpread(kind) : null), [kind, allowed]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  if (!kind || !reading) {
+  if (!kind || !allowed || !reading) {
     return <Redirect href="/tarot-spread" />;
   }
 

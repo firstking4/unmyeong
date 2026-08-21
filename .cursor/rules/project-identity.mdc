@@ -1,0 +1,43 @@
+---
+description: 운명人지도 본편 식별 — 별칭·중복 프로젝트 금지
+alwaysApply: true
+---
+
+# 프로젝트 정체성 (본편)
+
+이 워크스페이스는 **운명人지도** (`unmyeong-injido`) **본편**이다.
+
+## 공식 이름
+
+| 항목 | 값 |
+|---|---|
+| 표시명 | **운명人지도** (가운데 人) |
+| 슬러그 | `unmyeong-injido` |
+| 번들 ID | `com.yun.unmyeonginjido` |
+| 경로 | `/Volumes/Netac 2TB/Dev/Expo/unmyeong-injido` · `~/Projects/unmyeong-injido` |
+| 스택 | Expo 57 · React Native · TypeScript · expo-router |
+
+## 별칭 (같은 프로젝트)
+
+사용자가 아래 이름을 말해도 **이 저장소**를 가리킨다. 별도 프로젝트로 검색·생성하지 말 것.
+
+- **인생인지도** · 인생 인지도
+- **운명인지도** (한글 人 없이)
+
+## 하지 말 것
+
+- `인생인지도`를 못 찾았다고 **새 Expo 앱을 만들지 않기**
+- 삭제된 중복본 **`yeok-sul-ham`(역술함)** 을 다시 만들지 않기
+- 비슷한 이름의 다른 폴더를 본편으로 착각하지 않기
+
+## 앱 구조 (요약)
+
+- **홈**: 신분증 + 오늘 종합 운세·키워드
+- **탭**: 성향 / 사주 / 타로 / 지인(궁합)
+- **부가**: 관상(메뉴), 타로 덱·스프레드, 설정·백업
+
+## 실행
+
+```bash
+cd ~/Projects/unmyeong-injido && npm start
+```

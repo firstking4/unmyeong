@@ -49,19 +49,21 @@ function ContactDetailBody({
   reading,
   muted,
   tint,
+  unlocked,
+  onUnlock,
 }: {
   reading: Reading;
   muted: string;
   tint: string;
+  unlocked: boolean;
+  onUnlock?: () => void;
 }) {
-  const [unlocked, setUnlocked] = useState(false);
-
   return (
     <LockedContentCard
       title={DETAIL_LOCK.title}
       description={DETAIL_LOCK.description}
       ctaLabel={DETAIL_LOCK.ctaLabel}
-      onPress={() => setUnlocked(true)}>
+      onPress={unlocked ? undefined : onUnlock}>
       {unlocked ? (
         <>
           <Text style={[styles.body, { color: muted }]}>{reading.summary}</Text>
@@ -88,6 +90,8 @@ function CompatibilityCardBody({
   hairline,
   titlePadRight,
   staticRing,
+  detailUnlocked,
+  onUnlockDetail,
 }: {
   cardTitle: string;
   reading: Reading;
@@ -98,6 +102,8 @@ function CompatibilityCardBody({
   titlePadRight?: number;
   /** 공유 캡처용 — 점수 링 애니메이션 생략 */
   staticRing?: boolean;
+  detailUnlocked: boolean;
+  onUnlockDetail?: () => void;
 }) {
   return (
     <>
@@ -157,7 +163,13 @@ function CompatibilityCardBody({
             ) : null}
           </View>
           <View style={[styles.cardSplit, { borderTopColor: hairline }]}>
-            <ContactDetailBody reading={reading} muted={muted} tint={tint} />
+            <ContactDetailBody
+              reading={reading}
+              muted={muted}
+              tint={tint}
+              unlocked={detailUnlocked}
+              onUnlock={onUnlockDetail}
+            />
           </View>
         </>
       ) : (
@@ -178,6 +190,7 @@ export default function ContactDetailScreen() {
   const contact = id ? getContact(id) : undefined;
   const shareRef = useRef<View>(null);
   const [sharing, setSharing] = useState(false);
+  const [detailUnlocked, setDetailUnlocked] = useState(false);
   const cardW = windowW - space.md * 2;
 
   const reading = useMemo(
@@ -271,6 +284,7 @@ export default function ContactDetailScreen() {
     muted: c.muted,
     tint: c.tint,
     hairline: c.hairline,
+    detailUnlocked,
   };
 
   return (
@@ -309,7 +323,11 @@ export default function ContactDetailScreen() {
             <ShareIcon color={c.muted} size={18} />
           </Pressable>
 
-          <CompatibilityCardBody {...bodyProps} titlePadRight={28} />
+          <CompatibilityCardBody
+            {...bodyProps}
+            titlePadRight={28}
+            onUnlockDetail={() => setDetailUnlocked(true)}
+          />
         </View>
 
         {sharing ? (
