@@ -288,15 +288,11 @@ export function buildTodayCompatibility(
     .filter(Boolean)
     .join(' ');
 
-  /** 카드 요약용 한 줄 — 상세 풀이 앞부분만 압축 */
-  const summaryLine = [
-    `${withGwa(selfName)} ${withEun(otherName)} ${animalEasy}·${elementEasy}`,
-    `상대는 ${easyPlain(pairGod)} 쪽`,
-    pairFocus ? `오늘은 ${pairFocus}` : null,
-  ]
-    .filter(Boolean)
-    .join(', ')
-    .concat('.');
+  // 카드 한 줄: 오늘 만남만 — 칩(결·기운·초점)과 말을 겹치지 않음
+  const summaryLine =
+    engine.selfTodayTenGod === engine.otherTodayTenGod
+      ? `${withGwa(selfName)} ${withEun(otherName)} 오늘은 둘이 ${easyPlain(engine.selfTodayTenGod)}으로 만나기 쉽고, ${grade} 흐름입니다.`
+      : `${withGwa(selfName)} ${withEun(otherName)} 오늘은 나는 ${easyPlain(engine.selfTodayTenGod)}, 상대는 ${easyPlain(engine.otherTodayTenGod)}으로 만나며 ${grade} 흐름입니다.`;
 
   const relationship = [
     dualEasyLine('오늘', engine.selfTodayTenGod, engine.otherTodayTenGod),
