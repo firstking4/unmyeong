@@ -1,0 +1,21 @@
+# EAS 업로드 축소 — 런타임·assets·lib·app 은 유지
+
+.cursor/
+.claude/
+.expo/
+.vscode/
+.DS_Store
+
+# 디자인 샘플·로컬 캡처 (앱 번들에 불필요)
+docs/design-samples/
+screenshots/
+
+# 개발·검증 스크립트 산출물
+scripts/**/__pycache__/
+**/__pycache__/
+*.pyc
+*.tsbuildinfo
+
+# 로컬 네이티브 폴더 (EAS는 클라우드에서 생성)
+/ios
+/android

@@ -10,7 +10,14 @@ import { space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 
-type MenuHref = '/profile-edit' | '/gwansang' | '/saju-code-share' | '/history' | '/settings';
+type MenuHref =
+  | '/profile-edit'
+  | '/gwansang'
+  | '/saju-code-share'
+  | '/history'
+  | '/settings'
+  | '/legal/privacy'
+  | '/legal/terms';
 
 type MenuItem = {
   key: string;
@@ -49,6 +56,18 @@ const MENU: MenuItem[] = [
     href: '/settings',
     title: '설정',
     blurb: '알림·화면 테마·백업·복구',
+  },
+  {
+    key: 'privacy',
+    href: '/legal/privacy',
+    title: '개인정보 처리방침',
+    blurb: '수집·보관·이용 안내',
+  },
+  {
+    key: 'terms',
+    href: '/legal/terms',
+    title: '이용약관',
+    blurb: '서비스 이용·면책 안내',
   },
 ];
 

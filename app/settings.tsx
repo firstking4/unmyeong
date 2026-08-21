@@ -323,6 +323,37 @@ export default function SettingsScreen() {
         </Pressable>
       </View>
 
+      <View style={[styles.list, styles.sectionRule, { borderColor: c.hairline }]}>
+        <Pressable
+          onPress={() => router.push('/legal/privacy')}
+          style={({ pressed }) => [
+            styles.row,
+            { borderBottomColor: c.hairline, opacity: pressed ? 0.55 : 1 },
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel="개인정보 처리방침">
+          <View style={styles.rowText}>
+            <Text style={[styles.rowTitle, { color: c.text }]}>개인정보 처리방침</Text>
+            <Text style={[styles.rowBlurb, { color: c.muted }]}>수집·보관·이용 안내</Text>
+          </View>
+          <ChevronRightIcon color={c.muted} size={22} />
+        </Pressable>
+        <Pressable
+          onPress={() => router.push('/legal/terms')}
+          style={({ pressed }) => [
+            styles.row,
+            { borderBottomColor: c.hairline, opacity: pressed ? 0.55 : 1 },
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel="이용약관">
+          <View style={styles.rowText}>
+            <Text style={[styles.rowTitle, { color: c.text }]}>이용약관</Text>
+            <Text style={[styles.rowBlurb, { color: c.muted }]}>서비스 이용·면책 안내</Text>
+          </View>
+          <ChevronRightIcon color={c.muted} size={22} />
+        </Pressable>
+      </View>
+
       <Text style={[styles.disclaimer, { color: c.muted }]}>{ENTERTAINMENT_DISCLAIMER}</Text>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
 

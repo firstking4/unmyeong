@@ -32,11 +32,11 @@ export default function TarotSpreadScreen() {
   const requestUnlock = (kind: TarotSpreadKind, title: string) => {
     Alert.alert(
       `${title} 스프레드`,
-      '광고를 보면 이 스프레드를 한 번 볼 수 있어요. 지금은 광고 준비 중이라 바로 열 수 있습니다.',
+      '이 스프레드를 한 번 열 수 있어요.',
       [
         { text: '취소', style: 'cancel' },
         {
-          text: '광고 보고 열기',
+          text: '열기',
           onPress: () => openAfterAd(kind),
         },
       ],
@@ -50,7 +50,7 @@ export default function TarotSpreadScreen() {
         <Text style={[styles.eyebrow, { color: c.tint, fontFamily: display }]}>TAROT SPREAD</Text>
         <Text style={[styles.title, { color: c.text, fontFamily: display }]}>질문 스프레드</Text>
         <Text style={[styles.lead, { color: c.muted }]}>
-          연애·일·선택은 광고를 본 뒤 한 번씩 펼칠 수 있어요. 지금 살펴보고 싶은 상황을 고르세요.
+          연애·일·선택은 한 번씩 펼칠 수 있어요. 지금 살펴보고 싶은 상황을 고르세요.
         </Text>
 
         <View style={styles.typeList}>
@@ -58,8 +58,8 @@ export default function TarotSpreadScreen() {
             <Pressable
               key={spread.id}
               accessibilityRole="button"
-              accessibilityLabel={`${spread.title} 질문 스프레드 · 잠김 · 광고 후 열기`}
-              accessibilityHint="광고를 보면 한 번 열 수 있습니다"
+              accessibilityLabel={`${spread.title} 질문 스프레드 · 열기`}
+              accessibilityHint="한 번 열 수 있습니다"
               onPress={() => requestUnlock(spread.id, spread.title)}
               style={({ pressed }) => [
                 styles.typeCard,
@@ -80,7 +80,7 @@ export default function TarotSpreadScreen() {
               <Text style={[styles.typePositions, { color: c.muted }]}>
                 {spread.positions.join(' · ')}
               </Text>
-              <Text style={[styles.lockHint, { color: c.tint }]}>광고 1회 · 1번 열람</Text>
+              <Text style={[styles.lockHint, { color: c.tint }]}>1번 열람</Text>
             </Pressable>
           ))}
         </View>

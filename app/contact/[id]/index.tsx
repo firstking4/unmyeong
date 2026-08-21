@@ -42,7 +42,7 @@ type Reading = TodayCompatibility;
 const DETAIL_LOCK = {
   title: '자세한 풀이',
   description:
-    '광고를 보면 자세한 풀이와 오늘 해보기를 열 수 있어요. 한 번 열면 오늘 자정까지 유지됩니다. 지금은 광고 준비 중이라 눌러서 바로 확인할 수 있습니다.',
+    '자세한 풀이와 오늘 해보기를 열 수 있어요. 한 번 열면 오늘 자정까지 유지됩니다.',
   ctaLabel: '내용 보기',
 } as const;
 

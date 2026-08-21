@@ -182,6 +182,30 @@ function RootLayoutNav() {
                 }}
               />
               <Stack.Screen
+                name="legal/privacy"
+                options={{
+                  presentation: 'modal',
+                  title: '개인정보 처리방침',
+                  headerBackVisible: true,
+                  headerShadowVisible: false,
+                  headerTransparent: false,
+                  headerStatusBarHeight: 8,
+                  headerTitleStyle: { fontSize: 17 },
+                }}
+              />
+              <Stack.Screen
+                name="legal/terms"
+                options={{
+                  presentation: 'modal',
+                  title: '이용약관',
+                  headerBackVisible: true,
+                  headerShadowVisible: false,
+                  headerTransparent: false,
+                  headerStatusBarHeight: 8,
+                  headerTitleStyle: { fontSize: 17 },
+                }}
+              />
+              <Stack.Screen
                 name="tarot-cardbook"
                 options={{
                   presentation: 'modal',
