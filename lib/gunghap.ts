@@ -26,6 +26,8 @@ export type TodayCompatibility = {
   grade: CompatibilityGrade;
   moodHeadline: string;
   summary: string;
+  /** 카드 키워드 위 — 상세 요약의 한 줄 버전 */
+  summaryLine: string;
   relationship: string;
   guidance: string;
   caution: string;
@@ -214,6 +216,7 @@ function notReady(reason: string, date: Date): TodayCompatibility {
     grade: '무난',
     moodHeadline: '아직 열리지 않은 궁합',
     summary: reason,
+    summaryLine: reason,
     relationship: '',
     guidance: '이름과 생년월일을 채우면 오늘의 궁합 점수를 볼 수 있습니다.',
     caution: '',
@@ -285,6 +288,16 @@ export function buildTodayCompatibility(
     .filter(Boolean)
     .join(' ');
 
+  /** 카드 요약용 한 줄 — 상세 풀이 앞부분만 압축 */
+  const summaryLine = [
+    `${withGwa(selfName)} ${withEun(otherName)} ${animalEasy}·${elementEasy}`,
+    `상대는 ${easyPlain(pairGod)} 쪽`,
+    pairFocus ? `오늘은 ${pairFocus}` : null,
+  ]
+    .filter(Boolean)
+    .join(', ')
+    .concat('.');
+
   const relationship = [
     dualEasyLine('오늘', engine.selfTodayTenGod, engine.otherTodayTenGod),
     dualEasyLine('이달', engine.selfMonthTenGod, engine.otherMonthTenGod),
@@ -308,6 +321,7 @@ export function buildTodayCompatibility(
     grade,
     moodHeadline: `${toneKw} · ${grade}`,
     summary: fixObjectParticle(summary),
+    summaryLine: fixObjectParticle(summaryLine),
     relationship,
     guidance: fixObjectParticle(buildGuidance(engine.selfTodayTenGod, engine.otherTodayTenGod)),
     caution: buildCaution(

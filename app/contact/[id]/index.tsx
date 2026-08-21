@@ -135,12 +135,7 @@ function CompatibilityCardBody({
         <>
           <View style={styles.cardSummary}>
             <Text style={[styles.sectionLabel, { color: text }]}>오늘의 궁합</Text>
-            <Text style={[styles.body, { color: muted }]}>
-              {[reading.animalLabel, reading.elementLabel, ...reading.keywords]
-                .filter((v, i, all) => Boolean(v) && all.indexOf(v) === i)
-                .slice(0, 5)
-                .join(' · ')}
-            </Text>
+            <Text style={[styles.body, { color: muted }]}>{reading.summaryLine}</Text>
             {reading.keywords.length > 0 ? (
               <View style={styles.chips}>
                 {reading.keywords.map((kw, i) => (
