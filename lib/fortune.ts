@@ -8,7 +8,8 @@ import {
   pickTarotBySeed,
 } from '@/lib/data/catalog';
 import { pickDaily } from '@/lib/daily/pick';
-import { getElement, getZodiacAnimal } from './saju';
+import { computePersonalFortuneScore, tenGodPlain } from '@/lib/manseryeok';
+import { getElement, getZodiacAnimal, tonesForTenGods } from './saju';
 import type { FortuneInsights, IntegratedFortune, PillarTone, Profile } from './types';
 
 const TONE_GUIDANCE: Record<PillarTone, string> = {
@@ -25,6 +26,8 @@ const CLOSING_LINES = [
   '마음을 가볍게 두면 길이 보입니다.',
 ];
 
+export type FortuneGrade = '주의' | '조심' | '무난' | '좋음' | '최고';
+
 function hashSeed(input: string): number {
   let h = 0;
   for (let i = 0; i < input.length; i++) h = (h * 31 + input.charCodeAt(i)) >>> 0;
@@ -35,6 +38,7 @@ function pickFrom<T>(items: T[], seed: string): T {
   return items[hashSeed(seed) % items.length];
 }
 
+/** @deprecated 해시 톤 — 일진 연동 후 미사용. 호환용 유지 */
 export function pickSajuTones(seed: string): PillarTone[] {
   const all: PillarTone[] = ['관계', '일', '재물', '성장'];
   const h = hashSeed(seed);
@@ -95,10 +99,13 @@ function buildLuckTags(tones: PillarTone[]): string[] {
   return tags.slice(0, 3);
 }
 
-function moodHeadlineFromScore(score: number): string {
-  if (score >= 75) return '흐름이 좋은 날입니다';
-  if (score >= 62) return '차분히 나아가면 좋은 날입니다';
-  return '정리와 균형이 필요한 날입니다';
+/** 지인 궁합과 동일 5등급 컷 */
+export function fortuneGradeFromScore(score: number): FortuneGrade {
+  if (score >= 90) return '최고';
+  if (score >= 75) return '좋음';
+  if (score >= 60) return '무난';
+  if (score >= 50) return '조심';
+  return '주의';
 }
 
 function buildTraitPhrase(profile: Profile): string {
@@ -125,13 +132,17 @@ function resolveWesternZodiac(profile: Profile) {
   return getWesternZodiac(profile.birthDate);
 }
 
-function buildSajuPhrase(profile: Profile, tone: PillarTone, dailyMood: string): string {
+function buildSajuPhrase(profile: Profile, tone: PillarTone, dailyMood: string, tenGod?: string): string {
   const animalLabel = getZodiacAnimal(profile.birthDate);
   const elementLabel = getElement(profile.birthDate);
   const animal = getZodiacAnimalRecord(animalLabel);
   const element = getFiveElement(elementLabel);
   const mood = element?.mood ?? null;
+  const godBit = tenGod ? `${tenGodPlain(tenGod)}(${tenGod})` : null;
 
+  if (animal && mood && godBit) {
+    return `오늘의 ${dailyMood}·${godBit} 흐름 속에서 ${animal.label}띠의 ${mood}이 ${tone} 쪽으로 기울어 있습니다`;
+  }
   if (animal && mood) {
     return `오늘의 ${dailyMood} 속에서 ${animal.label}띠의 ${mood}이 ${tone} 흐름과 맞물립니다`;
   }
@@ -160,14 +171,6 @@ function buildInsightChips(profile: Profile, tarotTitle: string, tones: PillarTo
   return chips;
 }
 
-function computeScore(seed: string, profile: Profile): number {
-  const h = hashSeed(`${seed}:score:${profile.gender ?? ''}`);
-  const base = 58 + (h % 35);
-  const bonus =
-    (profile.mbti ? 2 : 0) + (profile.bloodType ? 2 : 0) + (profile.birthDate ? 3 : 0);
-  return Math.min(97, base + bonus);
-}
-
 function localYmd(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -175,17 +178,43 @@ function localYmd(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+/** 만세력 없을 때만 — 예전 해시 (58~97) */
+function computeHashScore(seed: string, profile: Profile): number {
+  const h = hashSeed(`${seed}:score:${profile.gender ?? ''}`);
+  const base = 58 + (h % 35);
+  const bonus =
+    (profile.mbti ? 2 : 0) + (profile.bloodType ? 2 : 0) + (profile.birthDate ? 3 : 0);
+  return Math.min(97, base + bonus);
+}
+
 export function buildIntegratedFortune(profile: Profile, date = new Date()): IntegratedFortune {
   const dateKey = localYmd(date);
   const seed = `${dateKey}:${profile.birthDate ?? 'anon'}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}`;
-  const tones = pickSajuTones(seed);
+
+  const periodScore =
+    profile.birthDate?.trim()
+      ? computePersonalFortuneScore(
+          { birthDate: profile.birthDate, birthTime: profile.birthTime },
+          date,
+        )
+      : null;
+
+  const tones = periodScore
+    ? tonesForTenGods(periodScore.selfTodayTenGod, periodScore.todayBranchTenGod)
+    : pickSajuTones(seed);
+
   const tarot = getDailyTarot(seed);
   const trait = buildTraitPhrase(profile);
   const theme = pickDaily('home', `home:${profile.birthDate ?? 'anon'}`, date);
   const dailyMood = theme.keyword;
   const primaryTone = tones[0] ?? '성장';
   const secondaryTone = tones[1];
-  const sajuPhrase = buildSajuPhrase(profile, primaryTone, dailyMood);
+  const sajuPhrase = buildSajuPhrase(
+    profile,
+    primaryTone,
+    dailyMood,
+    periodScore?.selfTodayTenGod,
+  );
 
   const blood = getBloodType(profile.bloodType);
   const mbtiRec = getMbti(profile.mbti);
@@ -205,13 +234,22 @@ export function buildIntegratedFortune(profile: Profile, date = new Date()): Int
     .filter(Boolean)
     .join(' ');
   const closing = theme.closing ?? pickFrom(CLOSING_LINES, `${seed}:closing`);
-  const score = computeScore(seed, profile);
+  const score = periodScore?.score ?? computeHashScore(seed, profile);
+  const grade = fortuneGradeFromScore(score);
 
   const name = profile.name?.trim() || '당신';
   const headline = `${name}의 오늘`;
 
+  const traitSubject = (() => {
+    const last = trait.trim().slice(-1);
+    const code = last.charCodeAt(0);
+    const hasBatchim =
+      !Number.isNaN(code) && code >= 0xac00 && code <= 0xd7a3 && (code - 0xac00) % 28 !== 0;
+    return `${trait}${hasBatchim ? '이' : '가'}`;
+  })();
+
   const summary = [
-    `오늘은 ${trait}이(가) ${sajuPhrase}.`,
+    `오늘은 ${traitSubject} ${sajuPhrase}.`,
     theme.focus,
     `이 흐름 위에 「${tarot.title}」의 기운이 겹쳐 ${tarot.blurb.replace(/\.$/, '')}.`,
   ].join(' ');
@@ -229,7 +267,7 @@ export function buildIntegratedFortune(profile: Profile, date = new Date()): Int
 
   return {
     headline,
-    moodHeadline: `${theme.keyword} · ${moodHeadlineFromScore(score)}`,
+    moodHeadline: `${theme.keyword} · ${grade}`,
     summary,
     guidance,
     caution: `${theme.caution} ${theme.relationship}`,

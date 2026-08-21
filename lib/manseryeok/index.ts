@@ -20,6 +20,10 @@ export { computeLuckPillars } from './luck';
 export type { LuckPillarsInput } from './luck';
 export { branchAnimal, getManseryeokPeriod } from './period';
 export type { ManseryeokPeriod, ManseryeokPeriodKind } from './period';
+export {
+  computePersonalFortuneScore,
+} from './personalFortune';
+export type { PersonalFortuneScore } from './personalFortune';
 export { DAY_BOUNDARY, UNKNOWN_TIME, USE_TRUE_SOLAR_TIME } from './policy';
 export { getMonthBoundaryTerm, getSolarTermWindow } from './solarTerms';
 export {

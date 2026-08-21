@@ -147,7 +147,7 @@ function pickTones(seed: string): PillarTone[] {
   return [primary, secondary];
 }
 
-function tonesForTenGods(primary: string, secondary: string): PillarTone[] {
+export function tonesForTenGods(primary: string, secondary: string): PillarTone[] {
   const toneFor = (god: string): PillarTone => {
     if (god === '편재' || god === '정재') return '재물';
     if (god === '편관' || god === '정관') return '일';
