@@ -1,5 +1,9 @@
 import { Link, Tabs } from 'expo-router';
+import { useCallback } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
+
+import { logTabView } from '@/lib/firebase/analytics';
+import type { AnalyticsTab } from '@/lib/firebase/config';
 
 import Colors from '@/constants/Colors';
 import { body } from '@/constants/Fonts';
@@ -8,12 +12,28 @@ import { BrandWordmark } from '@/components/ink/BrandWordmark';
 import { HamburgerIcon } from '@/components/ui/HamburgerIcon';
 import { TabIconImage } from '@/components/TabIconImage';
 
+const TAB_ANALYTICS: Record<string, AnalyticsTab> = {
+  index: 'home',
+  seonghyang: 'seonghyang',
+  saju: 'saju',
+  tarot: 'tarot',
+  gunghap: 'gunghap',
+};
+
 export default function TabLayout() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
 
+  const onTabFocus = useCallback((routeName: string) => {
+    const tab = TAB_ANALYTICS[routeName];
+    if (tab) void logTabView(tab);
+  }, []);
+
   return (
     <Tabs
+      screenListeners={({ route }) => ({
+        focus: () => onTabFocus(route.name),
+      })}
       screenOptions={{
         headerShown: true,
         headerShadowVisible: false,

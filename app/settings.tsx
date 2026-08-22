@@ -26,8 +26,14 @@ import {
   pickProfileBackupFile,
   unlockEncryptedBackup,
 } from '@/lib/profileBackupIO';
+import {
+  logBackupExport,
+  logBackupRestore,
+  logNotificationToggle,
+} from '@/lib/firebase/analytics';
 import type { ProfileBackup } from '@/lib/profileBackup';
 import { replaceHistory } from '@/lib/history';
+import { getAppVersionLabel } from '@/lib/appVersion';
 
 const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
   { value: 'light', label: '라이트' },
@@ -59,6 +65,7 @@ export default function SettingsScreen() {
 
   const updateFortuneNotification = async (enabled: boolean, hour = notificationSettings.hour) => {
     if (notificationBusy) return;
+    const wasEnabled = notificationSettings.enabled;
     setNotificationBusy(true);
     try {
       if (enabled) {
@@ -68,8 +75,10 @@ export default function SettingsScreen() {
           return;
         }
         setNotificationSettings(result.settings);
+        if (!wasEnabled) void logNotificationToggle(true);
       } else {
         setNotificationSettings(await disableDailyFortuneNotification());
+        if (wasEnabled) void logNotificationToggle(false);
       }
     } finally {
       setNotificationBusy(false);
@@ -102,6 +111,7 @@ export default function SettingsScreen() {
     await replaceProfile(backup.profile);
     await replaceContacts(backup.contacts);
     await replaceHistory(backup.history ?? []);
+    void logBackupRestore();
     Alert.alert('복구 완료', '운명인지도 데이터가 복원되었습니다.', [
       {
         text: '확인',
@@ -123,6 +133,7 @@ export default function SettingsScreen() {
         if (!result.canceled && result.error) Alert.alert('백업 실패', result.error);
         return;
       }
+      void logBackupExport();
       Alert.alert(
         '백업 완료',
         [
@@ -299,7 +310,7 @@ export default function SettingsScreen() {
         </View>
       </View>
 
-      <View style={[styles.list, styles.sectionRule, { borderColor: c.hairline }]}>
+      <View style={[styles.listSection, { borderTopColor: c.hairline }]}>
         <Pressable
           disabled={busy}
           onPress={openBackupMenu}
@@ -321,9 +332,6 @@ export default function SettingsScreen() {
           </View>
           <ChevronRightIcon color={c.muted} size={22} />
         </Pressable>
-      </View>
-
-      <View style={[styles.list, styles.sectionRule, { borderColor: c.hairline }]}>
         <Pressable
           onPress={() => router.push('/legal/privacy')}
           style={({ pressed }) => [
@@ -355,6 +363,9 @@ export default function SettingsScreen() {
       </View>
 
       <Text style={[styles.disclaimer, { color: c.muted }]}>{ENTERTAINMENT_DISCLAIMER}</Text>
+      <Text style={[styles.version, { color: c.muted }]} accessibilityLabel={`앱 버전 ${getAppVersionLabel()}`}>
+        {getAppVersionLabel()}
+      </Text>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
 
       <BackupPasswordModal
@@ -419,7 +430,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
   },
   themeChipText: { fontSize: 14, fontWeight: '600' },
-  list: { borderTopWidth: StyleSheet.hairlineWidth },
+  listSection: {
+    marginTop: 28,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -435,5 +449,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     opacity: 0.7,
+  },
+  version: {
+    marginTop: 20,
+    textAlign: 'center',
+    fontSize: 12,
+    lineHeight: 16,
+    opacity: 0.55,
   },
 });

@@ -1,10 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+import { logProfileComplete } from '@/lib/firebase/analytics';
 import { appStorage } from '@/lib/storage';
 import { parseYmd, solarToLunar, formatYmd } from '@/lib/lunar';
 import type { Profile } from '@/lib/types';
 
 const STORAGE_KEY = '@unmyeong/profile';
+const PROFILE_COMPLETE_ANALYTICS_KEY = '@unmyeong/analytics/profile-complete';
 
 /** 입·눈썹·코 평탄 옵션 → 2×2 합성 id */
 const PHYSIOGNOMY_OPTION_MIGRATE: Record<string, string> = {
@@ -113,8 +115,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updateProfile = useCallback(async (patch: Partial<Profile>) => {
+    let wasFortuneReady = false;
     let next: Profile = {};
     setProfile((prev) => {
+      wasFortuneReady = isFortuneReady(prev);
       next = { ...prev, ...patch };
       // undefined로 넘긴 선택 필드는 지운다(태어난 시각 모름 등).
       (Object.keys(patch) as (keyof Profile)[]).forEach((key) => {
@@ -123,6 +127,13 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
     await appStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    if (!wasFortuneReady && isFortuneReady(next)) {
+      const alreadyLogged = await appStorage.getItem(PROFILE_COMPLETE_ANALYTICS_KEY);
+      if (!alreadyLogged) {
+        await appStorage.setItem(PROFILE_COMPLETE_ANALYTICS_KEY, '1');
+        void logProfileComplete();
+      }
+    }
   }, []);
 
   const replaceProfile = useCallback(async (nextRaw: Profile) => {

@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useMemo } from 'react';
 import 'react-native-reanimated';
 
+import { AnalyticsScreenTracker } from '@/components/AnalyticsScreenTracker';
 import { useColorScheme } from '@/components/useColorScheme';
 import { BackIcon } from '@/components/ui/BackIcon';
 import Colors from '@/constants/Colors';
@@ -14,6 +15,7 @@ import { PersonalityResultsProvider } from '@/context/PersonalityResultsContext'
 import { ProfileProvider } from '@/context/ProfileContext';
 import { RewardUnlockProvider } from '@/context/RewardUnlockContext';
 import { AppThemeProvider } from '@/context/ThemeContext';
+import { initAnalytics } from '@/lib/firebase/analytics';
 import { getNotifications } from '@/lib/notificationsModule';
 
 export {
@@ -50,6 +52,10 @@ export default function RootLayout() {
   useEffect(() => {
     if (error) throw error;
   }, [error]);
+
+  useEffect(() => {
+    void initAnalytics();
+  }, []);
 
   useEffect(() => {
     if (loaded) {
@@ -94,6 +100,7 @@ function RootLayoutNav() {
         <ContactsProvider>
           <RewardUnlockProvider>
             <ThemeProvider value={navTheme}>
+              <AnalyticsScreenTracker />
               <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
               <Stack
                 screenOptions={{

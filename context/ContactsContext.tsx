@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { appStorage } from '@/lib/storage';
+import { logContactAdd } from '@/lib/firebase/analytics';
 import type {
   BirthCalendar,
   BloodType,
@@ -176,6 +177,7 @@ export function ContactsProvider({ children }: { children: React.ReactNode }) {
         updatedAt: now,
       };
       await persist([contact, ...contacts]);
+      void logContactAdd();
       return contact;
     },
     [contacts, persist],

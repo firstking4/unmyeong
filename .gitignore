@@ -36,6 +36,13 @@ yarn-error.*
 # AdMob production IDs (copy from lib/ads/adUnits.example.ts)
 lib/ads/adUnits.local.ts
 
+# Firebase (download from Firebase Console — see google-services.json.example)
+google-services.json
+GoogleService-Info.plist
+
+# Play release artifacts (AAB — use npm run store:download-aab)
+releases/
+
 # typescript
 *.tsbuildinfo
 

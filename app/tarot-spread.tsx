@@ -10,6 +10,7 @@ import { display } from '@/constants/Fonts';
 import { paperShadow, tabSection } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
+import { logTarotSpreadOpen } from '@/lib/firebase/analytics';
 import { TAROT_SPREADS, type TarotSpreadKind } from '@/lib/tarotSpread';
 import { clearTarotSpreadTickets, issueTarotSpreadTicket } from '@/lib/tarotSpreadUnlock';
 
@@ -25,6 +26,7 @@ export default function TarotSpreadScreen() {
   );
 
   const openAfterAd = (kind: TarotSpreadKind) => {
+    void logTarotSpreadOpen(kind);
     const ticket = issueTarotSpreadTicket(kind);
     router.push({ pathname: '/tarot-spread-result', params: { kind, ticket } });
   };

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "563909743300",
+    "project_id": "unmyeong-injido",
+    "storage_bucket": "unmyeong-injido.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:563909743300:android:1e12d45496c4307c586f91",
+        "android_client_info": {
+          "package_name": "com.yun.unmyeonginjido"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBaZbnpY8YFXnRE0fgr4orSLVM7sYmXIpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

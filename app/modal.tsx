@@ -15,9 +15,7 @@ type MenuHref =
   | '/gwansang'
   | '/saju-code-share'
   | '/history'
-  | '/settings'
-  | '/legal/privacy'
-  | '/legal/terms';
+  | '/settings';
 
 type MenuItem = {
   key: string;
@@ -55,19 +53,7 @@ const MENU: MenuItem[] = [
     key: 'settings',
     href: '/settings',
     title: '설정',
-    blurb: '알림·화면 테마·백업·복구',
-  },
-  {
-    key: 'privacy',
-    href: '/legal/privacy',
-    title: '개인정보 처리방침',
-    blurb: '수집·보관·이용 안내',
-  },
-  {
-    key: 'terms',
-    href: '/legal/terms',
-    title: '이용약관',
-    blurb: '서비스 이용·면책 안내',
+    blurb: '알림·화면 테마·백업·약관',
   },
 ];
 
