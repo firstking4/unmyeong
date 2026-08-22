@@ -48,6 +48,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "build:android:apk": "eas build -p android --profile preview",
+    "build:android:aab": "eas build -p android --profile production --non-interactive",
+    "store:graphics": "python3 scripts/generate-store-graphics.py",
     "design:samples": "bash scripts/fetch-design-samples.sh",
     "design:preview": "open docs/design-samples/preview.html",
     "design:ui": "open docs/design-samples/ui-reference.html",

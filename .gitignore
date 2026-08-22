@@ -33,6 +33,9 @@ yarn-error.*
 # local env files
 .env*.local
 
+# AdMob production IDs (copy from lib/ads/adUnits.example.ts)
+lib/ads/adUnits.local.ts
+
 # typescript
 *.tsbuildinfo
 
