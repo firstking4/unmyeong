@@ -2,12 +2,17 @@
 
 export type LegalSection = { heading: string; body: string };
 
-export const LEGAL_UPDATED = '2026년 8월 21일';
+/** Play Console 결제 프로필·고객지원과 동일 */
+export const PUBLISHER_NAME = 'Yun In Lab';
+export const PUBLISHER_EMAIL = 'firstking4@gmail.com';
+export const PUBLISHER_CONTACT = `${PUBLISHER_NAME} · ${PUBLISHER_EMAIL}`;
+
+export const LEGAL_UPDATED = '2026년 8월 22일';
 
 export const TERMS_SECTIONS: LegalSection[] = [
   {
     heading: '서비스 소개',
-    body: '운명人지도(이하 “앱”)는 성향·사주·타로·지인 궁합 등 참고용 해석을 제공하는 엔터테인먼트 앱입니다. 개발·운영 주체는 앱 스토어에 등록된 게시자입니다.',
+    body: `운명人지도(이하 “앱”)는 성향·사주·타로·지인 궁합 등 참고용 해석을 제공하는 엔터테인먼트 앱입니다. 개발·운영: ${PUBLISHER_NAME}.`,
   },
   {
     heading: '이용 대상',
@@ -31,7 +36,7 @@ export const TERMS_SECTIONS: LegalSection[] = [
   },
   {
     heading: '문의',
-    body: '약관·서비스 관련 문의는 스토어 게시자 연락처 또는 앱 내 안내된 채널로 해 주세요.',
+    body: `약관·서비스 관련 문의: ${PUBLISHER_CONTACT}`,
   },
 ];
 
@@ -70,6 +75,6 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
   },
   {
     heading: '문의',
-    body: '개인정보 관련 문의는 스토어 게시자 연락처로 해 주세요.',
+    body: `개인정보 관련 문의: ${PUBLISHER_CONTACT}`,
   },
 ];

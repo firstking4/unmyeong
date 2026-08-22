@@ -7,15 +7,23 @@
 
 ## 1. Play Console에 넣을 URL
 
-공개 HTTPS로 아래 파일을 호스팅한 뒤 Console에 등록합니다.
+GitHub Pages (`docs/` 폴더, `main` 브랜치)로 호스팅됨. Console에 아래 **공개 URL**을 그대로 등록.
 
-| 용도 | 저장소 경로 | 비고 |
+| 용도 | 공개 URL | 저장소 |
 |---|---|---|
-| 개인정보처리방침 | [`docs/legal/privacy.html`](../legal/privacy.html) | **필수** |
-| 이용약관 | [`docs/legal/terms.html`](../legal/terms.html) | 권장 |
+| 개인정보처리방침 | https://firstking4.github.io/unmyeong/legal/privacy.html | [`docs/legal/privacy.html`](../legal/privacy.html) |
+| 이용약관 | https://firstking4.github.io/unmyeong/legal/terms.html | [`docs/legal/terms.html`](../legal/terms.html) |
+| 문서 허브 | https://firstking4.github.io/unmyeong/ | [`docs/index.html`](../index.html) |
 
-예시: GitHub Pages / raw 공개 링크 / 개인 사이트.  
 앱 안에서도 설정 → 개인정보 처리방침·이용약관으로 동일 내용을 볼 수 있습니다.
+
+### 판매자·지원 (결제 프로필과 동일)
+
+| 항목 | 값 |
+|---|---|
+| 업체명 | Yun In Lab |
+| 고객지원 이메일 | firstking4@gmail.com |
+| 신용카드 명세서 이름 | Yun In Lab |
 
 ---
 
@@ -91,7 +99,31 @@ eas build -p android --profile production --non-interactive
 
 ---
 
-## 6. 이번 라운드에서 하지 않음
+## 6. Play Console 계정 설정 (진행 중)
+
+결제 프로필 → **비즈니스 공개 정보** 필수 항목 입력 완료:
+
+| 항목 | 상태 |
+|---|---|
+| 이름·주소·우편번호·전화 | ✅ |
+| 업체명 Yun In Lab | ✅ |
+| 판매 제품/서비스 · 컴퓨터 소프트웨어 | ✅ |
+| 고객지원 이메일 firstking4@gmail.com | ✅ |
+| 신용카드 명세서 이름 Yun In Lab | ✅ |
+| 웹사이트 | 선택 (비워 두거나 §1 문서 허브 URL) |
+
+**지금:** 페이지 하단 **「제출」** → 개발자 배포 계약·개인정보처리방침 동의.
+
+**제출 후:**
+
+1. 상단 **「앱을 게시하려면 개발자 계정 설정을 완료하세요」** → **세부정보 보기**에서 잔여 항목  
+   (흔함: 개발자 계정 유형·신원 확인, 결제 프로필 검토)
+2. 앱 생성 → **개인정보처리방침 URL** `https://firstking4.github.io/unmyeong/legal/privacy.html`
+3. 스토어·앱 콘텐츠에 **고객지원 이메일** `firstking4@gmail.com`
+
+---
+
+## 7. 이번 라운드에서 하지 않음
 
 - AdMob / 보상형 광고 SDK
 - iOS App Store Submit
