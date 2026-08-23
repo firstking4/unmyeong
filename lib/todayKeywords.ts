@@ -4,6 +4,7 @@ import { keywordPolarity, type KeywordPolarity } from '@/lib/keywordPolarity';
 import { buildSajuReading } from '@/lib/saju';
 import { buildSeonghyangReading } from '@/lib/seonghyang';
 import { buildTarotReading } from '@/lib/tarot';
+import { memoLast } from '@/lib/memoLast';
 import type { Profile } from '@/lib/types';
 
 export type { KeywordPolarity };
@@ -159,8 +160,19 @@ function pickDisplayKeywords(bag: Map<string, TodayKeyword>): TodayKeyword[] {
  * 각 탭의 오늘 카드 키워드와 같은 빌더 결과를 써야 한다 (운영 필수).
  * @see .cursor/rules/today-keywords.mdc
  */
+const keywordsMemo: { key: string; value: TodayKeywordSet | undefined } = { key: '', value: undefined };
+
 export function buildTodayKeywords(profile: Profile, date = new Date()): TodayKeywordSet {
   const dateKey = ymd(date);
+  const key = `${dateKey}:${profile.birthDate ?? ''}:${profile.birthTime ?? ''}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}:${profile.name ?? ''}`;
+  return memoLast(keywordsMemo, key, () => buildTodayKeywordsNow(profile, date, dateKey));
+}
+
+function buildTodayKeywordsNow(
+  profile: Profile,
+  date: Date,
+  dateKey: string,
+): TodayKeywordSet {
   const seed = fortuneSeed(profile, dateKey);
   const bag = new Map<string, TodayKeyword>();
 

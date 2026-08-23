@@ -26,6 +26,12 @@ export {
   computePersonalFortuneScore,
 } from './personalFortune';
 export type { PersonalFortuneScore } from './personalFortune';
+export {
+  buildHourPillarAlignLine,
+  buildSajuTodayContext,
+  getPillarAlignVerdict,
+} from './pillarAlign';
+export type { PillarAlignVerdict, SajuTodayContextLine } from './pillarAlign';
 export { DAY_BOUNDARY, UNKNOWN_TIME, USE_TRUE_SOLAR_TIME } from './policy';
 export { getMonthBoundaryTerm, getSolarTermWindow } from './solarTerms';
 export {

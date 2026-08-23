@@ -3,13 +3,17 @@ import type { SeedRecord } from '@/lib/data/types';
 import { pickDaily } from '@/lib/daily/pick';
 import {
   computeFourPillars,
+  computeLuckPillars,
   getManseryeokPeriod,
+  getSolarTermWindow,
+  buildSajuTodayContext,
   natalTenGodText,
   scopeCopy,
   scopeLead,
   tenGodKeywords,
 } from '@/lib/manseryeok';
 import type { PillarTone } from '@/lib/types';
+import { memoLast } from '@/lib/memoLast';
 
 const ZODIAC_ANIMALS = [
   '쥐',
@@ -210,6 +214,8 @@ export type PeriodReading = {
   tones: PillarTone[];
   keywords: string[];
   hints: { label: string; text: string }[];
+  /** 오늘 카드 — 절기·대운 배경, 시주·월·세운 맞음/어긋남 (점수 없음) */
+  contextLines?: { text: string }[];
 };
 
 export type SajuReading = {
@@ -531,10 +537,23 @@ function buildWeekPeriod(input: {
   };
 }
 
+const sajuMemo: { key: string; value: SajuReading | null | undefined } = { key: '', value: undefined };
+
 export function buildSajuReading(
   birthDate: string,
   date = new Date(),
   birthTime?: string,
+  gender?: 'male' | 'female' | null,
+): SajuReading | null {
+  const key = `${birthDate}|${birthTime ?? ''}|${gender ?? ''}|${ymd(date)}`;
+  return memoLast(sajuMemo, key, () => buildSajuReadingNow(birthDate, date, birthTime, gender));
+}
+
+function buildSajuReadingNow(
+  birthDate: string,
+  date: Date,
+  birthTime?: string,
+  gender?: 'male' | 'female' | null,
 ): SajuReading | null {
   const birthYear = parseBirthYear(birthDate);
   const animalLabel = getZodiacAnimal(birthDate);
@@ -580,6 +599,23 @@ export function buildSajuReading(
     scope: 'day',
     summaryLead: scopeLead('day', todayPeriod.stemTenGod),
   });
+  const luck =
+    gender === 'male' || gender === 'female'
+      ? computeLuckPillars({ birthDate, birthTime, gender })
+      : null;
+  const termWindow = getSolarTermWindow(date);
+  if (today) {
+    today.contextLines = buildSajuTodayContext({
+      natal: natalPillars,
+      todayPeriod,
+      monthPeriod,
+      yearPeriod,
+      termWindow,
+      luck,
+      birthDate,
+      at: date,
+    });
+  }
   const week = buildWeekPeriod({
     ...base,
     birthDate,

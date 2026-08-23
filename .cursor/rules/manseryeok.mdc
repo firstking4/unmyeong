@@ -25,10 +25,11 @@ alwaysApply: false
 - 중복 금지: 오늘=당일 반응, 주간=반복 분포, 이달=환경·배치, 올해=방향·기반처럼 각 카드의 문장 역할을 나눈다.
 - 키워드: `lib/manseryeok/tenGods.ts`의 십신 키워드 + 일일 팩 키워드. 띠·오행 시드 키워드는 기간 카드에 넣지 않는다.
 - 상세 구성 (고정): 요약 = `쉬운 말 도입`(`scopeLead`: 뜻 먼저, 십신 이름은 괄호) + 기간별 카피(`TEN_GOD_DAY/WEEK/MONTH/YEAR`)의 `focus` + 일일 팩 `focus`. 힌트 = `십신 뜻`(`TEN_GOD_NATAL`) → `기운 관계`(오행 상생·상극) → 시드 생활 힌트 2줄 → `실천` → `주의`.
+- **오늘의 사주 카드**: `buildSajuTodayContext` — 절기·대운 배경 한 줄, (시각 있으면) 시주, 월·세운은 점수 합산 없이 맞음/어긋남만. 지도·지인 궁합 점수와 역할 분리.
 - 요약 첫 줄에 일진·일간·월주·세운 용어를 나열하지 않는다. 그 정보는 헤드라인·플로우 메타·사주팔자 블록에 둔다.
 - 시드 생활 힌트는 오늘·주·이달·올해가 같은 문장을 띄우지 않게 `hintLines`의 `rotate`·`usedHints`로 어긋낸다.
 - 조사 처리: 간지·십신·오행을 문장에 넣을 때 `withEun`/`withIga`/`withRo`/`withEulReul`를 쓴다. `이(가)` 같은 병기 표기 금지.
-- `buildTodayKeywords`는 `buildSajuReading(profile.birthDate, date, profile.birthTime)` 결과를 그대로 사용한다.
+- `buildTodayKeywords`는 `buildSajuReading(profile.birthDate, date, profile.birthTime, profile.gender)` 결과를 그대로 사용한다.
 - 검증: `npm run verify:manseryeok`
 
 ## 지인 궁합
@@ -55,11 +56,10 @@ alwaysApply: false
 - `buildSajuReading` / 오늘 키워드를 명식 세운으로 교체
 - 진태양시·출생지
 - 대운을 궁합 점수에 넣기 (월주·세운 십신은 소가중으로 반영됨)
-- **오늘의 사주 강화**(다음 작업): 오늘 카드에 대운·절기 배경 한 줄, (시각 있으면) 시주, 월·세운은 점수 합산 없이 일치/어긋남만 — 지인 궁합과 역할 분리
 
 ## 지도 오늘의 운세
 
-- 점수: `computePersonalFortuneScore` — 나 단인 **일진·월주·세운** 십신. 만점 비중 **오늘 46 : 이달 23 : 올해 12**(지인 궁합과 동일), ORIGIN 39 · 분모 94. raw×0.65 + 고정 보정 0.36으로 등급 비율을 지인 표본에 맞춤.
+- 점수: `computePersonalFortuneScore` — 나 단인 **일진·월주·세운** 십신 + (출생 시각 있을 때) **시주×오늘 일진** 맞음/어긋남(+6/0/−6, 오늘 46 대비 ~13%). 만점 비중 **오늘 46 : 이달 23 : 올해 12**(지인 궁합과 동일), ORIGIN 39 · 분모 94. raw×0.65 + 고정 보정 0.36으로 등급 비율을 지인 표본에 맞춤.
 - 등급 컷: 지인 궁합과 동일 (**주의 &lt;50 · 조심 50~59 · 무난 60~74 · 좋음 75~89 · 최고 ≥90**)
 - 톤·키워드: 해시가 아니라 오늘 일진 천간·지지 십신 → `tonesForTenGods`
 - 문장: home 일일 팩 + 성향/타로 시드는 유지 (날짜마다 바뀜)

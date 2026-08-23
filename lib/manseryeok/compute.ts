@@ -14,12 +14,17 @@ export function formatFourPillarsHeadline(result: FourPillarsResult): string {
  * 양력 생년월일(+선택 시각) → 네 기둥.
  * 시각이 없으면 시주는 null. 진태양시는 적용하지 않는다.
  */
+const PILLAR_CACHE = new Map<string, FourPillarsResult | null>();
+const PILLAR_CACHE_MAX = 64;
+
 export function computeFourPillars(input: FourPillarsInput): FourPillarsResult | null {
   const ymd = parseYmd(input.birthDate);
   if (!ymd) return null;
 
   const clock = parseHm(input.birthTime);
   const hasHour = clock !== null;
+  const cacheKey = `${input.birthDate}|${input.birthTime ?? ''}`;
+  if (PILLAR_CACHE.has(cacheKey)) return PILLAR_CACHE.get(cacheKey) ?? null;
 
   try {
     const raw = calculateFourPillars({
@@ -36,7 +41,7 @@ export function computeFourPillars(input: FourPillarsInput): FourPillarsResult |
       day: { stem: raw.tenGods.day.stem, branch: raw.tenGods.day.branch },
       hour: { stem: raw.tenGods.hour.stem, branch: raw.tenGods.hour.branch },
     };
-    return {
+    const result: FourPillarsResult = {
       year: toPillar(raw.year, raw.yearString, raw.yearHanja),
       month: toPillar(raw.month, raw.monthString, raw.monthHanja),
       day: toPillar(raw.day, raw.dayString, raw.dayHanja),
@@ -44,7 +49,14 @@ export function computeFourPillars(input: FourPillarsInput): FourPillarsResult |
       dayMasterElement: raw.dayElement.stem,
       tenGods: hasHour ? tenGods : { ...tenGods, hour: { stem: '—', branch: '—' } },
     };
+    if (PILLAR_CACHE.size >= PILLAR_CACHE_MAX) {
+      const oldest = PILLAR_CACHE.keys().next().value;
+      if (oldest) PILLAR_CACHE.delete(oldest);
+    }
+    PILLAR_CACHE.set(cacheKey, result);
+    return result;
   } catch {
+    PILLAR_CACHE.set(cacheKey, null);
     return null;
   }
 }

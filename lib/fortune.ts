@@ -8,7 +8,14 @@ import {
   pickTarotBySeed,
 } from '@/lib/data/catalog';
 import { pickDaily } from '@/lib/daily/pick';
-import { computePersonalFortuneScore, tenGodPlain } from '@/lib/manseryeok';
+import {
+  buildHourPillarAlignLine,
+  computeFourPillars,
+  computePersonalFortuneScore,
+  getManseryeokPeriod,
+  tenGodPlain,
+} from '@/lib/manseryeok';
+import { memoLast } from '@/lib/memoLast';
 import { getElement, getZodiacAnimal, tonesForTenGods } from './saju';
 import type { FortuneInsights, IntegratedFortune, PillarTone, Profile } from './types';
 
@@ -178,6 +185,19 @@ function localYmd(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+/** 출생 시각이 있을 때 시주 × 오늘 일진 맞음/어긋남 — 점수와 분리된 문장만 */
+function buildHourPillarContext(profile: Profile, date: Date): string | null {
+  const birthDate = profile.birthDate?.trim();
+  if (!birthDate || !profile.birthTime) return null;
+
+  const input = { birthDate, birthTime: profile.birthTime };
+  const natal = computeFourPillars(input);
+  const todayPeriod = getManseryeokPeriod(input, date, 'day');
+  if (!natal || !todayPeriod) return null;
+
+  return buildHourPillarAlignLine({ natal, todayPeriod })?.text ?? null;
+}
+
 /** 만세력 없을 때만 — 예전 해시 (58~97) */
 function computeHashScore(seed: string, profile: Profile): number {
   const h = hashSeed(`${seed}:score:${profile.gender ?? ''}`);
@@ -187,8 +207,19 @@ function computeHashScore(seed: string, profile: Profile): number {
   return Math.min(97, base + bonus);
 }
 
+const fortuneMemo: { key: string; value: IntegratedFortune | undefined } = { key: '', value: undefined };
+
 export function buildIntegratedFortune(profile: Profile, date = new Date()): IntegratedFortune {
   const dateKey = localYmd(date);
+  const key = `${dateKey}:${profile.birthDate ?? ''}:${profile.birthTime ?? ''}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}:${profile.name ?? ''}`;
+  return memoLast(fortuneMemo, key, () => buildIntegratedFortuneNow(profile, date, dateKey));
+}
+
+function buildIntegratedFortuneNow(
+  profile: Profile,
+  date: Date,
+  dateKey: string,
+): IntegratedFortune {
   const seed = `${dateKey}:${profile.birthDate ?? 'anon'}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}`;
 
   const periodScore =
@@ -248,11 +279,15 @@ export function buildIntegratedFortune(profile: Profile, date = new Date()): Int
     return `${trait}${hasBatchim ? '이' : '가'}`;
   })();
 
+  const hourContext = buildHourPillarContext(profile, date);
   const summary = [
     `오늘은 ${traitSubject} ${sajuPhrase}.`,
+    hourContext,
     theme.focus,
     `이 흐름 위에 「${tarot.title}」의 기운이 겹쳐 ${tarot.blurb.replace(/\.$/, '')}.`,
-  ].join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const luckTags = [theme.keyword, ...buildLuckTags(tones)].filter(
     (tag, index, all) => all.indexOf(tag) === index,

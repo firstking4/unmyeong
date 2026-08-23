@@ -62,9 +62,9 @@ export default function SajuScreen() {
   const reading = useMemo(
     () =>
       ready && profile.birthDate
-        ? buildSajuReading(profile.birthDate, undefined, profile.birthTime)
+        ? buildSajuReading(profile.birthDate, undefined, profile.birthTime, profile.gender)
         : null,
-    [ready, profile.birthDate, profile.birthTime],
+    [ready, profile.birthDate, profile.birthTime, profile.gender],
   );
   const pillars = useMemo(
     () =>
@@ -243,6 +243,11 @@ function TodaySajuCard({
         <Text style={[styles.blockMeta, { color: muted }]}>
           {period.flowLabel} · {period.relation.title}
         </Text>
+        {(period.contextLines ?? []).map((line, i) => (
+          <Text key={`today-ctx-${i}`} style={[styles.blockMeta, { color: muted }]}>
+            {line.text}
+          </Text>
+        ))}
         <View style={styles.toneRow}>
           {(period.keywords ?? []).map((kw, i) => (
             <KeywordBadge key={`today-kw-${i}-${kw}`} label={kw} />

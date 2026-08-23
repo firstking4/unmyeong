@@ -1,8 +1,10 @@
 /**
- * 지도 오늘의 운세 — 나 단인 일진·월주·세운 점수.
+ * 지도 오늘의 운세 — 나 단인 일진·월주·세운 점수 + (시각 있을 때) 시주×오늘 일진.
  * 지인 궁합과 같은 오늘:이달:올해 만점 비중(46:23:12) · ORIGIN/SCALE · 등급 컷을 쓴다.
  */
+import { computeFourPillars } from './compute';
 import { getManseryeokPeriod } from './period';
+import { getPillarAlignVerdict, type PillarAlignVerdict } from './pillarAlign';
 import type { FourPillarsInput } from './types';
 
 /** 지인 궁합 TODAY_SELF × (46/16) — 오늘 만점 46 */
@@ -58,6 +60,13 @@ const SCORE_SCALE_MAX = 94;
 const RAW_AMPLITUDE = 0.65;
 const SOLO_CORRECTION_FACTOR = 0.36;
 
+/** 오늘 46 만점 대비 ~13% — 시주×일진 맞음/어긋남 (RAW_AMPLITUDE 적용 전) */
+const HOUR_TODAY_ALIGN_DELTA: Record<PillarAlignVerdict, number> = {
+  맞음: 6,
+  흐름: 0,
+  어긋남: -6,
+};
+
 export type PersonalFortuneScore = {
   score: number;
   todayScore: number;
@@ -66,6 +75,8 @@ export type PersonalFortuneScore = {
   selfMonthTenGod: string;
   selfYearTenGod: string;
   todayBranchTenGod: string;
+  hourAlignVerdict: PillarAlignVerdict | null;
+  hourAlignDelta: number;
 };
 
 export function computePersonalFortuneScore(
@@ -77,10 +88,21 @@ export function computePersonalFortuneScore(
   const year = getManseryeokPeriod(input, at, 'year');
   if (!day || !month || !year) return null;
 
+  let hourAlignVerdict: PillarAlignVerdict | null = null;
+  let hourAlignDelta = 0;
+  if (input.birthTime?.trim()) {
+    const natal = computeFourPillars(input);
+    if (natal?.hour) {
+      hourAlignVerdict = getPillarAlignVerdict(natal.hour, day.pillar);
+      hourAlignDelta = HOUR_TODAY_ALIGN_DELTA[hourAlignVerdict];
+    }
+  }
+
   const rawTotal = Math.round(
     ((TODAY_DELTA[day.stemTenGod] ?? 0) +
       (MONTH_DELTA[month.stemTenGod] ?? 0) +
-      (YEAR_DELTA[year.stemTenGod] ?? 0)) *
+      (YEAR_DELTA[year.stemTenGod] ?? 0) +
+      hourAlignDelta) *
       RAW_AMPLITUDE,
   );
 
@@ -99,5 +121,7 @@ export function computePersonalFortuneScore(
     selfMonthTenGod: month.stemTenGod,
     selfYearTenGod: year.stemTenGod,
     todayBranchTenGod: day.branchTenGod,
+    hourAlignVerdict,
+    hourAlignDelta,
   };
 }
