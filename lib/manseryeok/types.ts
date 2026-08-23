@@ -88,6 +88,10 @@ export type CompatibilityEngineResult = {
   animalKind: AnimalRelationKind;
   animalLabel: string;
   animalScore: number;
+  /** 양쪽 시주가 있을 때만 — 일지와 동일 육합·삼합 등 규칙 */
+  hourAnimalKind: AnimalRelationKind | null;
+  hourAnimalLabel: string | null;
+  hourAnimalScore: number | null;
   elementKind: ElementRelationKind;
   elementLabel: string;
   elementScore: number;

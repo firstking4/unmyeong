@@ -201,7 +201,7 @@
       "todayPillarKorean": "계해",
       "monthPillarKorean": "병신",
       "yearPillarKorean": "병오",
-      "baseScore": 66,
+      "baseScore": 67,
       "partDeltas": [
         16,
         12,
@@ -212,9 +212,9 @@
       ],
       "rawTotal": 23,
       "todayScore": 66,
-      "baseCorrectionBonus": 10,
+      "baseCorrectionBonus": 11,
       "dailyDelta": 23,
-      "score": 76
+      "score": 77
     }
   },
   {

@@ -319,6 +319,28 @@ const BASE_RAW_MIN = 45;
 const BASE_RAW_MAX = 84;
 const BASE_MAP_MIN = 20;
 const BASE_MAP_MAX = 40;
+const BASE_WEIGHT_DAY = 0.35;
+const BASE_WEIGHT_HOUR = 0.1;
+const BASE_WEIGHT_ELEMENT_WITH_HOUR = 0.3;
+const BASE_WEIGHT_TEN_GOD = 0.25;
+const BASE_WEIGHT_DAY_NO_HOUR = 0.4;
+const BASE_WEIGHT_ELEMENT_NO_HOUR = 0.35;
+
+function computeBaseCompatibilityScore(input) {
+  if (input.hourAnimalScore !== null) {
+    return Math.round(
+      input.dayAnimalScore * BASE_WEIGHT_DAY +
+        input.hourAnimalScore * BASE_WEIGHT_HOUR +
+        input.elementScore * BASE_WEIGHT_ELEMENT_WITH_HOUR +
+        input.tenGodScore * BASE_WEIGHT_TEN_GOD,
+    );
+  }
+  return Math.round(
+    input.dayAnimalScore * BASE_WEIGHT_DAY_NO_HOUR +
+      input.elementScore * BASE_WEIGHT_ELEMENT_NO_HOUR +
+      input.tenGodScore * BASE_WEIGHT_TEN_GOD,
+  );
+}
 
 function baseCorrectionFactor(baseScore) {
   const clamped = Math.max(BASE_RAW_MIN, Math.min(BASE_RAW_MAX, baseScore));
@@ -331,13 +353,14 @@ function baseCorrectionFactor(baseScore) {
 function natalOf(input) {
   const ymd = parseYmd(input.birthDate);
   if (!ymd) return null;
-  const clock = parseHm(input.birthTime) ?? UNKNOWN_TIME;
+  const clock = parseHm(input.birthTime);
+  const hasHour = clock !== null;
   const raw = calculateFourPillars({
     year: ymd.year,
     month: ymd.month,
     day: ymd.day,
-    hour: clock.hour,
-    minute: clock.minute,
+    hour: hasHour ? clock.hour : UNKNOWN_TIME.hour,
+    minute: hasHour ? clock.minute : UNKNOWN_TIME.minute,
     dayBoundary: DAY_BOUNDARY,
   });
   return {
@@ -346,6 +369,8 @@ function natalOf(input) {
     dayBranch: raw.day.earthlyBranch,
     dayMasterElement: getHeavenlyStemElement(raw.day.heavenlyStem),
     animal: BRANCH_ANIMAL[raw.day.earthlyBranch] ?? raw.day.earthlyBranch,
+    hourBranch: hasHour ? raw.hour.earthlyBranch : null,
+    hourAnimal: hasHour ? (BRANCH_ANIMAL[raw.hour.earthlyBranch] ?? raw.hour.earthlyBranch) : null,
   };
 }
 
@@ -405,7 +430,16 @@ function computeCompatibility(self, other, at) {
   const godScore = Math.round(
     ((TEN_GOD_SCORE[otherToSelfTenGod] ?? 66) + (TEN_GOD_SCORE[selfToOtherTenGod] ?? 66)) / 2,
   );
-  const baseScore = Math.round(animal.score * 0.4 + elementScore(elementKind) * 0.35 + godScore * 0.25);
+  const hourAnimal =
+    selfNatal.hourAnimal && otherNatal.hourAnimal
+      ? animalRelation(selfNatal.hourAnimal, otherNatal.hourAnimal)
+      : null;
+  const baseScore = computeBaseCompatibilityScore({
+    dayAnimalScore: animal.score,
+    hourAnimalScore: hourAnimal?.score ?? null,
+    elementScore: elementScore(elementKind),
+    tenGodScore: godScore,
+  });
   const parts = [
     { key: 'todaySelf', delta: TODAY_SELF_TEN_GOD_DELTA[selfTodayTenGod] ?? 0 },
     { key: 'todayOther', delta: TODAY_OTHER_TEN_GOD_DELTA[otherTodayTenGod] ?? 0 },

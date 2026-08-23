@@ -1,5 +1,6 @@
 export {
   computeCompatibility,
+  computeBaseCompatibilityScore,
   buildCompatibilityScoreParts,
   formatScorePartLine,
   baseCorrectionFactor,
@@ -8,6 +9,7 @@ export {
   amplitudeForBase,
   amplitudeUpForBase,
   amplitudeDownForBase,
+  branchAnimalRelation,
   elementRelationKind,
 } from './compatibility';
 export {

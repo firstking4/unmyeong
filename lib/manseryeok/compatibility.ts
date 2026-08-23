@@ -191,6 +191,14 @@ const BASE_RAW_MAX = 84;
 const BASE_MAP_MIN = 20;
 const BASE_MAP_MAX = 40;
 
+/** 양쪽 출생 시각이 있을 때만 시지(10%)를 넣고 일지·오행 비중을 조정한다 */
+const BASE_WEIGHT_DAY = 0.35;
+const BASE_WEIGHT_HOUR = 0.1;
+const BASE_WEIGHT_ELEMENT_WITH_HOUR = 0.3;
+const BASE_WEIGHT_TEN_GOD = 0.25;
+const BASE_WEIGHT_DAY_NO_HOUR = 0.4;
+const BASE_WEIGHT_ELEMENT_NO_HOUR = 0.35;
+
 /**
  * 기본 궁합 → 보정 계수 (0.20…0.40).
  * (100 − 오늘점수) × 계수 를 오늘 점수에 더한다.
@@ -227,27 +235,43 @@ function natalFromPillars(
   };
 }
 
+export function branchAnimalRelation(self: string, other: string): {
+  kind: AnimalRelationKind;
+  label: string;
+} {
+  if (self === other) {
+    return { kind: '같음', label: `같은 ${self} 기운` };
+  }
+  if (ANIMAL_HARMONY[self] === other) {
+    return { kind: '육합', label: `${self}·${other} 육합` };
+  }
+  if (ANIMAL_CLASH[self] === other) {
+    return { kind: '육충', label: `${self}·${other} 육충` };
+  }
+  if (sameGroup(ANIMAL_TRINE_GROUPS, self, other)) {
+    return { kind: '삼합', label: `${self}·${other} 삼합` };
+  }
+  if (sameGroup(ANIMAL_DIRECTION_GROUPS, self, other)) {
+    return { kind: '방합', label: `${self}·${other} 방합` };
+  }
+  return { kind: '흐름', label: `${self}·${other} 흐름` };
+}
+
 function animalRelation(self: string, other: string): {
   kind: AnimalRelationKind;
   label: string;
   score: number;
 } {
-  if (self === other) {
-    return { kind: '같음', label: `같은 ${self} 기운`, score: 72 };
-  }
-  if (ANIMAL_HARMONY[self] === other) {
-    return { kind: '육합', label: `${self}·${other} 육합`, score: 86 };
-  }
-  if (ANIMAL_CLASH[self] === other) {
-    return { kind: '육충', label: `${self}·${other} 육충`, score: 48 };
-  }
-  if (sameGroup(ANIMAL_TRINE_GROUPS, self, other)) {
-    return { kind: '삼합', label: `${self}·${other} 삼합`, score: 78 };
-  }
-  if (sameGroup(ANIMAL_DIRECTION_GROUPS, self, other)) {
-    return { kind: '방합', label: `${self}·${other} 방합`, score: 70 };
-  }
-  return { kind: '흐름', label: `${self}·${other} 흐름`, score: 66 };
+  const relation = branchAnimalRelation(self, other);
+  const scoreByKind: Record<AnimalRelationKind, number> = {
+    같음: 72,
+    육합: 86,
+    육충: 48,
+    삼합: 78,
+    방합: 70,
+    흐름: 66,
+  };
+  return { ...relation, score: scoreByKind[relation.kind] };
 }
 
 export function elementRelationKind(self: string, other: string): ElementRelationKind {
@@ -284,6 +308,30 @@ function elementRelation(self: string, other: string): {
 
 function tenGodScore(god: string): number {
   return TEN_GOD_SCORE[god] ?? 66;
+}
+
+/**
+ * 기본 궁합(일지·시지·오행·십신). 양쪽 시주가 있을 때만 시지 10%를 반영한다.
+ */
+export function computeBaseCompatibilityScore(input: {
+  dayAnimalScore: number;
+  hourAnimalScore: number | null;
+  elementScore: number;
+  tenGodScore: number;
+}): number {
+  if (input.hourAnimalScore !== null) {
+    return Math.round(
+      input.dayAnimalScore * BASE_WEIGHT_DAY +
+        input.hourAnimalScore * BASE_WEIGHT_HOUR +
+        input.elementScore * BASE_WEIGHT_ELEMENT_WITH_HOUR +
+        input.tenGodScore * BASE_WEIGHT_TEN_GOD,
+    );
+  }
+  return Math.round(
+    input.dayAnimalScore * BASE_WEIGHT_DAY_NO_HOUR +
+      input.elementScore * BASE_WEIGHT_ELEMENT_NO_HOUR +
+      input.tenGodScore * BASE_WEIGHT_TEN_GOD,
+  );
 }
 
 function todaySelfTenGodDelta(god: string): number {
@@ -425,8 +473,9 @@ export function dailyDeltaFromTenGods(
 }
 
 /**
- * 기본 궁합(일지·오행·십신)으로 보정하고, 원점수는 일진·월주·세운 십신을 합산.
+ * 기본 궁합(일지·시지·오행·십신)으로 보정하고, 원점수는 일진·월주·세운 십신을 합산.
  * 출생 시각이 없으면 정오로 계산하고 시주는 비교하지 않는다.
+ * 양쪽 모두 시각이 있을 때만 시지(10%)를 기본 궁합에 넣는다.
  */
 export function computeCompatibility(
   self: FourPillarsInput,
@@ -463,8 +512,20 @@ export function computeCompatibility(
   const godScore = Math.round(
     (tenGodScore(otherToSelfTenGod) + tenGodScore(selfToOtherTenGod)) / 2,
   );
+  const hourAnimal =
+    selfPillars.hour && otherPillars.hour
+      ? animalRelation(
+          branchAnimal(selfPillars.hour.branch),
+          branchAnimal(otherPillars.hour.branch),
+        )
+      : null;
   /** 참고용 관계 점수 + 보정 계수 입력. 원점수와는 별개 */
-  const baseScore = Math.round(animal.score * 0.4 + element.score * 0.35 + godScore * 0.25);
+  const baseScore = computeBaseCompatibilityScore({
+    dayAnimalScore: animal.score,
+    hourAnimalScore: hourAnimal?.score ?? null,
+    elementScore: element.score,
+    tenGodScore: godScore,
+  });
 
   const { parts, rawTotal, score: todayRawScore } = buildCompatibilityScoreParts({
     selfTodayTenGod: selfToday.stemTenGod,
@@ -482,6 +543,9 @@ export function computeCompatibility(
     animalKind: animal.kind,
     animalLabel: animal.label,
     animalScore: animal.score,
+    hourAnimalKind: hourAnimal?.kind ?? null,
+    hourAnimalLabel: hourAnimal?.label ?? null,
+    hourAnimalScore: hourAnimal?.score ?? null,
     elementKind: element.kind,
     elementLabel: element.label,
     elementScore: element.score,
