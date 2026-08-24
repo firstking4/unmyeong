@@ -75,7 +75,8 @@
     "analytics:install-preview": "node scripts/install-preview-apk.mjs",
     "firebase:install": "node scripts/install-firebase-config.mjs",
     "store:download-aab": "node scripts/download-production-aab.mjs",
-    "store:download-apk": "node scripts/download-preview-apk.mjs"
+    "store:download-apk": "node scripts/download-preview-apk.mjs",
+    "release:preview": "node scripts/publish-preview-release.mjs"
   },
   "private": true
 }
