@@ -37,7 +37,7 @@ OUT="$ROOT/releases/unmyeong-injido-${VERSION}-preview.apk"
 mkdir -p "$ROOT/releases"
 cp "$BUILD_DIR/android/app/build/outputs/apk/release/app-release.apk" "$OUT"
 EXTERNAL="/Volumes/Netac 2TB/Dev/Expo/unmyeong-injido/releases/$(basename "$OUT")"
-if [[ -d "$(dirname "$EXTERNAL")" ]]; then
+if [[ -d "$(dirname "$EXTERNAL")" && "$OUT" != "$EXTERNAL" ]]; then
   cp "$OUT" "$EXTERNAL"
 fi
 
