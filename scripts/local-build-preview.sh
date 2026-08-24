@@ -37,8 +37,12 @@ OUT="$ROOT/releases/unmyeong-injido-${VERSION}-preview.apk"
 mkdir -p "$ROOT/releases"
 cp "$BUILD_DIR/android/app/build/outputs/apk/release/app-release.apk" "$OUT"
 EXTERNAL="/Volumes/Netac 2TB/Dev/Expo/unmyeong-injido/releases/$(basename "$OUT")"
-if [[ -d "$(dirname "$EXTERNAL")" && "$OUT" != "$EXTERNAL" ]]; then
-  cp "$OUT" "$EXTERNAL"
+if [[ -d "$(dirname "$EXTERNAL")" ]]; then
+  OUT_REAL="$(cd "$(dirname "$OUT")" && pwd -P)/$(basename "$OUT")"
+  EXT_REAL="$(cd "$(dirname "$EXTERNAL")" && pwd -P)/$(basename "$EXTERNAL")"
+  if [[ "$OUT_REAL" != "$EXT_REAL" ]]; then
+    cp "$OUT" "$EXTERNAL"
+  fi
 fi
 
 echo "✓ $OUT"
