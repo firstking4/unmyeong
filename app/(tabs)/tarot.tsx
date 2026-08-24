@@ -17,6 +17,7 @@ import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { recordTarotView } from '@/lib/history';
 import { buildTarotReading, type TarotReading } from '@/lib/tarot';
 import { tarotMajorImage } from '@/lib/tarotMajorImages';
+import { useLocalDateKey } from '@/lib/useLocalDateKey';
 import { useTabScrollReset } from '@/lib/useTabScrollReset';
 
 const DETAIL_LOCK = {
@@ -37,9 +38,10 @@ export default function TarotScreen() {
   const { profile } = useProfile();
   const scrollRef = useTabScrollReset();
   const ready = isFortuneReady(profile);
+  const dateKey = useLocalDateKey();
   const reading = useMemo(
     () => (ready ? buildTarotReading(profile) : null),
-    [profile, ready],
+    [profile, ready, dateKey],
   );
 
   useEffect(() => {

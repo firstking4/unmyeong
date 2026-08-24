@@ -23,6 +23,8 @@ import {
 } from '@/lib/fortuneNotifications';
 import {
   exportProfileBackupFile,
+  findDevDocumentsBackupUri,
+  pickDevDocumentsBackup,
   pickProfileBackupFile,
   unlockEncryptedBackup,
 } from '@/lib/profileBackupIO';
@@ -152,6 +154,44 @@ export default function SettingsScreen() {
     if (busy) return;
     setBusy(true);
     try {
+      if (__DEV__) {
+        const devUri = await findDevDocumentsBackupUri();
+        if (devUri) {
+          const fileName = devUri.split('/').pop() ?? 'backup.json';
+          const useDev = await new Promise<boolean>((resolve) => {
+            Alert.alert(
+              '시뮬 백업 발견',
+              `Expo Documents에 ${fileName}이 있습니다.\n이 파일로 복구할까요?`,
+              [
+                { text: '다른 파일 고르기', onPress: () => resolve(false) },
+                { text: '이 파일로', onPress: () => resolve(true) },
+              ],
+            );
+          });
+          if (useDev) {
+            const picked = await pickDevDocumentsBackup();
+            if (!picked.ok) {
+              if ('notFound' in picked && picked.notFound) {
+                Alert.alert('복구 실패', 'Expo Documents에 백업 파일이 없습니다.');
+              } else if (picked.error) {
+                Alert.alert('복구 실패', picked.error);
+              }
+              return;
+            }
+            if (picked.kind === 'plain') {
+              await applyBackup(
+                picked.backup,
+                '이 파일은 예전 형식(암호화 없음)입니다. 복구 후 다시 백업하면 비밀번호로 암호화됩니다.',
+              );
+              return;
+            }
+            setPendingEnvelope(picked.envelope);
+            setPasswordMode('import');
+            return;
+          }
+        }
+      }
+
       const picked = await pickProfileBackupFile();
       if (!picked.ok) {
         if (!picked.canceled && picked.error) Alert.alert('복구 실패', picked.error);

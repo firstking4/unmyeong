@@ -17,6 +17,8 @@ import { isFortuneReady, useProfile } from '@/context/ProfileContext';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { buildTodayCompatibility } from '@/lib/gunghap';
 import type { ContactProfile } from '@/lib/types';
+import { dateFromLocalYmd } from '@/lib/daily/pick';
+import { useLocalDateKey } from '@/lib/useLocalDateKey';
 import { useTabScrollReset } from '@/lib/useTabScrollReset';
 
 function ContactRow({
@@ -94,11 +96,13 @@ export default function GunghapScreen() {
   const scrollRef = useTabScrollReset();
   const ready = isFortuneReady(profile);
   const [importOpen, setImportOpen] = useState(false);
+  const dateKey = useLocalDateKey();
+  const readingDate = useMemo(() => dateFromLocalYmd(dateKey), [dateKey]);
 
   const rows = useMemo(() => {
     return contacts
       .map((contact) => {
-        const reading = buildTodayCompatibility(profile, contact);
+        const reading = buildTodayCompatibility(profile, contact, readingDate);
         return {
           contact,
           reading,
@@ -113,7 +117,7 @@ export default function GunghapScreen() {
         const scoreB = b.reading.ready ? b.reading.score : -1;
         return scoreB - scoreA;
       });
-  }, [contacts, profile]);
+  }, [contacts, profile, readingDate]);
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>

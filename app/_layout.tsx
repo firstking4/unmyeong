@@ -17,6 +17,7 @@ import { RewardUnlockProvider } from '@/context/RewardUnlockContext';
 import { AppThemeProvider } from '@/context/ThemeContext';
 import { initAnalytics } from '@/lib/firebase/analytics';
 import { getNotifications } from '@/lib/notificationsModule';
+import { LocalDateProvider } from '@/lib/useLocalDateKey';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -95,11 +96,12 @@ function RootLayoutNav() {
   }, [scheme, c.tint, c.background, c.text, c.hairline]);
 
   return (
-    <ProfileProvider>
-      <PersonalityResultsProvider>
-        <ContactsProvider>
-          <RewardUnlockProvider>
-            <ThemeProvider value={navTheme}>
+    <LocalDateProvider>
+      <ProfileProvider>
+        <PersonalityResultsProvider>
+          <ContactsProvider>
+            <RewardUnlockProvider>
+              <ThemeProvider value={navTheme}>
               <AnalyticsScreenTracker />
               <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
               <Stack
@@ -248,10 +250,11 @@ function RootLayoutNav() {
               />
               <Stack.Screen name="contact" options={{ headerShown: false }} />
               </Stack>
-            </ThemeProvider>
-          </RewardUnlockProvider>
-        </ContactsProvider>
-      </PersonalityResultsProvider>
-    </ProfileProvider>
+              </ThemeProvider>
+            </RewardUnlockProvider>
+          </ContactsProvider>
+        </PersonalityResultsProvider>
+      </ProfileProvider>
+    </LocalDateProvider>
   );
 }

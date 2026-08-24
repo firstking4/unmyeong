@@ -26,6 +26,7 @@ import {
   type TodaySeonghyang,
   type TraitBlock,
 } from '@/lib/seonghyang';
+import { useLocalDateKey } from '@/lib/useLocalDateKey';
 import { useTabScrollReset } from '@/lib/useTabScrollReset';
 
 const DETAIL_LOCK = {
@@ -206,9 +207,10 @@ export default function SeonghyangScreen() {
   const { results } = usePersonalityResults();
   const scrollRef = useTabScrollReset();
   const ready = isFortuneReady(profile);
+  const dateKey = useLocalDateKey();
   const reading = useMemo(
     () => (ready ? buildSeonghyangReading(profile, results) : null),
-    [profile, ready, results],
+    [profile, ready, results, dateKey],
   );
   const combo = useMemo(
     () => (ready ? buildPersonalityCombo(profile, results) : null),

@@ -11,13 +11,15 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { useProfile } from '@/context/ProfileContext';
 import { buildIntegratedFortune } from '@/lib/fortune';
 import { recordFortuneView } from '@/lib/history';
+import { useLocalDateKey } from '@/lib/useLocalDateKey';
 
 export function IntegratedFortune() {
   const scheme = useColorScheme() ?? 'light';
   const c = Colors[scheme];
   const { profile } = useProfile();
+  const dateKey = useLocalDateKey();
 
-  const fortune = useMemo(() => buildIntegratedFortune(profile), [profile]);
+  const fortune = useMemo(() => buildIntegratedFortune(profile), [profile, dateKey]);
   const tags = fortune.insights?.luckTags ?? [];
 
   useEffect(() => {

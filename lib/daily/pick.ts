@@ -59,6 +59,12 @@ export function localYmd(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+/** `localYmd` 역변환. DST 경계를 피하려고 정오로 고정한다. */
+export function dateFromLocalYmd(ymd: string): Date {
+  const [y, m, d] = ymd.split('-').map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1, 12, 0, 0, 0);
+}
+
 /** 날짜가 하루 바뀌면 다음 변주로 순환. salt로 도메인·프로필별 오프셋. */
 export function pickDaily(domain: DailyDomain, salt: string, date = new Date()): DailyVariant {
   const pack = PACKS[domain];

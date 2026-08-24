@@ -1,4 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { AppState, type AppStateStatus } from 'react-native';
+
+import { localYmd } from '@/lib/daily/pick';
 
 import {
   emptyRewardUnlockState,
@@ -43,6 +46,23 @@ export function RewardUnlockProvider({ children }: { children: ReactNode }) {
       });
     return () => {
       active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const rollover = () => {
+      const today = localYmd(new Date());
+      setState((current) => (current.date === today ? current : { date: today, screens: {} }));
+    };
+    rollover();
+    const onChange = (status: AppStateStatus) => {
+      if (status === 'active') rollover();
+    };
+    const sub = AppState.addEventListener('change', onChange);
+    const poll = setInterval(rollover, 60_000);
+    return () => {
+      sub.remove();
+      clearInterval(poll);
     };
   }, []);
 

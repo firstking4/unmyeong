@@ -32,8 +32,10 @@ import { useContacts } from '@/context/ContactsContext';
 import { useProfile } from '@/context/ProfileContext';
 import { useRewardUnlock } from '@/context/RewardUnlockContext';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
+import { dateFromLocalYmd } from '@/lib/daily/pick';
 import { buildTodayCompatibility, type TodayCompatibility } from '@/lib/gunghap';
 import { recordCompatibilityView } from '@/lib/history';
+import { useLocalDateKey } from '@/lib/useLocalDateKey';
 import { formatDualBirthDateLabel } from '@/lib/lunar';
 import { formatSajuHourLabel } from '@/lib/saju';
 
@@ -188,10 +190,12 @@ export default function ContactDetailScreen() {
   const [sharing, setSharing] = useState(false);
   const detailUnlocked = contact ? isUnlocked('contact_today', contact.id) : false;
   const cardW = windowW - space.md * 2;
+  const dateKey = useLocalDateKey();
+  const readingDate = useMemo(() => dateFromLocalYmd(dateKey), [dateKey]);
 
   const reading = useMemo(
-    () => (contact ? buildTodayCompatibility(profile, contact) : null),
-    [contact, profile],
+    () => (contact ? buildTodayCompatibility(profile, contact, readingDate) : null),
+    [contact, profile, readingDate],
   );
 
   useEffect(() => {

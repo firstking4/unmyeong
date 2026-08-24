@@ -35,6 +35,7 @@ import {
   type PeriodReading,
   type SajuReading,
 } from '@/lib/saju';
+import { useLocalDateKey } from '@/lib/useLocalDateKey';
 import { useTabScrollReset } from '@/lib/useTabScrollReset';
 
 const PILLAR_SLOTS = [
@@ -59,12 +60,13 @@ export default function SajuScreen() {
   const { profile } = useProfile();
   const scrollRef = useTabScrollReset();
   const ready = isFortuneReady(profile);
+  const dateKey = useLocalDateKey();
   const reading = useMemo(
     () =>
       ready && profile.birthDate
         ? buildSajuReading(profile.birthDate, undefined, profile.birthTime, profile.gender)
         : null,
-    [ready, profile.birthDate, profile.birthTime, profile.gender],
+    [ready, profile.birthDate, profile.birthTime, profile.gender, dateKey],
   );
   const pillars = useMemo(
     () =>
@@ -80,7 +82,7 @@ export default function SajuScreen() {
         : null,
     [ready, profile.birthDate, profile.birthTime],
   );
-  const termWindow = useMemo(() => (ready ? getSolarTermWindow() : null), [ready]);
+  const termWindow = useMemo(() => (ready ? getSolarTermWindow() : null), [ready, dateKey]);
   const luck = useMemo(() => {
     if (!ready || !profile.birthDate) return null;
     if (profile.gender !== 'male' && profile.gender !== 'female') return null;

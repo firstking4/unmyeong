@@ -15,6 +15,7 @@ import {
   type KeywordSource,
   type TodayKeyword,
 } from '@/lib/todayKeywords';
+import { useLocalDateKey } from '@/lib/useLocalDateKey';
 import { requestTabScrollReset } from '@/lib/useTabScrollReset';
 
 const SOURCE_ROUTES: Record<KeywordSource, Href> = {
@@ -35,9 +36,10 @@ export function TodayKeywords({ onPressMapKeyword }: { onPressMapKeyword?: () =>
   const { profile } = useProfile();
   const router = useRouter();
   const ready = isFortuneReady(profile);
+  const dateKey = useLocalDateKey();
   const { keywords, sources } = useMemo(
     () => (ready ? buildTodayKeywords(profile) : { keywords: [], sources: [] as KeywordSource[] }),
-    [profile, ready],
+    [profile, ready, dateKey],
   );
 
   const handlePress = (keyword: TodayKeyword) => {
