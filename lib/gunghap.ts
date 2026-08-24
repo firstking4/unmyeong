@@ -1,10 +1,16 @@
 import {
+  applyBaseCorrection,
   computeCompatibility,
   meetingTone,
   tenGodPlain,
   type CompatibilityScorePart,
 } from '@/lib/manseryeok';
-import { relateElements, type Element, type ZodiacAnimal } from '@/lib/saju';
+import {
+  buildGunghapTarotReading,
+  rawTotalToTodayScore,
+  type GunghapTarotReading,
+} from '@/lib/gunghapTarot';
+import { type Element, type ZodiacAnimal } from '@/lib/saju';
 import type { ContactProfile, Profile } from '@/lib/types';
 
 export type CompatibilityGrade = '주의' | '조심' | '무난' | '좋음' | '최고';
@@ -47,6 +53,8 @@ export type TodayCompatibility = {
   otherYearTenGod: string;
   yearPillarKorean: string;
   compactDate: string;
+  tarot: GunghapTarotReading | null;
+  tarotScoreDelta: number;
 };
 
 const HARD_GODS = new Set(['겁재', '상관', '편관']);
@@ -235,6 +243,8 @@ function notReady(reason: string, date: Date): TodayCompatibility {
     otherYearTenGod: '',
     yearPillarKorean: '',
     compactDate: formatCompactDate(date),
+    tarot: null,
+    tarotScoreDelta: 0,
   };
 }
 
@@ -259,14 +269,22 @@ export function buildTodayCompatibility(
     return notReady('생년월일을 확인해 주세요.', date);
   }
 
-  const relation = relateElements(
-    engine.self.dayMasterElement as Element,
-    engine.other.dayMasterElement as Element,
-    '오늘',
-  );
+  const tarot = buildGunghapTarotReading(self.birthDate, other.birthDate, date);
+  const rawWithTarot = engine.rawTotal + tarot.scoreDelta;
+  const todayScoreWithTarot = rawTotalToTodayScore(rawWithTarot);
+  const { factor, bonus, score } = applyBaseCorrection(todayScoreWithTarot, engine.baseScore);
+  const scoreParts: CompatibilityScorePart[] = [
+    ...engine.scoreParts,
+    {
+      key: 'tarot',
+      label: `타로 ${tarot.cardTitle} ${tarot.orientation}`,
+      delta: tarot.scoreDelta,
+    },
+  ];
+
   const otherName = other.name.trim() || '상대';
   const selfName = self.name.trim();
-  const grade = gradeFromScore(engine.score);
+  const grade = gradeFromScore(score);
   const pairGod = engine.otherToSelfTenGod;
   const toneKw = toneKeyword(engine.selfTodayTenGod, engine.otherTodayTenGod);
   const animalEasy = EASY_ANIMAL[engine.animalKind] ?? '평범한 결';
@@ -278,7 +296,8 @@ export function buildTodayCompatibility(
     toneKw,
     ...((EASY_FOCUS[pairGod] ?? []).slice(0, 2)),
     elementEasy,
-  ]).slice(0, 5);
+    ...tarot.keywords,
+  ]).slice(0, 6);
 
   const summary = [
     `${withGwa(selfName)} ${withEun(otherName)} ${animalEasy}이고, ${elementEasy}입니다.`,
@@ -310,17 +329,17 @@ export function buildTodayCompatibility(
 
   return {
     ready: true,
-    score: engine.score,
+    score,
     baseScore: engine.baseScore,
-    todayScore: engine.todayScore,
-    baseCorrectionFactor: engine.baseCorrectionFactor,
-    baseCorrectionBonus: engine.baseCorrectionBonus,
+    todayScore: todayScoreWithTarot,
+    baseCorrectionFactor: factor,
+    baseCorrectionBonus: bonus,
     scoreOrigin: engine.scoreOrigin,
     scoreScaleMax: engine.scoreScaleMax,
     maxPositiveSum: engine.maxPositiveSum,
-    scoreParts: engine.scoreParts,
-    rawTotal: engine.rawTotal,
-    dailyDelta: engine.dailyDelta,
+    scoreParts,
+    rawTotal: rawWithTarot,
+    dailyDelta: rawWithTarot,
     grade,
     moodHeadline: `${toneKw} · ${grade}`,
     summary: fixObjectParticle(summary),
@@ -349,5 +368,7 @@ export function buildTodayCompatibility(
     otherYearTenGod: engine.otherYearTenGod,
     yearPillarKorean: engine.yearPillarKorean,
     compactDate: formatCompactDate(date),
+    tarot,
+    tarotScoreDelta: tarot.scoreDelta,
   };
 }

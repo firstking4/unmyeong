@@ -70,6 +70,16 @@ function ContactDetailBody({
           <Text style={[styles.body, { color: muted }]}>{reading.summary}</Text>
           <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>오늘·이달·올해</Text>
           <Text style={[styles.hintText, { color: muted }]}>{reading.relationship}</Text>
+          {reading.tarot ? (
+            <>
+              <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>
+                타로 궁합
+              </Text>
+              <Text style={[styles.hintText, { color: muted }]}>{reading.tarot.summary}</Text>
+              <Text style={[styles.hintText, { color: muted }]}>{reading.tarot.relationship}</Text>
+              <Text style={[styles.hintText, { color: muted }]}>{reading.tarot.caution}</Text>
+            </>
+          ) : null}
           <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>
             오늘 해보기
           </Text>
@@ -136,6 +146,9 @@ function CompatibilityCardBody({
           <View style={styles.cardSummary}>
             <Text style={[styles.sectionLabel, { color: text }]}>오늘의 궁합</Text>
             <Text style={[styles.body, { color: muted }]}>{reading.summaryLine}</Text>
+            {reading.tarot ? (
+              <Text style={[styles.body, { color: muted }]}>{reading.tarot.summaryLine}</Text>
+            ) : null}
             {reading.keywords.length > 0 ? (
               <View style={styles.chips}>
                 {reading.keywords.map((kw, i) => (
