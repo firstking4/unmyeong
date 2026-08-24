@@ -185,17 +185,23 @@ function buildGuidance(selfGod: string, otherGod: string): string {
   return `오늘은 ${focus} 쪽으로 작은 일 하나.`;
 }
 
-function buildCaution(selfGod: string, otherGod: string, pairGod: string, animalKind: string): string {
-  const hard = HARD_GODS.has(selfGod)
-    ? selfGod
-    : HARD_GODS.has(otherGod)
-      ? otherGod
-      : HARD_GODS.has(pairGod)
-        ? pairGod
-        : null;
-  if (hard && EASY_CAUTION[hard]) return EASY_CAUTION[hard];
+/** 오늘 나·상대 십신 기준 — guidance와 같이 날짜마다 바뀜 */
+function buildCaution(selfGod: string, otherGod: string, animalKind: string): string {
+  if (HARD_GODS.has(selfGod) && EASY_CAUTION[selfGod]) return EASY_CAUTION[selfGod];
+  if (HARD_GODS.has(otherGod) && EASY_CAUTION[otherGod]) return EASY_CAUTION[otherGod];
   if (animalKind === '육충') return '말투가 세지지 않게 조심하기.';
-  return EASY_CAUTION[pairGod] ?? '너무 밀어붙이지만 않기.';
+  if (selfGod === otherGod) {
+    return EASY_CAUTION[selfGod] ?? '너무 밀어붙이지만 않기.';
+  }
+
+  const assertive = new Set(['비견', '식신', '편재', '편인']);
+  if (assertive.has(selfGod) && !assertive.has(otherGod)) {
+    return EASY_CAUTION[selfGod] ?? '너무 밀어붙이지만 않기.';
+  }
+  if (assertive.has(otherGod) && !assertive.has(selfGod)) {
+    return EASY_CAUTION[otherGod] ?? '너무 밀어붙이지만 않기.';
+  }
+  return EASY_CAUTION[selfGod] ?? EASY_CAUTION[otherGod] ?? '너무 밀어붙이지만 않기.';
 }
 
 function withIga(word: string): string {
@@ -346,12 +352,7 @@ export function buildTodayCompatibility(
     summaryLine: fixObjectParticle(summaryLine),
     relationship,
     guidance: fixObjectParticle(buildGuidance(engine.selfTodayTenGod, engine.otherTodayTenGod)),
-    caution: buildCaution(
-      engine.selfTodayTenGod,
-      engine.otherTodayTenGod,
-      pairGod,
-      engine.animalKind,
-    ),
+    caution: buildCaution(engine.selfTodayTenGod, engine.otherTodayTenGod, engine.animalKind),
     keywords,
     selfAnimal: engine.self.animal as ZodiacAnimal,
     otherAnimal: engine.other.animal as ZodiacAnimal,

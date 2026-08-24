@@ -77,9 +77,8 @@ function ContactDetailBody({
               <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>
                 타로 궁합
               </Text>
-              <Text style={[styles.hintText, { color: muted }]}>{reading.tarot.summary}</Text>
-              <Text style={[styles.hintText, { color: muted }]}>{reading.tarot.relationship}</Text>
-              <Text style={[styles.hintText, { color: muted }]}>{reading.tarot.caution}</Text>
+              <Text style={[styles.hintText, { color: muted }]}>{reading.tarot.summaryLine}</Text>
+              <Text style={[styles.hintText, { color: muted }]}>{reading.tarot.headline}</Text>
             </>
           ) : null}
           <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>
