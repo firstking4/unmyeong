@@ -39,6 +39,17 @@ function isMajorArcana(card: SeedRecord): boolean {
   return typeof card.number === 'number' && !card.categoryId;
 }
 
+function hasFinalConsonant(word: string): boolean {
+  const last = word.trim().slice(-1);
+  const code = last.charCodeAt(0);
+  if (Number.isNaN(code) || code < 0xac00 || code > 0xd7a3) return false;
+  return (code - 0xac00) % 28 !== 0;
+}
+
+function withEulReul(word: string): string {
+  return `${word}${hasFinalConsonant(word) ? '을' : '를'}`;
+}
+
 function unique(words: (string | null | undefined)[]): string[] {
   const out: string[] = [];
   for (const raw of words) {
@@ -106,7 +117,7 @@ export function buildGunghapTarotReading(
     : theme.caution;
 
   const headline = reversed
-    ? `${title} · ${theme.keyword}을(를) 다시 맞출 날`
+    ? `${title} · ${withEulReul(theme.keyword)} 다시 맞출 날`
     : `${title}, ${theme.headline}`;
 
   const summaryLine = reversed

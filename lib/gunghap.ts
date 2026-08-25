@@ -65,7 +65,7 @@ const EASY_FOCUS: Record<string, string[]> = {
   비견: ['같은 속도', '같이하기'],
   겁재: ['서두름', '다툼'],
   식신: ['표현', '나누기'],
-  상관: ['말톤', '솔직함'],
+  상관: ['표현', '아이디어'],
   편재: ['움직임', '기회'],
   정재: ['챙기기', '약속'],
   편관: ['압박', '부담'],
@@ -93,7 +93,7 @@ const EASY_CAUTION_VARIANTS: Record<string, string[]> = {
   ],
   상관: [
     '말이 너무 세지지 않게.',
-    '말톤이 날카롭게 나가지 않게.',
+    '표현이 날카롭게 나가지 않게.',
     '비판 톤으로 대화하지 않기.',
   ],
   편재: [
@@ -161,9 +161,9 @@ const EASY_GUIDANCE_VARIANTS: Record<string, string[]> = {
     '오늘은 완성도보다 대화로 이어가기.',
   ],
   상관: [
-    '오늘은 말을 부드럽게 다듬고 짧게 만나기.',
-    '오늘은 솔직함 대신 제안으로 바꿔 말하기.',
-    '오늘은 날카로운 관찰을 공유하되 톤은 낮추기.',
+    '오늘은 표현을 부드럽게 다듬고 짧게 만나기.',
+    '오늘은 아이디어를 제안으로 바꿔 말하기.',
+    '오늘은 날카로운 말 대신 표현을 낮추기.',
   ],
   편재: [
     '오늘은 움직임·기회 중 하나만 골라 같이하기.',
@@ -223,8 +223,16 @@ const ANIMAL_CAUTION: Record<string, string[]> = {
 };
 
 const ELEMENT_CAUTION: Record<string, string[]> = {
-  극함: ['힘겨루기처럼 보이지 않게.', '맞서기보다 한 박자 쉬기.'],
-  극받음: ['밀어내지 않게 조심하기.', '상대 페이스를 존중하기.'],
+  극함: [
+    '힘겨루기처럼 보이지 않게.',
+    '맞서기보다 한 박자 쉬기.',
+    '이기려 들지 않기.',
+  ],
+  극받음: [
+    '밀어내지 않게 조심하기.',
+    '상대 페이스를 존중하기.',
+    '거리를 너무 멀리 두지 않기.',
+  ],
 };
 
 const EASY_ANIMAL: Record<string, string> = {
@@ -244,12 +252,30 @@ const EASY_ELEMENT: Record<string, string> = {
   극받음: '힘겨루기 쉬운 기운',
 };
 
+/** 상세 본문 첫 줄 — 띠·오행 다변화 */
+const ANIMAL_SUMMARY: Record<string, string[]> = {
+  같음: ['띠 궁합이 비슷하고', '같은 결의 띠이고', '띠 기운이 닮았고'],
+  육합: ['띠가 잘 맞고', '궁합 좋은 띠이고', '띠가 서로 돕는 쪽이고'],
+  삼합: ['띠가 한팀 같고', '따뜻하게 맞는 띠이고', '띠 궁합이 좋고'],
+  방합: ['띠가 가깝고', '친근한 띠 궁합이고', '띠가 편하게 맞고'],
+  육충: ['띠가 부딪치기 쉽고', '띠 궁합에 마찰이 있고', '띠가 엇갈리기 쉽고'],
+  흐름: ['띠 궁합은 무난하고', '띠는 평범한 편이고', '띠 기운은 특별하지 않고'],
+};
+
+const ELEMENT_SUMMARY: Record<string, string[]> = {
+  같음: ['오행도 비슷합니다.', '오행 기운도 가깝습니다.', '오행이 잘 맞습니다.'],
+  생함: ['오행은 서로 돕는 쪽입니다.', '오행이 내게 도움이 됩니다.', '오행이 나를 살립니다.'],
+  생받음: ['오행은 상대를 돕는 쪽입니다.', '오행이 상대를 살립니다.', '오행이 상대 편입니다.'],
+  극함: ['오행은 맞서기 쉬운 쪽입니다.', '오행은 힘이 부딪치기 쉽습니다.', '오행은 긴장이 생기기 쉽습니다.'],
+  극받음: ['오행은 밀릴 수 있는 쪽입니다.', '오행은 상대에게 힘이 실립니다.', '오행은 조율이 필요합니다.'],
+};
+
 /** 궁합 오늘·이달·올해 — 관계 맥락 짧은 말 (tenGodPlain 잘림 대신) */
 const RELATIONSHIP_TODAY: Record<string, string> = {
   비견: '같은 페이스',
   겁재: '서두름·결단',
   식신: '표현·나누기',
-  상관: '말톤·아이디어',
+  상관: '표현·아이디어',
   편재: '움직임·기회',
   정재: '챙기기·약속',
   편관: '압박·책임',
@@ -282,6 +308,20 @@ const RELATIONSHIP_YEAR: Record<string, string> = {
   정관: '질서·신뢰',
   편인: '탐구·직관',
   정인: '배움·기반',
+};
+
+/** 생년 관계 십신(상대→나) — 오늘·이달·올해와 구분 */
+const RELATIONSHIP_PAIR: Record<string, string> = {
+  비견: '비슷한 결',
+  겁재: '서로 자극',
+  식신: '표현·나눔',
+  상관: '표현·아이디어',
+  편재: '움직임·기회',
+  정재: '챙기기·약속',
+  편관: '압박·책임',
+  정관: '규칙·약속',
+  편인: '혼자 시간',
+  정인: '배움·돌봄',
 };
 
 function hasFinalConsonant(word: string): boolean {
@@ -338,24 +378,136 @@ function relationshipLabel(scope: '오늘' | '이달' | '올해', god: string): 
   return easyFocus(god) || tenGodPlain(god);
 }
 
-function dualEasyLine(scope: '오늘' | '이달' | '올해', selfGod: string, otherGod: string): string {
+function relationshipPairLabel(god: string): string {
+  if (RELATIONSHIP_PAIR[god]) return RELATIONSHIP_PAIR[god];
+  return easyFocus(god) || tenGodPlain(god);
+}
+
+function elementRelationshipLine(kind: string, pairSeed: string, date: Date): string {
+  const easy = EASY_ELEMENT[kind] ?? '비슷한 기운';
+  const seed = hashCopySeed(`gunghap-element:${localYmd(date)}:${kind}:${pairSeed}`);
+  const options =
+    easy.endsWith(' 기운')
+      ? [
+          `오행은 ${easy.slice(0, -3)} 쪽입니다.`,
+          `둘의 오행은 ${easy.slice(0, -3)} 편입니다.`,
+          `오행 기운은 ${easy.slice(0, -3)} 쪽에 가깝습니다.`,
+        ]
+      : [`오행은 ${easy}입니다.`, `둘의 오행은 ${easy} 쪽입니다.`];
+  return options[seed % options.length];
+}
+
+function pairNames(selfName: string, otherName: string): string {
+  return `${selfName}과 ${otherName}`;
+}
+
+function buildSummaryIntro(
+  selfName: string,
+  otherName: string,
+  animalKind: string,
+  elementKind: string,
+  pairSeed: string,
+  date: Date,
+): string {
+  const seed = hashCopySeed(`gunghap-intro:${localYmd(date)}:${animalKind}:${elementKind}:${pairSeed}`);
+  const animalOptions = ANIMAL_SUMMARY[animalKind] ?? ['띠 궁합은 무난하고'];
+  const elementOptions = ELEMENT_SUMMARY[elementKind] ?? ['오행은 비슷합니다.'];
+  const animalClause = animalOptions[seed % animalOptions.length];
+  const elementClause = elementOptions[Math.floor(seed / 3) % elementOptions.length];
+  return `${withGwa(selfName)} ${withEun(otherName)} ${animalClause} ${elementClause}`;
+}
+
+function buildSummaryLine(
+  selfName: string,
+  otherName: string,
+  selfGod: string,
+  otherGod: string,
+  grade: CompatibilityGrade,
+  pairSeed: string,
+  date: Date,
+): string {
+  const selfLabel = relationshipLabel('오늘', selfGod);
+  const otherLabel = relationshipLabel('오늘', otherGod);
+  const meetTone = meetingTone(selfGod, otherGod);
+  const meetClause =
+    meetTone === '주의'
+      ? '언사와 거리를 살필 할'
+      : meetTone === '조율'
+        ? '호흡을 맞출'
+        : '기운이 호응하기 쉬운';
+  const names = pairNames(selfName, otherName);
+  const seed = hashCopySeed(`gunghap-summary:${localYmd(date)}:${selfGod}:${otherGod}:${pairSeed}`);
+
+  if (selfGod === otherGod) {
+    const options = [
+      `${names}, 오늘 둘 다 ${selfLabel} 쪽이며 흐름은 ${grade}에 가깝습니다.`,
+      `${names} 오늘은 둘 다 ${selfLabel} 흐름이고, 기운은 ${grade} 쪽입니다.`,
+      `${names}, 오늘 만남은 ${selfLabel} 쪽으로 맞고 등급은 ${grade}입니다.`,
+    ];
+    return options[seed % options.length];
+  }
+
+  const options = [
+    `${names}, 오늘 나는 ${selfLabel}, 상대는 ${otherLabel}이라 ${meetClause} 하루이며 기운은 ${grade}입니다.`,
+    `${names} 오늘은 내 쪽 ${selfLabel}, 상대 쪽 ${otherLabel}이라 ${meetClause} 날이고 흐름은 ${grade}입니다.`,
+    `${names}, 오늘 만남은 ${selfLabel}·${otherLabel} 조합이라 ${meetClause} 하루이며 등급은 ${grade}입니다.`,
+  ];
+  return options[seed % options.length];
+}
+
+function dualEasyLine(
+  scope: '오늘' | '이달' | '올해',
+  selfGod: string,
+  otherGod: string,
+  pairSeed: string,
+  date: Date,
+): string {
   const selfLabel = relationshipLabel(scope, selfGod);
   const otherLabel = relationshipLabel(scope, otherGod);
   const topic = withEun(scope);
+  const seed = hashCopySeed(`gunghap-rel:${scope}:${localYmd(date)}:${selfGod}:${otherGod}:${pairSeed}`);
 
   if (selfGod === otherGod) {
-    if (scope === '오늘') return `${topic} 둘 다 ${selfLabel} 쪽이에요.`;
-    if (scope === '이달') return `${topic} 둘 다 ${selfLabel} 환경이에요.`;
-    return `${topic} 둘 다 ${selfLabel} 방향이에요.`;
+    const options =
+      scope === '오늘'
+        ? [
+            `${topic} 둘 다 ${selfLabel} 쪽이에요.`,
+            `${topic} 둘 다 ${selfLabel} 흐름이에요.`,
+          ]
+        : scope === '이달'
+          ? [
+              `${topic} 둘 다 ${selfLabel} 환경이에요.`,
+              `${topic} 둘 다 ${selfLabel} 분위기예요.`,
+            ]
+          : [
+              `${topic} 둘 다 ${selfLabel} 방향이에요.`,
+              `${topic} 둘 다 ${selfLabel} 흐름이에요.`,
+            ];
+    return options[seed % options.length];
   }
 
   if (scope === '오늘') {
-    return `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 쪽이에요.`;
+    const options = [
+      `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 쪽이에요.`,
+      `${topic} 내 쪽은 ${selfLabel}, 상대 쪽은 ${otherLabel}이에요.`,
+      `${topic} 나 ${selfLabel}, 상대 ${otherLabel} 흐름이에요.`,
+    ];
+    return options[seed % options.length];
   }
   if (scope === '이달') {
-    return `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 흐름이에요.`;
+    const options = [
+      `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 흐름이에요.`,
+      `${topic} 내 쪽 ${selfLabel}, 상대 쪽 ${otherLabel} 환경이에요.`,
+      `${topic} 나 ${selfLabel}, 상대 ${otherLabel} 리듬이에요.`,
+    ];
+    return options[seed % options.length];
   }
-  return `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 방향이에요.`;
+  const options = [
+    `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 방향이에요.`,
+    `${topic} 내 쪽 ${selfLabel}, 상대 쪽 ${otherLabel} 방향이에요.`,
+    `${topic} 나 ${selfLabel}, 상대 ${otherLabel} 큰 흐름이에요.`,
+  ];
+  return options[seed % options.length];
 }
 
 function toneKeyword(selfGod: string, otherGod: string): string {
@@ -605,42 +757,38 @@ export function buildTodayCompatibility(
   const toneKw = toneKeyword(engine.selfTodayTenGod, engine.otherTodayTenGod);
   const animalEasy = EASY_ANIMAL[engine.animalKind] ?? '평범한 결';
   const elementEasy = EASY_ELEMENT[engine.elementKind] ?? '기운';
-  const pairFocus = easyFocus(pairGod, 2);
+  const pairLabel = relationshipPairLabel(pairGod);
+
+  const pairSeed = `${self.birthDate}:${other.birthDate}`;
 
   const keywords = uniqueWords([
     animalEasy,
     toneKw,
     ...((EASY_FOCUS[pairGod] ?? []).slice(0, 2)),
-    elementEasy,
+    elementEasy.replace(/ 기운$/, ''),
     ...tarot.keywords,
   ]).slice(0, 6);
 
   const summary = [
-    `${withGwa(selfName)} ${withEun(otherName)} ${animalEasy}이고, ${elementEasy}입니다.`,
-    `상대는 나에게 ${relationshipLabel('오늘', pairGod)} 쪽이에요.`,
-    pairFocus ? `오늘은 ${withIga(pairFocus)} 보이기 쉽습니다.` : null,
-  ]
-    .filter(Boolean)
-    .join(' ');
+    buildSummaryIntro(selfName, otherName, engine.animalKind, engine.elementKind, pairSeed, date),
+    `관계상 상대는 나에게 ${pairLabel} 쪽이에요.`,
+  ].join(' ');
 
-  // 카드 한 줄: 격식체 · 십신 이름만 (쉬운 말 풀이·칩과 겹치지 않음)
-  const meetTone = meetingTone(engine.selfTodayTenGod, engine.otherTodayTenGod);
-  const meetClause =
-    meetTone === '주의'
-      ? '언사와 거리를 살필'
-      : meetTone === '조율'
-        ? '호흡을 맞출'
-        : '기운이 호응하기 쉬운';
-  const summaryLine =
-    engine.selfTodayTenGod === engine.otherTodayTenGod
-      ? `${withGwa(selfName)} ${withEun(otherName)} 오늘의 만남은 ${engine.selfTodayTenGod}으로 맞닿으며, 흐름은 ${grade}에 가깝습니다.`
-      : `${withGwa(selfName)} ${withEun(otherName)} 오늘은 나 ${engine.selfTodayTenGod}, 상대 ${engine.otherTodayTenGod}이라 ${meetClause} 하루이며, 기운은 ${grade}입니다.`;
+  const summaryLine = buildSummaryLine(
+    selfName,
+    otherName,
+    engine.selfTodayTenGod,
+    engine.otherTodayTenGod,
+    grade,
+    pairSeed,
+    date,
+  );
 
   const relationship = [
-    dualEasyLine('오늘', engine.selfTodayTenGod, engine.otherTodayTenGod),
-    dualEasyLine('이달', engine.selfMonthTenGod, engine.otherMonthTenGod),
-    dualEasyLine('올해', engine.selfYearTenGod, engine.otherYearTenGod),
-    `둘의 기운은 ${elementEasy}.`,
+    dualEasyLine('오늘', engine.selfTodayTenGod, engine.otherTodayTenGod, pairSeed, date),
+    dualEasyLine('이달', engine.selfMonthTenGod, engine.otherMonthTenGod, pairSeed, date),
+    dualEasyLine('올해', engine.selfYearTenGod, engine.otherYearTenGod, pairSeed, date),
+    elementRelationshipLine(engine.elementKind, pairSeed, date),
   ].join(' ');
 
   return {
@@ -666,7 +814,7 @@ export function buildTodayCompatibility(
         engine.selfTodayTenGod,
         engine.otherTodayTenGod,
         date,
-        `${self.birthDate}:${other.birthDate}`,
+        pairSeed,
       ),
     ),
     caution: buildCaution(
@@ -675,7 +823,7 @@ export function buildTodayCompatibility(
       engine.animalKind,
       engine.elementKind,
       date,
-      `${self.birthDate}:${other.birthDate}`,
+      pairSeed,
     ),
     keywords,
     selfAnimal: engine.self.animal as ZodiacAnimal,
