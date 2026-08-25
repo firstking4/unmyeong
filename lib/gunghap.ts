@@ -65,7 +65,7 @@ const EASY_FOCUS: Record<string, string[]> = {
   비견: ['같은 속도', '같이하기'],
   겁재: ['서두름', '다툼'],
   식신: ['표현', '나누기'],
-  상관: ['직설', '날카로움'],
+  상관: ['말톤', '솔직함'],
   편재: ['움직임', '기회'],
   정재: ['챙기기', '약속'],
   편관: ['압박', '부담'],
@@ -93,7 +93,7 @@ const EASY_CAUTION_VARIANTS: Record<string, string[]> = {
   ],
   상관: [
     '말이 너무 세지지 않게.',
-    '직설이 날카롭게 나가지 않게.',
+    '말톤이 날카롭게 나가지 않게.',
     '비판 톤으로 대화하지 않기.',
   ],
   편재: [
@@ -142,6 +142,81 @@ const GENERIC_CAUTION = [
   '작은 일로 톤이 올라가지 않게.',
   '확답을 오늘 안에 받으려 하지 않기.',
 ];
+
+/** 오늘 해보기 — 십신별 후보(날짜·관계 시드로 순환) */
+const EASY_GUIDANCE_VARIANTS: Record<string, string[]> = {
+  비견: [
+    '오늘은 같은 속도로 한 가지만 같이하기.',
+    '오늘은 각자 페이스를 존중하며 짧게 만나기.',
+    '오늘은 경쟁 대신 협력으로 맞추기.',
+  ],
+  겁재: [
+    '오늘은 서두르지 않고 한 박자 쉬며 대화하기.',
+    '오늘은 결론보다 분위기를 먼저 맞추기.',
+    '오늘은 다툼 대신 짧은 안부로 이어가기.',
+  ],
+  식신: [
+    '오늘은 표현·나누기 쪽으로 작은 이야기 하나.',
+    '오늘은 만든 것·느낀 것을 가볍게 공유하기.',
+    '오늘은 완성도보다 대화로 이어가기.',
+  ],
+  상관: [
+    '오늘은 말을 부드럽게 다듬고 짧게 만나기.',
+    '오늘은 솔직함 대신 제안으로 바꿔 말하기.',
+    '오늘은 날카로운 관찰을 공유하되 톤은 낮추기.',
+  ],
+  편재: [
+    '오늘은 움직임·기회 중 하나만 골라 같이하기.',
+    '오늘은 새 제안을 가볍게 나누고 반응 보기.',
+    '오늘은 여러 일보다 한 가지에 집중하기.',
+  ],
+  정재: [
+    '오늘은 챙기기·약속 중 작은 일 하나 정리하기.',
+    '오늘은 계획을 짧게 맞추고 다음 만남 잡기.',
+    '오늘은 신뢰 쌓는 작은 약속 하나 지키기.',
+  ],
+  편관: [
+    '오늘은 압박·부담을 줄이고 한 가지만 맞추기.',
+    '오늘은 기준을 정하되 톤은 부드럽게 하기.',
+    '오늘은 책임을 나누며 짧게 만나기.',
+  ],
+  정관: [
+    '오늘은 규칙·약속을 가볍게 맞추기.',
+    '오늘은 형식보다 마음이 통하는 대화로.',
+    '오늘은 해야 할 연락·절차 하나 처리하기.',
+  ],
+  편인: [
+    '오늘은 혼자 시간을 존중하며 짧게 만나기.',
+    '오늘은 생각을 재촉하지 않고 한 주제만 나누기.',
+    '오늘은 침묵도 괜찮다고 두고 가볍게 이어가기.',
+  ],
+  정인: [
+    '오늘은 배움·돌봄 쪽으로 작은 도움 하나.',
+    '오늘은 천천히 익히는 대화로 이어가기.',
+    '오늘은 결정을 맡기기보다 함께 정하기.',
+  ],
+};
+
+const GENERIC_GUIDANCE: Record<ReturnType<typeof meetingTone>, string[]> = {
+  주의: [
+    '오늘은 짧은 안부만 나누기.',
+    '오늘은 길게 늘이지 말기.',
+    '오늘은 가볍게 인사만 나누기.',
+    '오늘은 말수를 줄이고 톤을 낮추기.',
+  ],
+  조율: [
+    '오늘은 속도 차이를 맞추며 짧게 만나기.',
+    '오늘은 한쪽만 맞추지 않고 균형 잡기.',
+    '오늘은 작은 일 하나로 호흡 맞추기.',
+    '오늘은 페이스를 서로 확인하며 대화하기.',
+  ],
+  순조: [
+    '오늘은 작은 일 하나만 같이하기.',
+    '오늘은 짧은 대화로 가볍게 이어가기.',
+    '오늘은 부담 없는 만남으로 시작하기.',
+    '오늘은 좋은 흐름을 작게 이어가기.',
+  ],
+};
 
 const ANIMAL_CAUTION: Record<string, string[]> = {
   육충: YUKCHUNG_CAUTION,
@@ -248,6 +323,46 @@ function cautionVariantsForGod(god: string): string[] {
   return EASY_CAUTION_VARIANTS[god] ?? [];
 }
 
+function guidanceVariantsForGod(god: string): string[] {
+  return EASY_GUIDANCE_VARIANTS[god] ?? [];
+}
+
+function dynamicGuidanceLines(selfGod: string, otherGod: string): string[] {
+  const focus = uniqueWords([
+    ...(EASY_FOCUS[selfGod] ?? []),
+    ...(EASY_FOCUS[otherGod] ?? []),
+  ]);
+  if (focus.length === 0) return [];
+
+  const tone = meetingTone(selfGod, otherGod);
+  const pair = focus.slice(0, 2).join('·');
+  const triple = focus.slice(0, 3).join('·');
+  const lines = [
+    `오늘은 ${focus[0]} 쪽에서 작은 제안 하나 나누기.`,
+    focus[1]
+      ? `오늘은 ${focus[1]} 흐름으로 짧게 이어가기.`
+      : `오늘은 ${focus[0]} 흐름으로 짧게 이어가기.`,
+    `오늘은 ${pair} 흐름을 가볍게 맞추며 만나기.`,
+    `오늘은 ${focus[0]}보다 분위기를 먼저 살피기.`,
+  ];
+  if (triple !== pair) lines.push(`오늘은 ${triple} 쪽으로 작은 일 하나.`);
+  if (tone === '주의') {
+    lines.push(`오늘은 ${withEulReul(focus[0])} 낮추고 짧게 만나기.`);
+    lines.push(`오늘은 ${withEulReul(pair)} 줄이고 가볍게 만나기.`);
+    lines.push('오늘은 짧은 안부로 톤부터 맞추기.');
+  }
+  if (tone === '조율') {
+    lines.push(`오늘은 ${triple || pair} 속도를 서로 맞추기.`);
+    lines.push(`오늘은 ${pair} 균형을 먼저 맞추기.`);
+    if (focus[1]) lines.push(`오늘은 ${focus[0]}과 ${focus[1]} 사이를 조율하며 만나기.`);
+  }
+  if (tone === '순조') {
+    lines.push(`오늘은 ${triple || pair} 흐름으로 가볍게 이어가기.`);
+    lines.push(`오늘은 ${focus[0]} 쪽에서 작은 제안 하나.`);
+  }
+  return lines;
+}
+
 function dynamicCautionLines(selfGod: string, otherGod: string): string[] {
   const focus = uniqueWords([
     ...(EASY_FOCUS[selfGod] ?? []),
@@ -285,44 +400,20 @@ function buildGuidance(
   date: Date,
   pairSeed: string,
 ): string {
-  const tone = meetingTone(selfGod, otherGod);
-  const focus = uniqueWords([
-    ...(EASY_FOCUS[selfGod] ?? []),
-    ...(EASY_FOCUS[otherGod] ?? []),
-  ])
-    .slice(0, 3)
-    .join('·');
   const dateKey = localYmd(date);
   const seed = hashCopySeed(`gunghap-guidance:${dateKey}:${selfGod}:${otherGod}:${pairSeed}`);
+  const tone = meetingTone(selfGod, otherGod);
 
-  if (!focus) {
-    const fallbacks =
-      tone === '주의'
-        ? ['오늘은 짧은 안부만 나누기.', '오늘은 길게 늘이지 말기.', '오늘은 가볍게 인사만 나누기.']
-        : ['오늘은 작은 일 하나만.', '오늘은 짧은 대화로 시작하기.', '오늘은 부담 없는 만남으로.'];
-    return fallbacks[seed % fallbacks.length];
+  const candidates: string[] = [];
+  for (const god of prioritizedCautionGods(selfGod, otherGod)) {
+    candidates.push(...guidanceVariantsForGod(god));
   }
+  candidates.push(...dynamicGuidanceLines(selfGod, otherGod));
+  candidates.push(...GENERIC_GUIDANCE[tone]);
 
-  const templates: Record<ReturnType<typeof meetingTone>, string[]> = {
-    주의: [
-      `오늘은 ${withEulReul(focus)} 줄이고, 짧게 만나기.`,
-      `오늘은 ${withEulReul(focus)} 과하게 키우지 말기.`,
-      `오늘은 ${withEulReul(focus)} 내려놓고 가볍게 만나기.`,
-    ],
-    조율: [
-      `오늘은 ${focus} 속도를 서로 맞추기.`,
-      `오늘은 ${focus} 균형을 먼저 맞추기.`,
-      `오늘은 ${focus} 사이를 조율하며 만나기.`,
-    ],
-    순조: [
-      `오늘은 ${focus} 쪽으로 작은 일 하나.`,
-      `오늘은 ${focus} 흐름으로 가볍게 이어가기.`,
-      `오늘은 ${focus} 쪽에서 작은 제안 하나.`,
-    ],
-  };
-
-  const options = templates[tone];
-  return options[seed % options.length];
+  const unique = candidates.filter((line, i, all) => Boolean(line) && all.indexOf(line) === i);
+  if (unique.length === 0) return GENERIC_GUIDANCE[tone][0];
+  return unique[seed % unique.length];
 }
 
 function prioritizedCautionGods(selfGod: string, otherGod: string): string[] {
