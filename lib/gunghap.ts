@@ -10,6 +10,7 @@ import {
   rawTotalToTodayScore,
   type GunghapTarotReading,
 } from '@/lib/gunghapTarot';
+import { localYmd } from '@/lib/daily/pick';
 import { type Element, type ZodiacAnimal } from '@/lib/saju';
 import type { ContactProfile, Profile } from '@/lib/types';
 
@@ -73,18 +74,82 @@ const EASY_FOCUS: Record<string, string[]> = {
   정인: ['배움', '돌봄'],
 };
 
-/** 조심할 점 — 십신 이름 없이 */
-const EASY_CAUTION: Record<string, string> = {
-  비견: '같은 자리에서 겨루지 않기.',
-  겁재: '서두르거나 다투지 않기.',
-  식신: '완성만 따지다 만남을 미루지 않기.',
-  상관: '말이 너무 세지지 않게.',
-  편재: '약속을 너무 많이 잡지 않기.',
-  정재: '완벽하려다 만남을 미루지 않기.',
-  편관: '상대를 몰아붙이지 않기.',
-  정관: '형식만 챙기다 마음을 놓치지 않기.',
-  편인: '답을 재촉해 밀어내지 않기.',
-  정인: '결정을 전부 맡기지 않기.',
+/** 조심할 점 — 십신별 후보(날짜·관계 시드로 순환) */
+const EASY_CAUTION_VARIANTS: Record<string, string[]> = {
+  비견: [
+    '같은 자리에서 겨루지 않기.',
+    '속도 차이를 무시하지 않기.',
+    '내 방식만 맞다고 하지 않기.',
+  ],
+  겁재: [
+    '서두르거나 다투지 않기.',
+    '조급하게 결론부터 내지 않기.',
+    '사소한 일로 겨루지 않기.',
+  ],
+  식신: [
+    '완성만 따지다 만남을 미루지 않기.',
+    '표현 욕심에 상대 말을 놓치지 않기.',
+    '잘했다·못했다만 나누지 않기.',
+  ],
+  상관: [
+    '말이 너무 세지지 않게.',
+    '직설이 날카롭게 나가지 않게.',
+    '비판 톤으로 대화하지 않기.',
+  ],
+  편재: [
+    '약속을 너무 많이 잡지 않기.',
+    '움직임만 챙기다 대화를 놓치지 않기.',
+    '새 일만 벌이지 않기.',
+  ],
+  정재: [
+    '완벽하려다 만남을 미루지 않기.',
+    '세부만 챙기다 분위기를 놓치지 않기.',
+    '약속을 너무 엄하게 맞추지 않기.',
+  ],
+  편관: [
+    '상대를 몰아붙이지 않기.',
+    '압박감을 주는 말투 피하기.',
+    '명령조로 말하지 않기.',
+  ],
+  정관: [
+    '형식만 챙기다 마음을 놓치지 않기.',
+    '규칙만 따지다 유연함을 잃지 않기.',
+    '체크리스트처럼 대화하지 않기.',
+  ],
+  편인: [
+    '답을 재촉해 밀어내지 않기.',
+    '혼자 생각할 시간을 빼앗지 않기.',
+    '침묵을 답답해하지 않기.',
+  ],
+  정인: [
+    '결정을 전부 맡기지 않기.',
+    '돌봄이 부담이 되지 않게.',
+    '책임을 한쪽에만 두지 않기.',
+  ],
+};
+
+const YUKCHUNG_CAUTION = [
+  '말투가 세지지 않게 조심하기.',
+  '말끝을 무겁게 하지 않기.',
+  '답답해하며 몰아붙이지 않기.',
+];
+
+const GENERIC_CAUTION = [
+  '너무 밀어붙이지만 않기.',
+  '형식만 챙기다 마음을 놓치지 않기.',
+  '한쪽만 맞추려 하지 않기.',
+  '답을 재촉하며 분위기를 급하게 만들지 않기.',
+  '작은 일로 톤이 올라가지 않게.',
+  '확답을 오늘 안에 받으려 하지 않기.',
+];
+
+const ANIMAL_CAUTION: Record<string, string[]> = {
+  육충: YUKCHUNG_CAUTION,
+};
+
+const ELEMENT_CAUTION: Record<string, string[]> = {
+  극함: ['힘겨루기처럼 보이지 않게.', '맞서기보다 한 박자 쉬기.'],
+  극받음: ['밀어내지 않게 조심하기.', '상대 페이스를 존중하기.'],
 };
 
 const EASY_ANIMAL: Record<string, string> = {
@@ -117,6 +182,10 @@ function withGwa(word: string): string {
 
 function withEun(word: string): string {
   return `${word}${hasFinalConsonant(word) ? '은' : '는'}`;
+}
+
+function withEulReul(word: string): string {
+  return `${word}${hasFinalConsonant(word) ? '을' : '를'}`;
 }
 
 function formatCompactDate(date: Date) {
@@ -169,7 +238,53 @@ function toneKeyword(selfGod: string, otherGod: string): string {
   return '잘 맞음';
 }
 
-function buildGuidance(selfGod: string, otherGod: string): string {
+function hashCopySeed(input: string): number {
+  let h = 0;
+  for (let i = 0; i < input.length; i++) h = (h * 31 + input.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+function cautionVariantsForGod(god: string): string[] {
+  return EASY_CAUTION_VARIANTS[god] ?? [];
+}
+
+function dynamicCautionLines(selfGod: string, otherGod: string): string[] {
+  const focus = uniqueWords([
+    ...(EASY_FOCUS[selfGod] ?? []),
+    ...(EASY_FOCUS[otherGod] ?? []),
+  ]);
+  if (focus.length === 0) return [];
+
+  const tone = meetingTone(selfGod, otherGod);
+  const pair = focus.slice(0, 2).join('·');
+  const triple = focus.slice(0, 3).join('·');
+  const lines = [
+    `${withEulReul(pair)} 동시에 밀지 않기.`,
+    `${focus[0]}만 따지지 않기.`,
+    focus[1] ? `${withIga(focus[1])} 겹치지 않게.` : `${withIga(focus[0])} 겹치지 않게.`,
+    `${pair}로 밀어붙이지 않기.`,
+    `${withEulReul(pair)} 한꺼번에 꺼내지 않기.`,
+    focus[2] ? `${focus[2]}에만 시선이 가지 않게.` : `${focus[0]}에만 시선이 가지 않게.`,
+  ];
+  if (triple !== pair) lines.push(`${withIga(triple)} 한꺼번에 나오지 않게.`);
+  if (tone === '주의') {
+    lines.push(`${withEulReul(pair)} 줄이고 짧게 마무리하기.`);
+    lines.push('말수를 줄이고 톤을 낮추기.');
+  }
+  if (tone === '조율') {
+    lines.push(`${pair} 속도 차이를 무시하지 않기.`);
+    lines.push('한쪽만 맞추라고 재촉하지 않기.');
+  }
+  if (tone === '순조') lines.push('너무 많은 걸 한 번에 꺼내지 않기.');
+  return lines;
+}
+
+function buildGuidance(
+  selfGod: string,
+  otherGod: string,
+  date: Date,
+  pairSeed: string,
+): string {
   const tone = meetingTone(selfGod, otherGod);
   const focus = uniqueWords([
     ...(EASY_FOCUS[selfGod] ?? []),
@@ -177,31 +292,83 @@ function buildGuidance(selfGod: string, otherGod: string): string {
   ])
     .slice(0, 3)
     .join('·');
+  const dateKey = localYmd(date);
+  const seed = hashCopySeed(`gunghap-guidance:${dateKey}:${selfGod}:${otherGod}:${pairSeed}`);
+
   if (!focus) {
-    return tone === '주의' ? '오늘은 짧은 안부만 나누기.' : '오늘은 작은 일 하나만.';
+    const fallbacks =
+      tone === '주의'
+        ? ['오늘은 짧은 안부만 나누기.', '오늘은 길게 늘이지 말기.', '오늘은 가볍게 인사만 나누기.']
+        : ['오늘은 작은 일 하나만.', '오늘은 짧은 대화로 시작하기.', '오늘은 부담 없는 만남으로.'];
+    return fallbacks[seed % fallbacks.length];
   }
-  if (tone === '주의') return `오늘은 ${focus}를 줄이고, 짧게 만나기.`;
-  if (tone === '조율') return `오늘은 ${focus} 속도를 서로 맞추기.`;
-  return `오늘은 ${focus} 쪽으로 작은 일 하나.`;
+
+  const templates: Record<ReturnType<typeof meetingTone>, string[]> = {
+    주의: [
+      `오늘은 ${withEulReul(focus)} 줄이고, 짧게 만나기.`,
+      `오늘은 ${withEulReul(focus)} 과하게 키우지 말기.`,
+      `오늘은 ${withEulReul(focus)} 내려놓고 가볍게 만나기.`,
+    ],
+    조율: [
+      `오늘은 ${focus} 속도를 서로 맞추기.`,
+      `오늘은 ${focus} 균형을 먼저 맞추기.`,
+      `오늘은 ${focus} 사이를 조율하며 만나기.`,
+    ],
+    순조: [
+      `오늘은 ${focus} 쪽으로 작은 일 하나.`,
+      `오늘은 ${focus} 흐름으로 가볍게 이어가기.`,
+      `오늘은 ${focus} 쪽에서 작은 제안 하나.`,
+    ],
+  };
+
+  const options = templates[tone];
+  return options[seed % options.length];
 }
 
-/** 오늘 나·상대 십신 기준 — guidance와 같이 날짜마다 바뀜 */
-function buildCaution(selfGod: string, otherGod: string, animalKind: string): string {
-  if (HARD_GODS.has(selfGod) && EASY_CAUTION[selfGod]) return EASY_CAUTION[selfGod];
-  if (HARD_GODS.has(otherGod) && EASY_CAUTION[otherGod]) return EASY_CAUTION[otherGod];
-  if (animalKind === '육충') return '말투가 세지지 않게 조심하기.';
-  if (selfGod === otherGod) {
-    return EASY_CAUTION[selfGod] ?? '너무 밀어붙이지만 않기.';
-  }
+function prioritizedCautionGods(selfGod: string, otherGod: string): string[] {
+  const gods: string[] = [];
+  const push = (god: string) => {
+    if (god && gods.indexOf(god) === -1) gods.push(god);
+  };
+
+  if (HARD_GODS.has(selfGod)) push(selfGod);
+  if (HARD_GODS.has(otherGod)) push(otherGod);
+  push(selfGod);
+  push(otherGod);
 
   const assertive = new Set(['비견', '식신', '편재', '편인']);
-  if (assertive.has(selfGod) && !assertive.has(otherGod)) {
-    return EASY_CAUTION[selfGod] ?? '너무 밀어붙이지만 않기.';
+  if (assertive.has(selfGod)) push(selfGod);
+  if (assertive.has(otherGod)) push(otherGod);
+
+  return gods;
+}
+
+/** 오늘 나·상대 십신 + 날짜·관계 시드 — 해보기처럼 매일·지인별로 달라짐 */
+function buildCaution(
+  selfGod: string,
+  otherGod: string,
+  animalKind: string,
+  elementKind: string,
+  date: Date,
+  pairSeed: string,
+): string {
+  const dateKey = localYmd(date);
+  const seed = hashCopySeed(
+    `gunghap-caution:${dateKey}:${selfGod}:${otherGod}:${animalKind}:${elementKind}:${pairSeed}`,
+  );
+
+  const candidates: string[] = [];
+  for (const god of prioritizedCautionGods(selfGod, otherGod)) {
+    candidates.push(...cautionVariantsForGod(god));
   }
-  if (assertive.has(otherGod) && !assertive.has(selfGod)) {
-    return EASY_CAUTION[otherGod] ?? '너무 밀어붙이지만 않기.';
-  }
-  return EASY_CAUTION[selfGod] ?? EASY_CAUTION[otherGod] ?? '너무 밀어붙이지만 않기.';
+  candidates.push(...dynamicCautionLines(selfGod, otherGod));
+  candidates.push(...(ANIMAL_CAUTION[animalKind] ?? []));
+  candidates.push(...(ELEMENT_CAUTION[elementKind] ?? []));
+  candidates.push(...GENERIC_CAUTION);
+
+  const unique = candidates.filter((line, i, all) => Boolean(line) && all.indexOf(line) === i);
+  if (unique.length === 0) return GENERIC_CAUTION[0];
+  return unique[seed % unique.length];
 }
 
 function withIga(word: string): string {
@@ -351,8 +518,22 @@ export function buildTodayCompatibility(
     summary: fixObjectParticle(summary),
     summaryLine: fixObjectParticle(summaryLine),
     relationship,
-    guidance: fixObjectParticle(buildGuidance(engine.selfTodayTenGod, engine.otherTodayTenGod)),
-    caution: buildCaution(engine.selfTodayTenGod, engine.otherTodayTenGod, engine.animalKind),
+    guidance: fixObjectParticle(
+      buildGuidance(
+        engine.selfTodayTenGod,
+        engine.otherTodayTenGod,
+        date,
+        `${self.birthDate}:${other.birthDate}`,
+      ),
+    ),
+    caution: buildCaution(
+      engine.selfTodayTenGod,
+      engine.otherTodayTenGod,
+      engine.animalKind,
+      engine.elementKind,
+      date,
+      `${self.birthDate}:${other.birthDate}`,
+    ),
     keywords,
     selfAnimal: engine.self.animal as ZodiacAnimal,
     otherAnimal: engine.other.animal as ZodiacAnimal,
