@@ -244,6 +244,46 @@ const EASY_ELEMENT: Record<string, string> = {
   극받음: '힘겨루기 쉬운 기운',
 };
 
+/** 궁합 오늘·이달·올해 — 관계 맥락 짧은 말 (tenGodPlain 잘림 대신) */
+const RELATIONSHIP_TODAY: Record<string, string> = {
+  비견: '같은 페이스',
+  겁재: '서두름·결단',
+  식신: '표현·나누기',
+  상관: '말톤·아이디어',
+  편재: '움직임·기회',
+  정재: '챙기기·약속',
+  편관: '압박·책임',
+  정관: '규칙·약속',
+  편인: '혼자 시간',
+  정인: '배움·돌봄',
+};
+
+const RELATIONSHIP_MONTH: Record<string, string> = {
+  비견: '동료·경쟁',
+  겁재: '속도 경쟁',
+  식신: '표현·제작',
+  상관: '피드백·개선',
+  편재: '기회·확장',
+  정재: '축적·정리',
+  편관: '책임·마감',
+  정관: '질서·약속',
+  편인: '탐구·혼자',
+  정인: '배움·돌봄',
+};
+
+const RELATIONSHIP_YEAR: Record<string, string> = {
+  비견: '주체성·동료',
+  겁재: '결단·속도',
+  식신: '표현·성장',
+  상관: '관찰·조율',
+  편재: '기회·확장',
+  정재: '안정·축적',
+  편관: '책임·기준',
+  정관: '질서·신뢰',
+  편인: '탐구·직관',
+  정인: '배움·기반',
+};
+
 function hasFinalConsonant(word: string): boolean {
   const last = word.trim().slice(-1);
   const code = last.charCodeAt(0);
@@ -291,19 +331,31 @@ function easyFocus(god: string, limit = 2): string {
   return (EASY_FOCUS[god] ?? []).slice(0, limit).join('·');
 }
 
-function easyPlain(god: string): string {
-  // tenGodPlain이 길면 첫 덩어리만
-  const plain = tenGodPlain(god);
-  const cut = plain.split('과')[0]?.split('와')[0]?.trim();
-  return cut || plain;
+function relationshipLabel(scope: '오늘' | '이달' | '올해', god: string): string {
+  const map =
+    scope === '오늘' ? RELATIONSHIP_TODAY : scope === '이달' ? RELATIONSHIP_MONTH : RELATIONSHIP_YEAR;
+  if (map[god]) return map[god];
+  return easyFocus(god) || tenGodPlain(god);
 }
 
 function dualEasyLine(scope: '오늘' | '이달' | '올해', selfGod: string, otherGod: string): string {
+  const selfLabel = relationshipLabel(scope, selfGod);
+  const otherLabel = relationshipLabel(scope, otherGod);
   const topic = withEun(scope);
+
   if (selfGod === otherGod) {
-    return `${topic} 둘이 ${easyPlain(selfGod)} 쪽.`;
+    if (scope === '오늘') return `${topic} 둘 다 ${selfLabel} 쪽이에요.`;
+    if (scope === '이달') return `${topic} 둘 다 ${selfLabel} 환경이에요.`;
+    return `${topic} 둘 다 ${selfLabel} 방향이에요.`;
   }
-  return `${topic} 나는 ${easyPlain(selfGod)}, 상대는 ${easyPlain(otherGod)} 쪽.`;
+
+  if (scope === '오늘') {
+    return `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 쪽이에요.`;
+  }
+  if (scope === '이달') {
+    return `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 흐름이에요.`;
+  }
+  return `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 방향이에요.`;
 }
 
 function toneKeyword(selfGod: string, otherGod: string): string {
@@ -565,7 +617,7 @@ export function buildTodayCompatibility(
 
   const summary = [
     `${withGwa(selfName)} ${withEun(otherName)} ${animalEasy}이고, ${elementEasy}입니다.`,
-    `상대는 나에게 ${easyPlain(pairGod)} 쪽.`,
+    `상대는 나에게 ${relationshipLabel('오늘', pairGod)} 쪽이에요.`,
     pairFocus ? `오늘은 ${withIga(pairFocus)} 보이기 쉽습니다.` : null,
   ]
     .filter(Boolean)
