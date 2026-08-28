@@ -54,7 +54,8 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
   const card = pickTarotBySeed(seed);
   const reversed = hashSeed(`${seed}:rev`) % 2 === 1;
   const title = card.title ?? card.label;
-  const theme = pickDaily('tarot', `tarot:${card.id}`, date);
+  // 프로필 salt — dayNumber와 함께 날짜마다 변주가 바뀌게 한다 (카드 id salt는 연속일 동일 문구 가능).
+  const theme = pickDaily('tarot', `tarot:${profile.birthDate ?? 'anon'}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}`, date);
   const reverseWord = theme.reverseKeyword ?? '점검';
   const seedHints = card.hints;
 
@@ -100,10 +101,7 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
             : `${title}이(가) 가리키는 교훈을 안으로 가져가 보세요. ${theme.focus}`,
         },
         { label: '오늘의 한 가지', text: theme.action },
-        {
-          label: '주의',
-          text: `${theme.caution} 카드가 뒤집힌 날에는 결론보다 점검이 우선입니다.`,
-        },
+        { label: '주의', text: theme.caution },
       ]
     : [
         {

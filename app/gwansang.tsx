@@ -37,7 +37,9 @@ import {
   listPhysiognomyCategories,
   type PhysiognomySelection,
 } from '@/lib/physiognomy';
+import { dateFromLocalYmd } from '@/lib/daily/pick';
 import type { Gender } from '@/lib/types';
+import { useLocalDateKey } from '@/lib/useLocalDateKey';
 
 type HeroBodyProps = {
   selection: PhysiognomySelection;
@@ -119,8 +121,12 @@ export default function GwansangScreen() {
   const selection: PhysiognomySelection = profile.physiognomy ?? {};
   const categories = listPhysiognomyCategories();
   const filled = countPhysiognomySelections(selection);
+  const dateKey = useLocalDateKey();
   const composite = useMemo(() => buildPhysiognomyComposite(selection), [selection]);
-  const today = useMemo(() => buildTodayPhysiognomy(selection), [selection]);
+  const today = useMemo(
+    () => buildTodayPhysiognomy(selection, dateFromLocalYmd(dateKey)),
+    [selection, dateKey],
+  );
   const portraitW = Math.min(220, Math.round(windowW * 0.52));
 
   const applyPhysiognomy = async (next: PhysiognomySelection) => {

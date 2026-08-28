@@ -15,6 +15,7 @@ import { isFortuneReady, useProfile } from '@/context/ProfileContext';
 import { useRewardUnlock } from '@/context/RewardUnlockContext';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { recordTarotView } from '@/lib/history';
+import { dateFromLocalYmd } from '@/lib/daily/pick';
 import { buildTarotReading, type TarotReading } from '@/lib/tarot';
 import { tarotMajorImage } from '@/lib/tarotMajorImages';
 import { useLocalDateKey } from '@/lib/useLocalDateKey';
@@ -40,7 +41,7 @@ export default function TarotScreen() {
   const ready = isFortuneReady(profile);
   const dateKey = useLocalDateKey();
   const reading = useMemo(
-    () => (ready ? buildTarotReading(profile) : null),
+    () => (ready ? buildTarotReading(profile, dateFromLocalYmd(dateKey)) : null),
     [profile, ready, dateKey],
   );
 
