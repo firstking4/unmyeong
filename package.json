@@ -75,6 +75,7 @@
     "analytics:verify-device": "node scripts/verify-analytics-device.mjs",
     "analytics:install-preview": "node scripts/install-preview-apk.mjs",
     "firebase:install": "node scripts/install-firebase-config.mjs",
+    "store:verify-developer": "node scripts/verify-play-developer.mjs",
     "store:download-aab": "node scripts/download-production-aab.mjs",
     "store:download-apk": "node scripts/download-preview-apk.mjs",
     "release:preview": "node scripts/publish-preview-release.mjs"

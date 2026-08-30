@@ -49,3 +49,6 @@ releases/
 # generated native folders
 /ios
 /android
+
+# Telegram handoff dumps (LATEST.md symlink stays tracked)
+.cursor/handoffs/telegram-cursor-*.md

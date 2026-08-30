@@ -15,6 +15,7 @@ alwaysApply: true
 | 슬러그 | `unmyeong-injido` |
 | 번들 ID | `com.yun.unmyeonginjido` |
 | 경로 | `/Volumes/Netac 2TB/Dev/Expo/unmyeong-injido` · `~/Projects/unmyeong-injido` |
+| Cursor 열기 | **`~/Projects/unmyeong-injido`만** (심볼릭 링크). 외장 실경로를 두 번째 창으로 열지 말 것 — 채팅·규칙이 갈라짐 |
 | 스택 | Expo 57 · React Native · TypeScript · expo-router |
 
 ## 별칭 (같은 프로젝트)
@@ -27,7 +28,8 @@ alwaysApply: true
 ## 하지 말 것
 
 - `인생인지도`를 못 찾았다고 **새 Expo 앱을 만들지 않기**
-- 삭제된 중복본 **`yeok-sul-ham`(역술함)** 을 다시 만들지 않기
+- 삭제된 중복본 **`yeok-sul-ham`(역술함)** 을 다시 만들지 않기 (아카이브: `/Volumes/Netac 2TB/Dev/Expo/_archive/yeoksulham`)
+- 외장 실경로와 `~/Projects/unmyeong-injido`를 **동시에 Cursor 프로젝트로 열지 않기**
 - 비슷한 이름의 다른 폴더를 본편으로 착각하지 않기
 
 ## 앱 구조 (요약)
