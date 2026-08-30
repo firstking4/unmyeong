@@ -394,10 +394,12 @@ export function pairCopy(god: string): PairCopy {
   );
 }
 
+/** 궁합 UI는 `lib/gunghap.ts` 전용 카피를 사용. 참고·검증용으로만 유지 */
 export function pairLead(god: string): string {
   return `상대는 나에게 ${tenGodPlain(god)} 쪽에 가깝습니다(${god}).`;
 }
 
+/** 궁합 UI는 `lib/gunghap.ts` 전용 카피를 사용. 참고·검증용으로만 유지 */
 export function meetingCopy(
   selfGod: string,
   otherGod: string,

@@ -58,7 +58,7 @@ function buildGunghapTarotReading(selfBirthDate, otherBirthDate, date) {
   const card = pickPairCard(seed);
   const reversed = hashSeed(`${seed}:rev`) % 2 === 1;
   const title = card.title ?? card.label;
-  const theme = pickDaily(`tarot:${card.id}`, date);
+  const theme = pickDaily(`gunghap:${selfBirthDate}:${otherBirthDate}`, date);
   const magnitude = isMajorArcana(card) ? MAJOR_DELTA : MINOR_DELTA;
   const scoreDelta = reversed ? -magnitude : magnitude;
   return {

@@ -510,11 +510,39 @@ function dualEasyLine(
   return options[seed % options.length];
 }
 
+const MOOD_TONE_LABELS: Record<ReturnType<typeof meetingTone>, string[]> = {
+  주의: ['천천히', '호흡 맞추기', '짧게', '톤 낮추기'],
+  조율: ['맞추기', '한 박자', '균형', '조율'],
+  순조: ['잘 맞음', '순조', '호응', '가볍게'],
+};
+
+const MOOD_GRADE_LABELS: Record<CompatibilityGrade, string[]> = {
+  주의: ['주의'],
+  조심: ['조심', '신중'],
+  무난: ['무난', '평온'],
+  좋음: ['좋음', '호응'],
+  최고: ['최고', '기운 좋음'],
+};
+
 function toneKeyword(selfGod: string, otherGod: string): string {
   const tone = meetingTone(selfGod, otherGod);
-  if (tone === '주의') return '천천히';
-  if (tone === '조율') return '맞추기';
-  return '잘 맞음';
+  return MOOD_TONE_LABELS[tone][0];
+}
+
+function buildMoodHeadline(
+  selfGod: string,
+  otherGod: string,
+  grade: CompatibilityGrade,
+  pairSeed: string,
+  date: Date,
+): string {
+  const tone = meetingTone(selfGod, otherGod);
+  const toneLabels = MOOD_TONE_LABELS[tone];
+  const gradeLabels = MOOD_GRADE_LABELS[grade];
+  const seed = hashCopySeed(`gunghap-mood:${localYmd(date)}:${selfGod}:${otherGod}:${pairSeed}`);
+  const tonePart = toneLabels[seed % toneLabels.length];
+  const gradePart = gradeLabels[Math.floor(seed / toneLabels.length) % gradeLabels.length];
+  return `${tonePart} · ${gradePart}`;
 }
 
 function hashCopySeed(input: string): number {
@@ -805,7 +833,13 @@ export function buildTodayCompatibility(
     rawTotal: rawWithTarot,
     dailyDelta: rawWithTarot,
     grade,
-    moodHeadline: `${toneKw} · ${grade}`,
+    moodHeadline: buildMoodHeadline(
+      engine.selfTodayTenGod,
+      engine.otherTodayTenGod,
+      grade,
+      pairSeed,
+      date,
+    ),
     summary: fixObjectParticle(summary),
     summaryLine: fixObjectParticle(summaryLine),
     relationship,

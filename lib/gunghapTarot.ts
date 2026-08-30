@@ -12,6 +12,8 @@ export type GunghapTarotReading = {
   headline: string;
   summaryLine: string;
   relationship: string;
+  /** 상세 잠금 본문 — 관계 한 줄(정방향) 또는 역방향 짧은 문장 */
+  detailLine: string;
   summary: string;
   caution: string;
   keywords: string[];
@@ -50,6 +52,10 @@ function withEulReul(word: string): string {
   return `${word}${hasFinalConsonant(word) ? '을' : '를'}`;
 }
 
+function fixObjectParticle(text: string): string {
+  return text.replace(/을\(를\)/g, '를').replace(/이\(가\)/g, '가');
+}
+
 function unique(words: (string | null | undefined)[]): string[] {
   const out: string[] = [];
   for (const raw of words) {
@@ -76,7 +82,7 @@ export function buildGunghapTarotReading(
   const card = pickPairCard(seed);
   const reversed = hashSeed(`${seed}:rev`) % 2 === 1;
   const title = card.title ?? card.label;
-  const theme = pickDaily('tarot', `tarot:${card.id}`, date);
+  const theme = pickDaily('tarot', `gunghap:${selfBirthDate}:${otherBirthDate}`, date);
   const reverseWord = theme.reverseKeyword ?? '점검';
   const seedHints = card.hints;
   const magnitude = isMajorArcana(card) ? MAJOR_DELTA : MINOR_DELTA;
@@ -112,17 +118,23 @@ export function buildGunghapTarotReading(
         .filter(Boolean)
         .join(' ');
 
-  const caution = reversed
-    ? `${theme.caution} 카드가 뒤집힌 날에는 결론보다 점검이 우선입니다.`
-    : theme.caution;
+  const caution = theme.caution;
 
-  const headline = reversed
-    ? `${title} · ${withEulReul(theme.keyword)} 다시 맞출 날`
-    : `${title}, ${theme.headline}`;
+  const headline = fixObjectParticle(
+    reversed
+      ? `${title} · ${withEulReul(theme.keyword)} 다시 맞출 날`
+      : `${title}, ${theme.headline}`,
+  );
 
   const summaryLine = reversed
     ? `타로 · ${title} · 역방향 — ${reverseWord}`
     : `타로 · ${title} — ${theme.keyword}`;
+
+  const detailLine = fixObjectParticle(
+    reversed
+      ? `${title} 역방향 — ${withEulReul(theme.keyword)} 다시 맞추는 날이에요.`
+      : theme.relationship,
+  );
 
   const keywords = unique([
     `타로·${theme.keyword}`,
@@ -138,9 +150,10 @@ export function buildGunghapTarotReading(
     keyword: theme.keyword,
     headline,
     summaryLine,
-    relationship,
-    summary,
-    caution,
+    relationship: fixObjectParticle(relationship),
+    detailLine,
+    summary: fixObjectParticle(summary),
+    caution: fixObjectParticle(caution),
     keywords,
     scoreDelta,
   };
