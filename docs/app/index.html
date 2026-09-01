@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>운명人지도 — 성향·사주·타로·지인 궁합</title>
+  <meta name="description" content="성향·사주·타로·지인 궁합으로 오늘을 짚어 보는 참고용 운세 앱. Yun In Lab." />
+  <link rel="canonical" href="https://firstking4.github.io/unmyeong/app/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:site_name" content="운명人지도" />
+  <meta property="og:title" content="운명人지도 — 성향·사주·타로·지인 궁합" />
+  <meta property="og:description" content="성향·사주·타로·지인 궁합으로 오늘을 짚어 보는 참고용 운세 앱." />
+  <meta property="og:url" content="https://firstking4.github.io/unmyeong/app/" />
+  <meta property="og:image" content="https://firstking4.github.io/unmyeong/store/play-icon-512.png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="운명人지도" />
+  <meta name="twitter:description" content="성향·사주·타로·지인 궁합으로 오늘을 짚어 보세요." />
+  <meta name="twitter:image" content="https://firstking4.github.io/unmyeong/store/play-icon-512.png" />
+  <style>
+    :root {
+      --bg: #f3eee6;
+      --card: #faf7f2;
+      --text: #1a1714;
+      --muted: #6b6560;
+      --tint: #b33a2e;
+      --hairline: #ddd5c8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 26rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 3rem;
+      text-align: center;
+    }
+    .icon {
+      width: 5.5rem;
+      height: 5.5rem;
+      border-radius: 1.1rem;
+      margin: 0 auto 1rem;
+      display: block;
+      box-shadow: 0 8px 24px rgba(26, 23, 20, 0.08);
+    }
+    h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      margin: 0 0 0.35rem;
+      letter-spacing: -0.02em;
+    }
+    .tagline {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin: 0 0 1.75rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--hairline);
+      border-radius: 0.75rem;
+      padding: 1.25rem 1rem;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .card h2 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin: 0 0 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .card ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      font-size: 0.92rem;
+    }
+    .card li { margin: 0.2rem 0; }
+    .cta {
+      display: block;
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.85rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: var(--tint);
+      color: #faf7f2;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      text-align: center;
+      cursor: pointer;
+    }
+    .cta:active { opacity: 0.9; }
+    .notice {
+      display: none;
+      margin-top: 0.75rem;
+      padding: 0.85rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--hairline);
+      background: #fff;
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-align: center;
+    }
+    .notice strong {
+      display: block;
+      color: var(--text);
+      font-size: 0.95rem;
+      margin-bottom: 0.25rem;
+    }
+    .platform-ios .android-only { display: none !important; }
+    .platform-ios .ios-only { display: block !important; }
+    .ios-only { display: none; }
+    .footer {
+      margin-top: 1.5rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .footer a { color: var(--tint); }
+  </style>
+  <script>
+    (function () {
+      var ua = navigator.userAgent || '';
+      var root = document.documentElement;
+      if (/iPhone|iPad|iPod/i.test(ua)) root.classList.add('platform-ios');
+      else if (/Android/i.test(ua)) root.classList.add('platform-android');
+      else root.classList.add('platform-other');
+    })();
+  </script>
+</head>
+<body>
+  <main class="wrap">
+    <img
+      class="icon"
+      src="../store/play-icon-512.png"
+      width="88"
+      height="88"
+      alt="운명人지도 앱 아이콘"
+    />
+    <h1>운명人지도</h1>
+    <p class="tagline">성향·사주·타로·지인 궁합으로 오늘을 짚어 보세요</p>
+
+    <section class="card">
+      <h2>앱에서 할 수 있는 것</h2>
+      <ul>
+        <li>오늘의 종합 운세와 키워드</li>
+        <li>성향 · 사주 · 타로 · 관상</li>
+        <li>지인 궁합과 오늘의 한마디</li>
+      </ul>
+    </section>
+
+    <div class="android-only">
+      <a
+        class="cta"
+        id="play-cta"
+        href="https://play.google.com/store/apps/details?id=com.yun.unmyeonginjido"
+        rel="noopener"
+      >Google Play에서 설치</a>
+    </div>
+
+    <div class="notice ios-only" role="status">
+      <strong>iPhone · iPad</strong>
+      App Store 버전은 준비 중이에요.<br />
+      출시되면 이 페이지에서 안내할게요.
+    </div>
+
+    <p class="footer">
+      Yun In Lab ·
+      <a href="../legal/privacy.html">개인정보</a> ·
+      <a href="../legal/terms.html">이용약관</a> ·
+      <a href="mailto:firstking4@gmail.com">문의</a>
+    </p>
+  </main>
+</body>
+</html>
