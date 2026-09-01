@@ -4,8 +4,7 @@ import { ShareIcon } from '@/components/icons/AppIcon';
 import { DojangSeal } from '@/components/ink/DojangSeal';
 import { Text } from '@/components/Themed';
 import Colors from '@/constants/Colors';
-import { display } from '@/constants/Fonts';
-import { paperShadow, radius } from '@/constants/Theme';
+import { radius } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { shareAppInstallPage } from '@/lib/appInstall';
 
@@ -25,126 +24,103 @@ export function ShareBannerSlot() {
       }}
       accessibilityRole="button"
       accessibilityLabel="앱 소개 페이지 공유"
-      style={({ pressed }) => [styles.wrap, { opacity: pressed ? 0.92 : 1 }]}>
+      style={({ pressed }) => [
+        styles.slot,
+        {
+          backgroundColor: c.card,
+          borderColor: c.hairline,
+          opacity: pressed ? 0.9 : 1,
+        },
+      ]}>
+      <Image
+        source={wash}
+        style={[styles.wash, { opacity: isDark ? 0.16 : 0.1 }]}
+        resizeMode="cover"
+        accessibilityIgnoresInvertColors
+      />
       <View
-        style={[
-          styles.card,
-          paperShadow,
-          {
-            backgroundColor: c.surface,
-            borderColor: c.hairline,
-          },
-        ]}>
-        <Image
-          source={wash}
-          style={[styles.wash, { opacity: isDark ? 0.22 : 0.14 }]}
-          resizeMode="cover"
-          accessibilityIgnoresInvertColors
-        />
-        <View
-          pointerEvents="none"
-          style={[
-            styles.accent,
-            {
-              backgroundColor: c.tint,
-              opacity: isDark ? 0.55 : 0.85,
-            },
-          ]}
-        />
-        <View pointerEvents="none" style={styles.seal}>
-          <DojangSeal size={54} rotate={-12} />
-        </View>
+        pointerEvents="none"
+        style={[styles.accent, { backgroundColor: c.tint, opacity: isDark ? 0.5 : 0.75 }]}
+      />
+      <View pointerEvents="none" style={styles.seal}>
+        <DojangSeal size={34} rotate={-10} />
+      </View>
 
-        <View style={styles.row}>
-          <Image source={icon} style={styles.thumb} resizeMode="cover" accessibilityIgnoresInvertColors />
-          <View style={styles.copy}>
-            <Text style={[styles.eyebrow, { color: c.tint }]}>SHARE</Text>
-            <Text style={[styles.title, { color: c.text, fontFamily: display }]}>친구에게 앱 공유</Text>
-            <Text style={[styles.hint, { color: c.muted }]}>성향·사주·타로 함께 살펴보기</Text>
-          </View>
-          <View style={[styles.cta, { backgroundColor: c.tint }]}>
-            <ShareIcon color="#F3EEE6" size={16} />
-            <Text style={styles.ctaText}>링크</Text>
-          </View>
-        </View>
+      <Image
+        source={icon}
+        style={[styles.thumb, { borderColor: c.hairline }]}
+        resizeMode="cover"
+        accessibilityIgnoresInvertColors
+      />
+      <View style={styles.copy}>
+        <Text style={[styles.title, { color: c.text }]}>친구에게 앱 공유</Text>
+        <Text style={[styles.hint, { color: c.muted }]}>성향·사주·타로 함께 살펴보기</Text>
+      </View>
+      <View style={[styles.cta, { backgroundColor: `${c.tint}18` }]}>
+        <ShareIcon color={c.tint} size={18} />
       </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: {
-    borderRadius: radius.lg,
-  },
-  card: {
-    minHeight: 92,
-    borderRadius: radius.lg,
+  slot: {
+    minHeight: 64,
+    borderRadius: radius.sm,
     borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 10,
     overflow: 'hidden',
-    justifyContent: 'center',
   },
   wash: {
-    ...StyleSheet.absoluteFillObject,
-    transform: [{ scale: 1.08 }],
+    position: 'absolute',
+    right: -24,
+    top: -8,
+    width: 120,
+    height: 80,
   },
   accent: {
     position: 'absolute',
     left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
+    top: 10,
+    bottom: 10,
+    width: 3,
+    borderRadius: 2,
   },
   seal: {
     position: 'absolute',
-    right: -6,
-    bottom: -10,
-    opacity: 0.1,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
+    right: 44,
+    bottom: -8,
+    opacity: 0.08,
   },
   thumb: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: StyleSheet.hairlineWidth,
   },
   copy: {
     flex: 1,
-    gap: 2,
-    paddingRight: 4,
-  },
-  eyebrow: {
-    fontSize: 10,
-    letterSpacing: 2.2,
-    fontWeight: '700',
-    lineHeight: 14,
+    gap: 1,
+    minWidth: 0,
   },
   title: {
-    fontSize: 17,
-    lineHeight: 24,
-    letterSpacing: 0.2,
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
   },
   hint: {
     fontSize: 12,
-    lineHeight: 17,
-    marginTop: 1,
+    lineHeight: 16,
   },
   cta: {
-    flexDirection: 'row',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 999,
-  },
-  ctaText: {
-    color: '#F3EEE6',
-    fontSize: 12,
-    fontWeight: '700',
-    lineHeight: 16,
+    justifyContent: 'center',
   },
 });
