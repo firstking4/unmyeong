@@ -14,6 +14,7 @@ import { useColorScheme } from './useColorScheme';
 
 import Colors from '@/constants/Colors';
 import { body } from '@/constants/Fonts';
+import { fs } from '@/constants/Theme';
 
 type ThemeProps = {
   lightColor?: string;
@@ -29,18 +30,19 @@ const MAX_FONT_SCALE = 1.2;
 /** NotoSansKR 기준 줄 간격. Android includeFontPadding을 끈 만큼 여기서 되돌린다. */
 const LINE_HEIGHT_RATIO = 1.4;
 
-const DEFAULT_FONT_SIZE = 14;
-
 /**
  * Android는 Text마다 폰트 패딩을 덧붙이고 한글 폰트는 상하 메트릭이 넓어서,
  * 같은 스타일이라도 iOS보다 훨씬 두꺼워진다. 패딩을 끄고 줄 간격을 직접 고정해 맞춘다.
  */
 function resolveTextStyle(style: StyleProp<TextStyle>): StyleProp<TextStyle> {
   const flat = StyleSheet.flatten(style);
-  if (flat?.lineHeight != null) return style;
-
-  const fontSize = typeof flat?.fontSize === 'number' ? flat.fontSize : DEFAULT_FONT_SIZE;
-  return [style, { lineHeight: Math.round(fontSize * LINE_HEIGHT_RATIO) }];
+  const baseSize = typeof flat?.fontSize === 'number' ? flat.fontSize : 14;
+  const fontSize = fs(baseSize);
+  const lineHeight =
+    typeof flat?.lineHeight === 'number'
+      ? Math.round(flat.lineHeight * (fontSize / baseSize))
+      : Math.round(fontSize * LINE_HEIGHT_RATIO);
+  return [style, { fontSize, lineHeight }];
 }
 
 export function useThemeColor(

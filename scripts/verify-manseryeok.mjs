@@ -312,13 +312,13 @@ const YEAR_SELF_TEN_GOD_DELTA = {
   편관: -4,
 };
 const SAME_YEAR_TEN_GOD_BONUS = 2;
-const SCORE_ORIGIN = 42;
+const SCORE_ORIGIN = 44;
 const MAX_POSITIVE_SUM = 46 + 23 + 12; // 81
 const SCORE_SCALE_MAX = 94;
 const BASE_RAW_MIN = 45;
 const BASE_RAW_MAX = 84;
-const BASE_MAP_MIN = 24;
-const BASE_MAP_MAX = 44;
+const BASE_MAP_MIN = 26;
+const BASE_MAP_MAX = 46;
 const BASE_WEIGHT_DAY = 0.35;
 const BASE_WEIGHT_HOUR = 0.1;
 const BASE_WEIGHT_ELEMENT_WITH_HOUR = 0.3;

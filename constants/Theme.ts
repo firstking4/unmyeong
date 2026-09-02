@@ -1,5 +1,12 @@
 import { Platform, StyleSheet } from 'react-native';
 
+/** 앱 전체 본문·타이틀 확대. `Themed` Text·탭바·헤더에 적용. */
+export const FONT_SCALE = 1.18;
+
+export function fs(size: number): number {
+  return Math.round(size * FONT_SCALE);
+}
+
 /** 8pt grid — editorial spacing. */
 export const space = {
   xs: 8,

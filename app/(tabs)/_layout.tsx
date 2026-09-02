@@ -7,6 +7,7 @@ import type { AnalyticsTab } from '@/lib/firebase/config';
 
 import Colors from '@/constants/Colors';
 import { body } from '@/constants/Fonts';
+import { fs } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { BrandWordmark } from '@/components/ink/BrandWordmark';
 import { HamburgerIcon } from '@/components/ui/HamburgerIcon';
@@ -46,8 +47,8 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarLabelStyle: {
           fontFamily: body,
-          fontSize: 11,
-          lineHeight: 15,
+          fontSize: fs(11),
+          lineHeight: fs(15),
           fontWeight: '500',
           letterSpacing: 0.2,
           includeFontPadding: false,

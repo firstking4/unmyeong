@@ -100,7 +100,7 @@ export type CompatibilityEngineResult = {
   tenGodScore: number;
   /** 참고용 관계 점수(합산 모델과 별개) */
   baseScore: number;
-  /** 기본 궁합 → 0.24…0.44 보정 계수 */
+  /** 기본 궁합 → 0.26…0.46 보정 계수 */
   baseCorrectionFactor: number;
   /** (100 − 오늘원점수) × 계수 */
   baseCorrectionBonus: number;

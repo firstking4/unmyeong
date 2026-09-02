@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { DojangSeal } from '@/components/ink/DojangSeal';
 import { display } from '@/constants/Fonts';
+import { fs } from '@/constants/Theme';
 
 type Props = {
   tint: string;
@@ -12,8 +13,8 @@ type Props = {
 
 /** 운명 + 人 인장 + 지도 — 헤더·공유 카드 공통 워드마크. */
 export function BrandWordmark({ tint, text, size = 'header' }: Props) {
-  const fontSize = size === 'header' ? 22 : 18;
-  const lineHeight = size === 'header' ? 30 : 24;
+  const fontSize = fs(size === 'header' ? 22 : 18);
+  const lineHeight = fs(size === 'header' ? 30 : 24);
   const seal = size === 'header' ? 22 : 18;
 
   return (

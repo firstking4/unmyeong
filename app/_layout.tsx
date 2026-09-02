@@ -10,6 +10,7 @@ import { AnalyticsScreenTracker } from '@/components/AnalyticsScreenTracker';
 import { useColorScheme } from '@/components/useColorScheme';
 import { BackIcon } from '@/components/ui/BackIcon';
 import Colors from '@/constants/Colors';
+import { fs } from '@/constants/Theme';
 import { ContactsProvider } from '@/context/ContactsContext';
 import { PersonalityResultsProvider } from '@/context/PersonalityResultsContext';
 import { ProfileProvider } from '@/context/ProfileContext';
@@ -139,7 +140,7 @@ function RootLayoutNav() {
                   headerShadowVisible: false,
                   headerTransparent: false,
                   headerStatusBarHeight: 8,
-                  headerTitleStyle: { fontSize: 17 },
+                  headerTitleStyle: { fontSize: fs(17) },
                 }}
               />
               <Stack.Screen
@@ -151,7 +152,7 @@ function RootLayoutNav() {
                   headerShadowVisible: false,
                   headerTransparent: false,
                   headerStatusBarHeight: 8,
-                  headerTitleStyle: { fontSize: 17 },
+                  headerTitleStyle: { fontSize: fs(17) },
                 }}
               />
               <Stack.Screen
@@ -163,7 +164,7 @@ function RootLayoutNav() {
                   headerShadowVisible: false,
                   headerTransparent: false,
                   headerStatusBarHeight: 8,
-                  headerTitleStyle: { fontSize: 17 },
+                  headerTitleStyle: { fontSize: fs(17) },
                 }}
               />
               <Stack.Screen
@@ -175,7 +176,7 @@ function RootLayoutNav() {
                   headerShadowVisible: false,
                   headerTransparent: false,
                   headerStatusBarHeight: 8,
-                  headerTitleStyle: { fontSize: 17 },
+                  headerTitleStyle: { fontSize: fs(17) },
                 }}
               />
               <Stack.Screen
@@ -187,7 +188,7 @@ function RootLayoutNav() {
                   headerShadowVisible: false,
                   headerTransparent: false,
                   headerStatusBarHeight: 8,
-                  headerTitleStyle: { fontSize: 17 },
+                  headerTitleStyle: { fontSize: fs(17) },
                 }}
               />
               <Stack.Screen
@@ -199,7 +200,7 @@ function RootLayoutNav() {
                   headerShadowVisible: false,
                   headerTransparent: false,
                   headerStatusBarHeight: 8,
-                  headerTitleStyle: { fontSize: 17 },
+                  headerTitleStyle: { fontSize: fs(17) },
                 }}
               />
               <Stack.Screen
@@ -211,7 +212,7 @@ function RootLayoutNav() {
                   headerShadowVisible: false,
                   headerTransparent: false,
                   headerStatusBarHeight: 8,
-                  headerTitleStyle: { fontSize: 17 },
+                  headerTitleStyle: { fontSize: fs(17) },
                 }}
               />
               <Stack.Screen
@@ -223,7 +224,7 @@ function RootLayoutNav() {
                   headerShadowVisible: false,
                   headerTransparent: false,
                   headerStatusBarHeight: 8,
-                  headerTitleStyle: { fontSize: 17 },
+                  headerTitleStyle: { fontSize: fs(17) },
                 }}
               />
               <Stack.Screen
@@ -234,7 +235,7 @@ function RootLayoutNav() {
                   headerBackVisible: true,
                   headerShadowVisible: false,
                   headerTransparent: false,
-                  headerTitleStyle: { fontSize: 17 },
+                  headerTitleStyle: { fontSize: fs(17) },
                 }}
               />
               <Stack.Screen
@@ -245,7 +246,7 @@ function RootLayoutNav() {
                   headerBackVisible: true,
                   headerShadowVisible: false,
                   headerTransparent: false,
-                  headerTitleStyle: { fontSize: 17 },
+                  headerTitleStyle: { fontSize: fs(17) },
                 }}
               />
               <Stack.Screen name="contact" options={{ headerShown: false }} />

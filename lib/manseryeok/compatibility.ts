@@ -177,7 +177,7 @@ const SAME_YEAR_TEN_GOD_BONUS = 2;
  * 등급 컷 주의&lt;50 · 무난 50~79 · 좋음≥80 기준 전체 표본이
  * 대략 15/65/20이 되고, 지인 한 해 최고가 90대에 들어가도록 맞춤.
  */
-const SCORE_ORIGIN = 42;
+const SCORE_ORIGIN = 44;
 /** 항목만점: 오늘(46) + 이달(23) + 올해(4+6+2=12) */
 const MAX_POSITIVE_SUM = 46 + 23 + 12; // 81
 /** 환산 분모 — 만점 비율보다 타이트하게 잡아 상단(80·90대)을 연다 */
@@ -185,11 +185,11 @@ const SCORE_SCALE_MAX = 94;
 const SCORE_FLOOR = 0;
 const SCORE_CEILING = 100;
 
-/** 기본 궁합 → 보정 수치 24…44 → 계수 0.24…0.44 */
+/** 기본 궁합 → 보정 수치 26…46 → 계수 0.26…0.46 */
 const BASE_RAW_MIN = 45;
 const BASE_RAW_MAX = 84;
-const BASE_MAP_MIN = 24;
-const BASE_MAP_MAX = 44;
+const BASE_MAP_MIN = 26;
+const BASE_MAP_MAX = 46;
 
 /** 양쪽 출생 시각이 있을 때만 시지(10%)를 넣고 일지·오행 비중을 조정한다 */
 const BASE_WEIGHT_DAY = 0.35;
@@ -200,7 +200,7 @@ const BASE_WEIGHT_DAY_NO_HOUR = 0.4;
 const BASE_WEIGHT_ELEMENT_NO_HOUR = 0.35;
 
 /**
- * 기본 궁합 → 보정 계수 (0.24…0.44).
+ * 기본 궁합 → 보정 계수 (0.26…0.46).
  * (100 − 오늘점수) × 계수 를 오늘 점수에 더한다.
  */
 export function baseCorrectionFactor(baseScore: number): number {
