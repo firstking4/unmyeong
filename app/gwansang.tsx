@@ -25,7 +25,7 @@ import { PaperGrain } from '@/components/ui/PaperGrain';
 import { ShareIcon } from '@/components/ui/ShareIcon';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
-import { paperShadow, radius, space } from '@/constants/Theme';
+import { pagePad, paperShadow, radius, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useProfile } from '@/context/ProfileContext';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
@@ -116,7 +116,7 @@ export default function GwansangScreen() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [sharing, setSharing] = useState(false);
   const shareRef = useRef<View>(null);
-  const cardW = windowW - space.md * 2;
+  const cardW = windowW - pagePad * 2;
 
   const selection: PhysiognomySelection = profile.physiognomy ?? {};
   const categories = listPhysiognomyCategories();
@@ -315,7 +315,7 @@ export default function GwansangScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: space.md,
+    paddingHorizontal: pagePad,
     paddingTop: space.sm,
     paddingBottom: space.lg,
   },

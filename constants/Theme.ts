@@ -16,6 +16,12 @@ export const space = {
   xl: 40,
 } as const;
 
+/** 앱 전체 스크롤·페이지 좌우 여백. */
+export const pagePad = space.sm;
+
+/** @deprecated `pagePad` 사용 */
+export const homePagePad = pagePad;
+
 export const radius = {
   sm: 12,
   md: 16,
@@ -45,7 +51,7 @@ export const paperShadow = Platform.select({
 export const tabSection = {
   /** 탭 스크롤 페이지 여백 */
   content: {
-    paddingHorizontal: space.md,
+    paddingHorizontal: pagePad,
     paddingTop: space.md,
     paddingBottom: space.lg,
   },

@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Themed';
 import { CloseIcon } from '@/components/ui/CloseIcon';
 import Colors from '@/constants/Colors';
-import { radius, space } from '@/constants/Theme';
+import { pagePad, radius, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 
 type Mode = 'export' | 'import';
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
   sheet: {
     borderBottomLeftRadius: radius.lg,
     borderBottomRightRadius: radius.lg,
-    paddingHorizontal: space.md,
+    paddingHorizontal: pagePad,
     paddingBottom: space.md,
     gap: 10,
     overflow: 'hidden',

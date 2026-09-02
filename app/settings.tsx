@@ -8,7 +8,7 @@ import { BackupPasswordModal } from '@/components/profile/BackupPasswordModal';
 import { Text } from '@/components/Themed';
 import { ChevronRightIcon } from '@/components/icons/AppIcon';
 import Colors from '@/constants/Colors';
-import { radius, space } from '@/constants/Theme';
+import { pagePad, radius, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useContacts } from '@/context/ContactsContext';
 import { useProfile } from '@/context/ProfileContext';
@@ -428,7 +428,7 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { paddingHorizontal: space.md },
+  scrollContent: { paddingHorizontal: pagePad },
   section: { gap: 12, marginTop: 8 },
   sectionRule: {
     marginTop: 28,

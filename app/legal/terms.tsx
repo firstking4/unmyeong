@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
-import { space, tabSection } from '@/constants/Theme';
+import { pagePad, space, tabSection } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { LEGAL_UPDATED, TERMS_SECTIONS } from '@/lib/legal';
@@ -38,7 +38,7 @@ export default function TermsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingHorizontal: space.md, paddingTop: 8, gap: space.sm },
+  content: { paddingHorizontal: pagePad, paddingTop: 8, gap: space.sm },
   title: { fontSize: 26, lineHeight: 34 },
   updated: { fontSize: 13, marginBottom: 8 },
   block: { gap: 8 },

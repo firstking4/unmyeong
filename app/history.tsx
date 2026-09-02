@@ -6,7 +6,7 @@ import { Text } from '@/components/Themed';
 import { PaperGrain } from '@/components/ui/PaperGrain';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
-import { paperShadow, radius, space } from '@/constants/Theme';
+import { pagePad, paperShadow, radius, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import {
@@ -134,7 +134,7 @@ export default function HistoryScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: space.md,
+    paddingHorizontal: pagePad,
     paddingTop: space.md,
     paddingBottom: space.xl,
     gap: space.sm,

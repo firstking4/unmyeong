@@ -21,11 +21,11 @@ import {
 import { Text } from '@/components/Themed';
 import { ShareIcon } from '@/components/ui/ShareIcon';
 import Colors from '@/constants/Colors';
-import { paperShadow, radius, space } from '@/constants/Theme';
+import { pagePad, paperShadow, radius, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useProfile } from '@/context/ProfileContext';
 import { type IDCardFieldKey } from '@/lib/idCardFields';
-import { birthCalendarLabel, formatBirthDateDisplay } from '@/lib/lunar';
+import { birthCalendarLabel, formatBirthDateMainDisplay } from '@/lib/lunar';
 import { hasPhysiognomyFace } from '@/lib/physiognomyFaceParams';
 import { formatSajuHourLabel } from '@/lib/saju';
 import type { PhysiognomySelection, Profile } from '@/lib/types';
@@ -49,8 +49,8 @@ function isEmptyIdProfile(profile: Profile) {
   );
 }
 
-/** 지도 스크롤 좌우 패딩(space.md) — 카드 가용 폭 계산에 맞춤. */
-const PAGE_PAD = space.md;
+/** 지도 스크롤 좌우 패딩 — 카드 가용 폭 계산에 맞춤. */
+const PAGE_PAD = pagePad;
 const CARD_H_PAD = space.sm;
 const BODY_GAP = 12;
 /** 공유 버튼과 겹치지 않게 — 이름(첫 행)에만 적용. */
@@ -81,15 +81,29 @@ function FieldRow({
   muted: string;
   padRight?: number;
 }) {
+  const multiline = !!value?.includes('\n');
   const content = (
     <>
-      <Text style={[styles.fieldLabel, { color: muted }]}>{label}</Text>
-      <Text style={[styles.fieldValue, { color: value ? text : muted }]}>{value ?? '—'}</Text>
+      <Text style={[styles.fieldLabel, multiline && styles.fieldLabelMultiline, { color: muted }]}>
+        {label}
+      </Text>
+      <Text
+        style={[
+          styles.fieldValue,
+          multiline && styles.fieldValueMultiline,
+          { color: value ? text : muted },
+        ]}>
+        {value ?? '—'}
+      </Text>
     </>
   );
 
   if (!onPress) {
-    return <View style={[styles.fieldRow, { paddingRight: padRight }]}>{content}</View>;
+    return (
+      <View style={[styles.fieldRow, multiline && styles.fieldRowMultiline, { paddingRight: padRight }]}>
+        {content}
+      </View>
+    );
   }
 
   return (
@@ -97,6 +111,7 @@ function FieldRow({
       onPress={onPress}
       style={({ pressed }) => [
         styles.fieldRow,
+        multiline && styles.fieldRowMultiline,
         { opacity: pressed ? 0.65 : 1, paddingRight: padRight },
       ]}>
       {content}
@@ -229,7 +244,7 @@ export function IdentityCard() {
 
   const rows: { label: string; value: string | null; field: IDCardFieldKey }[] = [
     { label: '이름', value: profile.name?.trim() || null, field: 'name' },
-    { label: '생년월일', value: formatBirthDateDisplay(profile), field: 'birthDate' },
+    { label: '생년월일', value: formatBirthDateMainDisplay(profile), field: 'birthDate' },
     {
       label: '양력/음력',
       value: profile.birthDate
@@ -475,14 +490,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
+  fieldRowMultiline: {
+    alignItems: 'flex-start',
+  },
   fieldLabel: {
     width: 68,
     fontSize: 12,
     flexShrink: 0,
   },
+  fieldLabelMultiline: {
+    paddingTop: 1,
+  },
   fieldValue: {
     flex: 1,
     fontSize: 13,
     fontWeight: '600',
+  },
+  fieldValueMultiline: {
+    lineHeight: 17,
   },
 });

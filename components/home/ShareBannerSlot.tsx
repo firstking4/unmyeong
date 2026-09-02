@@ -4,7 +4,7 @@ import { ShareIcon } from '@/components/icons/AppIcon';
 import { DojangSeal } from '@/components/ink/DojangSeal';
 import { Text } from '@/components/Themed';
 import Colors from '@/constants/Colors';
-import { radius } from '@/constants/Theme';
+import { radius, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { shareAppInstallPage } from '@/lib/appInstall';
 
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: space.sm,
     gap: 10,
     overflow: 'hidden',
   },
@@ -85,8 +85,8 @@ const styles = StyleSheet.create({
   accent: {
     position: 'absolute',
     left: 0,
-    top: 10,
-    bottom: 10,
+    top: space.sm,
+    bottom: space.sm,
     width: 3,
     borderRadius: 2,
   },

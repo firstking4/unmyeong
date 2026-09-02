@@ -8,7 +8,7 @@ import { PaperGrain } from '@/components/ui/PaperGrain';
 import { ShareIcon } from '@/components/ui/ShareIcon';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
-import { paperShadow, radius, space } from '@/constants/Theme';
+import { pagePad, paperShadow, radius, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { isFortuneReady, useProfile } from '@/context/ProfileContext';
 import {
@@ -106,7 +106,7 @@ export default function SajuCodeShareScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: space.md,
+    paddingHorizontal: pagePad,
     paddingTop: space.sm,
     paddingBottom: space.xl,
     gap: 16,

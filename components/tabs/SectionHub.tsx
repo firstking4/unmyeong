@@ -4,7 +4,7 @@ import { Text } from '@/components/Themed';
 import { PaperGrain } from '@/components/ui/PaperGrain';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
-import { space } from '@/constants/Theme';
+import { pagePad, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 
@@ -54,7 +54,7 @@ export function SectionHub({ eyebrow, title, lead, features }: Props) {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   inner: {
-    paddingHorizontal: space.md,
+    paddingHorizontal: pagePad,
     paddingTop: space.md,
     paddingBottom: space.lg,
   },

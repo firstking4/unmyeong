@@ -7,7 +7,7 @@ import { KeywordBadge } from '@/components/ui/KeywordBadge';
 import { PaperGrain } from '@/components/ui/PaperGrain';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
-import { paperShadow, radius, space, tabSection } from '@/constants/Theme';
+import { pagePad, paperShadow, radius, space, tabSection } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { tarotCardImage } from '@/lib/tarotDeckImages';
@@ -53,7 +53,7 @@ export default function TarotSpreadResultScreen() {
   const definition = getTarotSpread(kind);
   const selected = selectedIndex === null ? null : reading.cards[selectedIndex];
   const gap = 10;
-  const sidePad = space.md;
+  const sidePad = pagePad;
   const cardWidth = Math.floor((width - sidePad * 2 - gap * 2) / 3);
   const artHeight = Math.round(cardWidth * (400 / 279));
 

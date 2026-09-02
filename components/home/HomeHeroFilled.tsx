@@ -4,12 +4,12 @@ import { InkPineHero } from '@/components/ink/InkPineHero';
 import { Text } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
-import { space } from '@/constants/Theme';
+import { pagePad } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useProfile } from '@/context/ProfileContext';
 
 /** 홈 ScrollView 좌우 패딩. */
-const PAGE_PAD = space.md;
+const PAGE_PAD = pagePad;
 /** copy 블록 우측 패딩 + 아트가 화면 밖으로 물리는 값. */
 const COPY_RIGHT_PAD = 8;
 const ART_OVERHANG = 8;
@@ -90,14 +90,12 @@ const styles = StyleSheet.create({
   wrap: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 4,
-    marginTop: 4,
     minHeight: 124,
   },
   copy: {
     flex: 1,
     minWidth: 0,
-    paddingTop: 8,
+    paddingVertical: 8,
     paddingRight: COPY_RIGHT_PAD,
     gap: 8,
     zIndex: 1,
@@ -114,6 +112,5 @@ const styles = StyleSheet.create({
   art: {
     flexShrink: 0,
     marginRight: -ART_OVERHANG,
-    marginTop: -4,
   },
 });

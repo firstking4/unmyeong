@@ -17,7 +17,7 @@ import { ContactForm } from '@/components/gunghap/ContactForm';
 import { Text } from '@/components/Themed';
 import { CloseIcon } from '@/components/ui/CloseIcon';
 import Colors from '@/constants/Colors';
-import { radius, space } from '@/constants/Theme';
+import { pagePad, radius, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useContacts } from '@/context/ContactsContext';
 import { decodeSajuCode, type SajuCodePayload } from '@/lib/sajuCode';
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'center',
-    paddingHorizontal: space.md,
+    paddingHorizontal: pagePad,
   },
   center: {
     width: '100%',

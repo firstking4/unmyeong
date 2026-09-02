@@ -99,7 +99,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.md,
     paddingTop: 16,
     paddingBottom: 14,
-    marginTop: 12,
     gap: 14,
   },
   header: {

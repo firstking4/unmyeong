@@ -26,7 +26,7 @@ import { PaperGrain } from '@/components/ui/PaperGrain';
 import { ShareIcon } from '@/components/ui/ShareIcon';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
-import { paperShadow, radius, space, tabSection } from '@/constants/Theme';
+import { pagePad, paperShadow, radius, space, tabSection } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useContacts } from '@/context/ContactsContext';
 import { useProfile } from '@/context/ProfileContext';
@@ -188,7 +188,7 @@ export default function ContactDetailScreen() {
   const shareRef = useRef<View>(null);
   const [sharing, setSharing] = useState(false);
   const detailUnlocked = contact ? isUnlocked('contact_today', contact.id) : false;
-  const cardW = windowW - space.md * 2;
+  const cardW = windowW - pagePad * 2;
   const dateKey = useLocalDateKey();
   const readingDate = useMemo(() => dateFromLocalYmd(dateKey), [dateKey]);
 

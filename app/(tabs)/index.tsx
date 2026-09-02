@@ -10,7 +10,7 @@ import { LockedFortune } from '@/components/home/LockedFortune';
 import { TodayKeywords } from '@/components/home/TodayKeywords';
 import { PaperGrain } from '@/components/ui/PaperGrain';
 import Colors from '@/constants/Colors';
-import { space } from '@/constants/Theme';
+import { pagePad, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useProfile } from '@/context/ProfileContext';
 import { useTabScrollReset } from '@/lib/useTabScrollReset';
@@ -35,12 +35,8 @@ export default function HomeScreen() {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled">
         <HomeHeroFilled />
-        <View style={styles.profileGap}>
-          <IdentityCard />
-        </View>
-        <View style={styles.adGap}>
-          <ShareBannerSlot />
-        </View>
+        <IdentityCard />
+        <ShareBannerSlot />
         <View onLayout={(e) => { fortuneY.current = e.nativeEvent.layout.y; }}>
           {fortuneReady ? <IntegratedFortune /> : <LockedFortune />}
         </View>
@@ -53,15 +49,9 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: space.md,
+    paddingHorizontal: pagePad,
     paddingTop: space.sm,
     paddingBottom: space.lg,
-  },
-  profileGap: {
-    marginTop: space.sm,
-  },
-  adGap: {
-    marginTop: space.sm,
-    marginBottom: space.xs,
+    gap: space.sm,
   },
 });

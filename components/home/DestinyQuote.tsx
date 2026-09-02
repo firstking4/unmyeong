@@ -25,7 +25,6 @@ export function DestinyQuote() {
 
 const styles = StyleSheet.create({
   wrap: {
-    marginTop: 16,
     minHeight: 88,
     alignItems: 'center',
     justifyContent: 'center',

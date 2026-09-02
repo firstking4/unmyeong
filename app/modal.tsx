@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Themed';
 import { ChevronRightIcon } from '@/components/icons/AppIcon';
 import Colors from '@/constants/Colors';
-import { space } from '@/constants/Theme';
+import { pagePad, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 
@@ -101,7 +101,7 @@ export default function ModalScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { paddingHorizontal: space.md },
+  scrollContent: { paddingHorizontal: pagePad },
   list: { borderTopWidth: StyleSheet.hairlineWidth },
   row: {
     flexDirection: 'row',

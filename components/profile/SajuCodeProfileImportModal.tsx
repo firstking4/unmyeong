@@ -15,7 +15,7 @@ import {
 import { Text } from '@/components/Themed';
 import { CloseIcon } from '@/components/ui/CloseIcon';
 import Colors from '@/constants/Colors';
-import { radius, space } from '@/constants/Theme';
+import { pagePad, radius, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useProfile } from '@/context/ProfileContext';
 import { formatBirthDateDisplay } from '@/lib/lunar';
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'center',
-    paddingHorizontal: space.md,
+    paddingHorizontal: pagePad,
   },
   center: {
     width: '100%',

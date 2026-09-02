@@ -104,6 +104,22 @@ export function formatBirthDateDisplay(profile: Pick<Profile, 'birthCalendar' | 
   return `${solar.year}. ${pad2(solar.month)}. ${pad2(solar.day)}`;
 }
 
+/** 메인 신분증 — 생년 / 월·일 줄바꿈 표시. */
+export function formatBirthDateMainDisplay(
+  profile: Pick<Profile, 'birthCalendar' | 'birthDate' | 'birthLunarDate' | 'birthLeapMonth'>,
+): string | null {
+  const calendar = profile.birthCalendar ?? 'solar';
+  if (calendar === 'lunar') {
+    const lunar = parseYmd(profile.birthLunarDate);
+    if (!lunar) return null;
+    const leapMark = profile.birthLeapMonth ? '윤' : '';
+    return `${lunar.year}\n${leapMark}${pad2(lunar.month)}. ${pad2(lunar.day)}`;
+  }
+  const solar = parseYmd(profile.birthDate);
+  if (!solar) return null;
+  return `${solar.year}\n${pad2(solar.month)}. ${pad2(solar.day)}`;
+}
+
 /**
  * 지인 상세용 — 양력·음력 병기.
  * 예: `양력 1982. 12. 11. · 음력 1982. 11. 07.` / 윤달 `음력 1982. 윤11. 07.`
