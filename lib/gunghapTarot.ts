@@ -21,7 +21,7 @@ export type GunghapTarotReading = {
   scoreDelta: number;
 };
 
-const SCORE_ORIGIN = 39;
+const SCORE_ORIGIN = 42;
 const SCORE_SCALE_MAX = 94;
 const MAJOR_DELTA = 6;
 const MINOR_DELTA = 4;

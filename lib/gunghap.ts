@@ -711,7 +711,7 @@ function notReady(reason: string, date: Date): TodayCompatibility {
     todayScore: 0,
     baseCorrectionFactor: 0,
     baseCorrectionBonus: 0,
-    scoreOrigin: 39,
+    scoreOrigin: 42,
     scoreScaleMax: 94,
     maxPositiveSum: 81,
     scoreParts: [],

@@ -14,7 +14,7 @@ const tarotPack = JSON.parse(readFileSync(join(root, 'data/daily/packs/tarot.jso
 
 const MAJOR_DELTA = 6;
 const MINOR_DELTA = 4;
-const SCORE_ORIGIN = 39;
+const SCORE_ORIGIN = 42;
 const SCORE_SCALE_MAX = 94;
 
 function hashSeed(input) {
