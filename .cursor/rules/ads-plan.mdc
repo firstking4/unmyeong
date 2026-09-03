@@ -1,19 +1,18 @@
 ---
-description: 광고(AdMob) 적용 계획 — 당장 구현하지 않음. 광고·수익화 관련 요청 시 이 계획을 따른다.
+description: 광고(AdMob) 적용 계획 — SDK 연동됨. 광고·수익화 관련 요청 시 이 계획을 따른다.
 alwaysApply: true
 ---
 
-# 광고 적용 계획 (미구현)
+# 광고 적용 계획
 
-**현재 상태:** 홈·메뉴의 `AdBannerSlot`은 **자리만** 잡은 플레이스홀더. SDK·수익 광고는 아직 넣지 않는다. 사용자가 광고 구현을 명시적으로 요청하기 전까지 코드에 AdMob 등을 추가하지 말 것.
+**현재 상태 (2026-09-02):** `react-native-google-mobile-ads` 연동. 홈·메뉴 `AdBannerSlot` 배너 + `showRewarded` 보상형. `__DEV__`는 Google 테스트 ID. 실 ID는 `adUnits.local.ts`(gitignore). **Expo Go 불가** — EAS/로컬 네이티브 재빌드 필요. 상세: `docs/store/next-chat-handoff.md`.
 
 ## 목표 형태
 
-1. **배너 (Banner)** — 지도(홈) 신분증 아래와 메뉴 하단 `AdBannerSlot`에 실제 배너
-2. **보상형 동영상 (Rewarded)** — “광고 보고 혜택” UX (시청 완료 콜백만 혜택 지급)
+1. **배너 (Banner)** — 지도(홈) 신분증 아래·메뉴 하단 `AdBannerSlot`
+2. **보상형 동영상 (Rewarded)** — “광고 보기” → `reward earned` 시에만 해금
 
-네트워크 1순위: **Google AdMob**  
-RN/Expo 후보 패키지: `react-native-google-mobile-ads` (네이티브 모듈 → **Expo Go 불가**, 개발 빌드/미리보기 APK·스토어 빌드 필요)
+네트워크: **Google AdMob** · 패키지 `react-native-google-mobile-ads`
 
 ## 보상형 후보 (앱 톤에 맞게 부가 기능만)
 
@@ -21,29 +20,23 @@ RN/Expo 후보 패키지: `react-native-google-mobile-ads` (네이티브 모듈 
 
 - 성향: 성향 지도 카드의 부가 해설 — **그날 자정까지** (`seonghyang_today`, `RewardUnlock`)
 - 사주: 오늘 기운 카드의 `summary`·`hints` — **그날 자정까지** (`saju_today`)
-- 타로: 오늘의 카드 본문·힌트 — **그날 자정까지** (`tarot_today`) · **질문 스프레드(연애·일·선택)** — 광고 1회당 결과 1회 (`tarotSpreadUnlock`)
-- 지인: 오늘 풀이·행동 가이드 — **지인별** 상세 해금, **그날 자정까지** (`contact_today:<id>`, `RewardUnlock`)
+- 타로: 오늘의 카드 본문·힌트 — **그날 자정까지** (`tarot_today`) · **질문 스프레드** — 광고 1회당 결과 1회 (`tarotSpreadUnlock`)
+- 지인: 오늘 풀이·행동 가이드 — **지인별** 상세 해금, **그날 자정까지** (`contact_today:<id>`)
 
-흐름: 버튼 → 광고 로드·표시 → `reward earned` → 그때만 해금. 해금 범위는 **해당 화면만, 그날 자정까지**. 광고 미준비 동안에는 AdMob 없이 **잠금 UI + 탭하면 내용 노출** 스탠드인을 쓴다(사주 상세부터).
+흐름: 버튼 → 광고 로드·표시 → `reward earned` → 그때만 해금. SDK 없거나 실패 시 `unavailable` → 기존처럼 「상세 열기」만.
 
-## 카드 UI 원칙
+## 구현 체크
 
-- 성향·사주·타로·지도 운세의 핵심 카드는 각 화면 타이틀 바로 아래에 둔다.
-- 명칭은 화면별로 다르게 한다. 지도는 운세, 성향은 성향 지도, 사주는 오늘 기운, 타로는 오늘의 카드처럼 해당 도메인의 언어를 쓴다.
-- 잠금은 `LockedContentCard`로 상세 블록만 가린다. 광고 콜백 전에는 CTA가 바로 해금한다.
+1. ✅ AdMob 계정 · Android 앱 · 배너/보상형 ID → `adUnits.local.ts`
+2. ✅ `__DEV__` 테스트 ID · 실 ID 본인 클릭 금지
+3. ✅ config plugin (`app.json`) · AD_ID 차단 해제
+4. ✅ `AdBannerSlot` · `lib/ads/rewarded.ts`
+5. ✅ 개인정보 방침(앱·`docs/legal/privacy.html`) 갱신 — Pages 배포는 별도
+6. ⏳ iOS AdMob 앱 ID(지금은 테스트 App ID) · Play 「앱에 광고 포함」예 + 데이터 안전성
+7. ⏳ 실기기 스모크 (프리뷰 APK 재빌드 후)
 
-## 구현 시 체크리스트 (나중에)
+## 하지 말 것
 
-1. AdMob 계정 · 앱 등록 · 배너/보상형 **광고 단위 ID**
-2. 개발 중 **테스트 광고 ID만** 사용 (실 ID 클릭 테스트 금지)
-3. config plugin + EAS/로컬 네이티브 빌드
-4. `AdBannerSlot`을 배너 컴포넌트로 교체 (레이아웃·높이 기존 슬롯에 맞춤)
-5. 보상형 헬퍼(`lib/` 등) + 해금 상태(세션/일일 한도) 정책
-6. 개인정보·맞춤형 광고 동의·스토어 정책 문구
-7. iOS/Android 각각 실기기에서 로드·보상 콜백 검증
-
-## 하지 말 것 (지금)
-
-- 플레이스홀더를 임의로 수익 광고로 바꾸지 않기
-- Expo Go 전제로 AdMob 연동을 약속하지 않기
-- 핵심 운세/궁합을 광고 시청 없이는 못 보게 가두지 않기 (정책·UX 합의 전)
+- Expo Go 전제로 AdMob 약속하지 않기
+- 실 광고 단위로 본인 반복 클릭
+- 핵심 운세/궁합을 광고 없이는 전혀 못 보게 가두지 않기

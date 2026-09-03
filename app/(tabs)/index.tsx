@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { IntegratedFortune } from '@/components/IntegratedFortune';
 import { IdentityCard } from '@/components/id-card/IdentityCard';
+import { AdBannerSlot } from '@/components/home/AdBannerSlot';
 import { ShareBannerSlot } from '@/components/home/ShareBannerSlot';
 import { DestinyQuote } from '@/components/home/DestinyQuote';
 import { HomeHeroFilled } from '@/components/home/HomeHeroFilled';
@@ -37,6 +38,7 @@ export default function HomeScreen() {
         <HomeHeroFilled />
         <IdentityCard />
         <ShareBannerSlot />
+        <AdBannerSlot />
         <View onLayout={(e) => { fortuneY.current = e.nativeEvent.layout.y; }}>
           {fortuneReady ? <IntegratedFortune /> : <LockedFortune />}
         </View>

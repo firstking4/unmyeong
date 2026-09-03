@@ -36,6 +36,8 @@ import {
 import type { ProfileBackup } from '@/lib/profileBackup';
 import { replaceHistory } from '@/lib/history';
 import { getAppVersionLabel } from '@/lib/appVersion';
+import { shareAppInstallPage } from '@/lib/appInstall';
+import { requestAppReview } from '@/lib/requestAppReview';
 
 const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
   { value: 'light', label: '라이트' },
@@ -351,6 +353,38 @@ export default function SettingsScreen() {
       </View>
 
       <View style={[styles.listSection, { borderTopColor: c.hairline }]}>
+        <Pressable
+          onPress={() => {
+            void shareAppInstallPage();
+          }}
+          style={({ pressed }) => [
+            styles.row,
+            { borderBottomColor: c.hairline, opacity: pressed ? 0.55 : 1 },
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel="앱 공유하기">
+          <View style={styles.rowText}>
+            <Text style={[styles.rowTitle, { color: c.text }]}>앱 공유하기</Text>
+            <Text style={[styles.rowBlurb, { color: c.muted }]}>친구에게 설치 페이지 링크 보내기</Text>
+          </View>
+          <ChevronRightIcon color={c.muted} size={22} />
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            void requestAppReview();
+          }}
+          style={({ pressed }) => [
+            styles.row,
+            { borderBottomColor: c.hairline, opacity: pressed ? 0.55 : 1 },
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel="앱 평가하기">
+          <View style={styles.rowText}>
+            <Text style={[styles.rowTitle, { color: c.text }]}>앱 평가하기</Text>
+            <Text style={[styles.rowBlurb, { color: c.muted }]}>Play 스토어에서 평가 남기기</Text>
+          </View>
+          <ChevronRightIcon color={c.muted} size={22} />
+        </Pressable>
         <Pressable
           disabled={busy}
           onPress={openBackupMenu}

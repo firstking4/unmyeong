@@ -198,6 +198,7 @@ function PeriodDetailBody({
 
   return (
     <LockedContentCard
+      lockId="saju_today"
       title={DETAIL_LOCK.title}
       description={DETAIL_LOCK.description}
       ctaLabel={DETAIL_LOCK.ctaLabel}

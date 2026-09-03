@@ -14,9 +14,11 @@ import { fs } from '@/constants/Theme';
 import { ContactsProvider } from '@/context/ContactsContext';
 import { PersonalityResultsProvider } from '@/context/PersonalityResultsContext';
 import { ProfileProvider } from '@/context/ProfileContext';
+import { ReviewPromptProvider } from '@/context/ReviewPromptContext';
 import { RewardUnlockProvider } from '@/context/RewardUnlockContext';
 import { AppThemeProvider } from '@/context/ThemeContext';
 import { initAnalytics } from '@/lib/firebase/analytics';
+import { initMobileAds } from '@/lib/ads/initAds';
 import { getNotifications } from '@/lib/notificationsModule';
 import { LocalDateProvider } from '@/lib/useLocalDateKey';
 
@@ -57,6 +59,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     void initAnalytics();
+    void initMobileAds();
   }, []);
 
   useEffect(() => {
@@ -102,6 +105,7 @@ function RootLayoutNav() {
         <PersonalityResultsProvider>
           <ContactsProvider>
             <RewardUnlockProvider>
+              <ReviewPromptProvider>
               <ThemeProvider value={navTheme}>
               <AnalyticsScreenTracker />
               <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
@@ -252,6 +256,7 @@ function RootLayoutNav() {
               <Stack.Screen name="contact" options={{ headerShown: false }} />
               </Stack>
               </ThemeProvider>
+              </ReviewPromptProvider>
             </RewardUnlockProvider>
           </ContactsProvider>
         </PersonalityResultsProvider>

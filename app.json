@@ -2,7 +2,7 @@
   "expo": {
     "name": "운명人지도",
     "slug": "unmyeong-injido",
-    "version": "0.1.11",
+    "version": "0.1.22",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "unmyeonginjido",
@@ -13,9 +13,8 @@
     },
     "android": {
       "package": "com.yun.unmyeonginjido",
-      "versionCode": 6,
+      "versionCode": 18,
       "googleServicesFile": "./google-services.json",
-      "blockedPermissions": ["com.google.android.gms.permission.AD_ID"],
       "adaptiveIcon": {
         "backgroundColor": "#F3EEE6",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -50,6 +49,14 @@
           }
         }
       ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-2874731542856105~2623659839",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ],
+      "./plugins/withForcePlayServicesAds.js",
       [
         "expo-build-properties",
         {

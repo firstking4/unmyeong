@@ -7,7 +7,7 @@ export const PUBLISHER_NAME = 'Yun In Lab';
 export const PUBLISHER_EMAIL = 'firstking4@gmail.com';
 export const PUBLISHER_CONTACT = `${PUBLISHER_NAME} · ${PUBLISHER_EMAIL}`;
 
-export const LEGAL_UPDATED = '2026년 8월 22일';
+export const LEGAL_UPDATED = '2026년 9월 2일';
 
 export const TERMS_SECTIONS: LegalSection[] = [
   {
@@ -55,7 +55,11 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
   },
   {
     heading: '제3자 제공',
-    body: '현재 광고 SDK·분석 SDK를 넣지 않은 빌드에서는 개인정보를 제3자에게 판매·제공하지 않습니다. 이후 광고·분석을 도입하면 본 방침을 갱신하고 필요한 동의를 받습니다.',
+    body: '앱에는 Google AdMob(광고)과 Firebase Analytics(이용 통계)가 포함될 수 있습니다. 광고 제공·측정·분석을 위해 광고 식별자·기기·앱 사용 정보가 Google에 전달될 수 있습니다. 그 외 목적으로 개인정보를 판매하지 않습니다. Google 광고 설정: https://adssettings.google.com/',
+  },
+  {
+    heading: '광고',
+    body: '홈·메뉴에 배너 광고가 표시될 수 있으며, 일부 상세 해설은 보상형 광고 시청 후 해금될 수 있습니다. 핵심 요약·점수는 광고 없이 볼 수 있습니다. 개발·테스트 빌드에서는 Google 공식 테스트 광고만 사용합니다.',
   },
   {
     heading: '알림',

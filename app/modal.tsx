@@ -3,12 +3,15 @@ import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AdBannerSlot } from '@/components/home/AdBannerSlot';
 import { Text } from '@/components/Themed';
 import { ChevronRightIcon } from '@/components/icons/AppIcon';
 import Colors from '@/constants/Colors';
 import { pagePad, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
+import { shareAppInstallPage } from '@/lib/appInstall';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
+import { requestAppReview } from '@/lib/requestAppReview';
 
 type MenuHref =
   | '/profile-edit'
@@ -19,10 +22,13 @@ type MenuHref =
 
 type MenuItem = {
   key: string;
-  href: MenuHref;
   title: string;
   blurb: string;
-};
+} & (
+  | { href: MenuHref; action?: never }
+  | { action: 'share_app'; href?: never }
+  | { action: 'leave_review'; href?: never }
+);
 
 const MENU: MenuItem[] = [
   {
@@ -50,6 +56,18 @@ const MENU: MenuItem[] = [
     blurb: '내 사주 정보를 코드로 복사·공유',
   },
   {
+    key: 'app-share',
+    action: 'share_app',
+    title: '앱 공유하기',
+    blurb: '친구에게 설치 페이지 링크 보내기',
+  },
+  {
+    key: 'leave-review',
+    action: 'leave_review',
+    title: '리뷰 남기기',
+    blurb: 'Play 스토어에서 평가 남기기',
+  },
+  {
     key: 'settings',
     href: '/settings',
     title: '설정',
@@ -63,6 +81,18 @@ export default function ModalScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
+  const onPressItem = (item: MenuItem) => {
+    if (item.action === 'share_app') {
+      void shareAppInstallPage();
+      return;
+    }
+    if (item.action === 'leave_review') {
+      void requestAppReview();
+      return;
+    }
+    router.push(item.href);
+  };
+
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: c.background }]}
@@ -74,7 +104,7 @@ export default function ModalScreen() {
         {MENU.map((item) => (
           <Pressable
             key={item.key}
-            onPress={() => router.push(item.href)}
+            onPress={() => onPressItem(item)}
             style={({ pressed }) => [
               styles.row,
               {
@@ -94,6 +124,9 @@ export default function ModalScreen() {
       </View>
 
       <Text style={[styles.disclaimer, { color: c.muted }]}>{ENTERTAINMENT_DISCLAIMER}</Text>
+      <View style={styles.adSlot}>
+        <AdBannerSlot />
+      </View>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
     </ScrollView>
   );
@@ -119,4 +152,5 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     opacity: 0.7,
   },
+  adSlot: { marginTop: 16 },
 });

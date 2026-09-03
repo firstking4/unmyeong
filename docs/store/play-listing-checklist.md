@@ -231,7 +231,7 @@ Play·AdMob은 **같은 Google 결제 프로필**(Yun In Lab)을 쓰면 **본인
 
 ---
 
-## 9. AdMob 계정 · 광고 단위 (진행 중)
+## 9. AdMob 계정 · 광고 단위
 
 Play Console과 **같은 Google 계정** (`firstking4@gmail.com`) · 수취인 국가 **대한민국**.
 
@@ -240,37 +240,42 @@ Play Console과 **같은 Google 계정** (`firstking4@gmail.com`) · 수취인 �
 | 가입 | ✅ 완료 (2026-08-22) |
 | 퍼블리셔 ID | `pub-2874731542856105` |
 | 지급 프로필 | Play와 동일 — 애드센스(대한민국) · **박종윤** |
-| 본인 확인 | Play와 **동일** — 진행 중 (대기) |
+| 본인 확인 | Play와 **동일** — 진행 중 (대기)일 수 있음 |
 | 계좌 입금 확인 | Play와 같이 **나중에** |
+| Android 앱 추가 | ✅ 2026-09-02 · 콘솔 앱 번호 `2623659839` (스토어 등록: **아니요**) |
+| 광고 단위 | ✅ 배너 · ✅ 보상형 |
+| 앱 ID | `ca-app-pub-2874731542856105~2623659839` |
+| 배너 ID | `ca-app-pub-2874731542856105/8885924882` |
+| 보상형 ID | `ca-app-pub-2874731542856105/9570692937` |
+| `adUnits.local.ts` | ✅ Android 3종 반영 |
+| SDK 연동 | ✅ `react-native-google-mobile-ads` (0.1.13) |
+| 개인정보 방침 | ✅ 앱·`docs/legal` 갱신 · Pages 배포 대기 |
 
 코드 상수: `lib/ads/adUnits.example.ts` → `ADMOB_PUBLISHER_ID`
 
 ### 9-1. 본인 확인 대기 중에 할 수 있는 것
 
-콘솔에서 **지금** 진행 가능 (앱 심사·수익 정산은 본인 확인·지급 설정 완료 후):
-
-1. **앱 추가** (§9-2) — Play 앱 레코드 없어도 패키지명으로 등록 가능
-2. **광고 단위** 생성 (§9-3) — 배너·보상형 ID 발급 → `adUnits.local.ts`
+1. ~~앱 추가~~ ✅
+2. ~~광고 단위~~ ✅ → 남은 일: ID를 `adUnits.local.ts`에 넣기
 3. Play **앱 만들기** (§7) · 스토어 등록정보 · 설문
 4. Android **기기 인증** (§6-3)
 
-### 9-2. 앱 추가
+### 9-2. 앱 추가 ✅ (2026-09-02)
 
 | 항목 | 값 |
 |---|---|
 | 플랫폼 | Android (iOS는 나중에) |
 | 앱 이름 | 운명人지도 |
 | 패키지명 | `com.yun.unmyeonginjido` |
-| Play 연결 | Play에 앱 레코드가 있으면 연결 · 없으면 **나중에** |
+| AdMob 「스토어 등록?」 | **아니요** |
+| Play 연결 | 나중에 |
 
-### 9-3. 광고 단위 만들기 (앱 추가 후)
+### 9-3. 광고 단위 ✅ 콘솔 생성 (ID → local 대기)
 
-AdMob → 앱 → 광고 단위 추가:
-
-| 유형 | 제안 이름 | 용도 |
-|---|---|---|
-| **배너** | `unmyeong_banner` | 홈 신분증 아래 · 메뉴 하단 (`AdBannerSlot`) |
-| **보상형** | `unmyeong_rewarded` | 오늘 카드 상세·타로 스프레드·지인 상세 해금 |
+| 유형 | 이름 | 용도 | 설정 |
+|---|---|---|---|
+| **배너** | `unmyeong_banner` | 홈·메뉴 `AdBannerSlot` | 파트너 입찰·고급설정 **기본** |
+| **보상형** | `unmyeong_rewarded` | 상세·타로·지인 해금 | 동일 |
 
 발급된 ID는 저장소에 커밋하지 말고:
 
@@ -290,8 +295,10 @@ cp lib/ads/adUnits.example.ts lib/ads/adUnits.local.ts
 
 ---
 
-## 10. 이번 라운드에서 하지 않음
+## 10. 이번 라운드에서 하지 않음 / 남은 일
 
-- `react-native-google-mobile-ads` SDK 설치·config plugin (명시 요청 후)
-- iOS App Store Submit
-- Play Console·AdMob 콘솔 클릭 대행 (게시자가 직접)
+- ~~`react-native-google-mobile-ads` SDK~~ ✅
+- 프리뷰/스토어 **재빌드** 후 실기기 확인
+- GitHub Pages 방침 배포
+- iOS App Store Submit · iOS AdMob 실 App ID
+- Play Console 클릭 대행 (게시자가 직접)

@@ -104,7 +104,7 @@ export function formatBirthDateDisplay(profile: Pick<Profile, 'birthCalendar' | 
   return `${solar.year}. ${pad2(solar.month)}. ${pad2(solar.day)}`;
 }
 
-/** 메인 신분증 — 생년 / 월·일 줄바꿈 표시. */
+/** 메인 신분증 — 월/일만 `12/01` 형식으로 표시. */
 export function formatBirthDateMainDisplay(
   profile: Pick<Profile, 'birthCalendar' | 'birthDate' | 'birthLunarDate' | 'birthLeapMonth'>,
 ): string | null {
@@ -113,11 +113,11 @@ export function formatBirthDateMainDisplay(
     const lunar = parseYmd(profile.birthLunarDate);
     if (!lunar) return null;
     const leapMark = profile.birthLeapMonth ? '윤' : '';
-    return `${lunar.year}\n${leapMark}${pad2(lunar.month)}. ${pad2(lunar.day)}`;
+    return `${leapMark}${pad2(lunar.month)}/${pad2(lunar.day)}`;
   }
   const solar = parseYmd(profile.birthDate);
   if (!solar) return null;
-  return `${solar.year}\n${pad2(solar.month)}. ${pad2(solar.day)}`;
+  return `${pad2(solar.month)}/${pad2(solar.day)}`;
 }
 
 /**

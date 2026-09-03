@@ -49,12 +49,14 @@ const DETAIL_LOCK = {
 } as const;
 
 function ContactDetailBody({
+  lockId,
   reading,
   muted,
   tint,
   unlocked,
   onUnlock,
 }: {
+  lockId: string;
   reading: Reading;
   muted: string;
   tint: string;
@@ -63,6 +65,7 @@ function ContactDetailBody({
 }) {
   return (
     <LockedContentCard
+      lockId={lockId}
       title={DETAIL_LOCK.title}
       description={DETAIL_LOCK.description}
       ctaLabel={DETAIL_LOCK.ctaLabel}
@@ -103,6 +106,7 @@ function CompatibilityCardBody({
   titlePadRight,
   staticRing,
   detailUnlocked,
+  detailLockId,
   onUnlockDetail,
 }: {
   cardTitle: string;
@@ -115,6 +119,7 @@ function CompatibilityCardBody({
   /** 공유 캡처용 — 점수 링 애니메이션 생략 */
   staticRing?: boolean;
   detailUnlocked: boolean;
+  detailLockId: string;
   onUnlockDetail?: () => void;
 }) {
   return (
@@ -160,6 +165,7 @@ function CompatibilityCardBody({
           </View>
           <View style={[styles.cardSplit, { borderTopColor: hairline }]}>
             <ContactDetailBody
+              lockId={detailLockId}
               reading={reading}
               muted={muted}
               tint={tint}
@@ -281,6 +287,7 @@ export default function ContactDetailScreen() {
     tint: c.tint,
     hairline: c.hairline,
     detailUnlocked,
+    detailLockId: `contact_today:${contact.id}`,
   };
 
   return (
