@@ -18,14 +18,27 @@ function bd(seed: number): string {
   return `${1960 + next(45)}-${String(1 + next(12)).padStart(2, '0')}-${String(1 + next(28)).padStart(2, '0')}`;
 }
 
-/** 지인에게 계속 붙으면 곤란한 표현 */
+/**
+ * 지인에게 계속 붙으면 곤란한 표현.
+ *
+ * 조심할 점(오늘 할 행동)은 검사 대상이 아니다. 그건 사람에 대한 판정이
+ * 아니라 하루짜리 조언이라 매일 바뀐다. 여기서 잡는 건 고정값에 물려
+ * 영원히 따라다니는 말이다.
+ */
 const NEGATIVE = [
-  '부딪치기 쉬운',
-  '힘겨루기 쉬운',
+  '부딪치',
+  '힘겨루기',
   '압박',
   '부담',
   '다툼',
   '서두름',
+  '마찰',
+  '맞서',
+  '밀어내',
+  '밀릴',
+  '누릅니다',
+  '눌러',
+  '조심스러운',
 ];
 
 const DAYS = 60;
@@ -45,16 +58,20 @@ for (let s = 0; s < 40; s++) {
     if (!seq[0].ready) continue;
     pairCount++;
 
-    const negDays = seq.filter((r) =>
-      r.keywords.some((k) => NEGATIVE.some((n) => k.includes(n))),
-    ).length;
+    // 키워드뿐 아니라 매일 노출되는 요약 본문까지 본다
+    const hits = seq.map((r) => {
+      const text = [...r.keywords, r.summary, r.summaryLine].join(' ');
+      return NEGATIVE.filter((n) => text.includes(n));
+    });
+    const negDays = hits.filter((h) => h.length > 0).length;
 
     if (negDays > 0) everNegative++;
     if (negDays === DAYS) {
       alwaysNegative++;
       if (samples.length < 5) {
-        const hit = seq[0].keywords.filter((k) => NEGATIVE.some((n) => k.includes(n)));
-        samples.push(`${self.name}–${contact.name}: ${seq[0].keywords.join(' · ')}   ← ${hit.join(', ')}`);
+        samples.push(
+          `${self.name}–${contact.name}: ${seq[0].summary}   ← ${[...new Set(hits[0])].join(', ')}`,
+        );
       }
     }
 
@@ -68,7 +85,15 @@ console.log(`쌍 ${pairCount}개 × ${DAYS}일\n`);
 console.log('=== 지인 키워드의 고정 부정 표현 ===');
 console.log(`  한 번이라도 부정 표현이 뜨는 쌍: ${everNegative}개 (${pct(everNegative)})`);
 console.log(`  ${DAYS}일 내내 부정 표현이 붙는 쌍: ${alwaysNegative}개 (${pct(alwaysNegative)})`);
-console.log('  → 뒤쪽 숫자가 「그 지인에게 영구히 붙는 딱지」다\n');
+console.log('');
+console.log('  앞 숫자는 높아도 된다 — 마찰을 솔직히 말한다는 뜻이다.');
+console.log('  뒤 숫자가 「그 지인에게 영구히 붙는 딱지」이고, 0이어야 한다.');
+console.log(
+  alwaysNegative === 0
+    ? '\n  ✅ 영구 딱지 없음'
+    : `\n  ❌ ${alwaysNegative}개 쌍이 고정 부정 표현을 달고 있다`,
+);
+console.log('');
 
 if (samples.length) {
   console.log('  예시:');
