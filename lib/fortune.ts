@@ -4,17 +4,16 @@ import {
   getMbti,
   getWesternZodiac,
   getZodiacAnimalRecord,
-  mbtiAxisHint,
   pickDailyTarotCard,
 } from '@/lib/data/catalog';
 import { pickDaily, pickDailyFrom } from '@/lib/daily/pick';
 import { withIga } from '@/lib/korean/particle';
-import { joinSentences, stripSentenceEnd } from '@/lib/korean/sentence';
+import { joinSentences } from '@/lib/korean/sentence';
 import {
-  buildHourPillarAlignLine,
   computeFourPillars,
   computePersonalFortuneScore,
   getManseryeokPeriod,
+  getPillarAlignVerdict,
   tenGodPlain,
 } from '@/lib/manseryeok';
 import { memoLast } from '@/lib/memoLast';
@@ -101,6 +100,8 @@ export function getDailyTarot(profileSalt: string, date: Date) {
   return {
     title: card.title ?? card.label,
     blurb: card.upright ?? card.summary,
+    /** 키워드 나열 대신 쓰는 짧은 해설 — 완충 표현이 들어 있어 홈 카드에 안전하다 */
+    summary: card.summary ?? '',
   };
 }
 
@@ -163,52 +164,40 @@ export function fortuneGradeFromScore(score: number): FortuneGrade {
  * `내면의 기준과 논리적 판단과 계획과 정리, 섬세, 사수자리의 기질`처럼
  * 읽기 어려운 나열이 됐다. 신호는 두 덩이까지만 남기고 안은 가운뎃점으로 묶는다.
  */
-function buildTraitPhrase(profile: Profile): string {
-  const mbtiRec = getMbti(profile.mbti);
-  const blood = getBloodType(profile.bloodType);
-  const west = resolveWesternZodiac(profile);
-
-  const parts: string[] = [];
-
-  if (mbtiRec) {
-    const letters = (profile.mbti ?? '').split('');
-    const hints = [letters[0], letters[2], letters[3]]
-      .map((letter) => mbtiAxisHint(letter))
-      .filter(Boolean) as string[];
-    if (hints.length) parts.push(hints.slice(0, 2).join('·'));
-    else if (mbtiRec.keywords[0]) parts.push(mbtiRec.keywords[0]);
-  }
-
-  // MBTI가 없을 때만 혈액형 키워드로 채운다 (셋 다 넣으면 주어가 너무 길어진다)
-  if (parts.length === 0 && blood?.keywords[0]) parts.push(blood.keywords[0]);
-
-  if (west) parts.push(`${west.label} 기질`);
-
-  return parts.length ? parts.join(', ') : '당신만의 결';
-}
-
 function resolveWesternZodiac(profile: Profile) {
   return getWesternZodiac(profile.birthDate);
 }
 
-function buildSajuPhrase(profile: Profile, tone: PillarTone, dailyMood: string, tenGod?: string): string {
-  const animalLabel = getZodiacAnimal(profile.birthDate);
-  const elementLabel = getElement(profile.birthDate);
-  const animal = getZodiacAnimalRecord(animalLabel);
-  const element = getFiveElement(elementLabel);
-  const mood = element?.mood ?? null;
-  const godBit = tenGod ? `${tenGodPlain(tenGod)}(${tenGod})` : null;
+/**
+ * 오늘의 기운 한 줄 — 십신은 쉬운 말로만 (상관 같은 명칭은 사주 탭에 둔다).
+ */
+function buildTodayLead(tone: PillarTone, dailyMood: string, tenGod?: string): string {
+  const godPlain = tenGod ? tenGodPlain(tenGod) : null;
+  if (godPlain) return `${withIga(godPlain)} 도드라지는 날입니다. ${tone} 쪽에 힘이 실립니다.`;
+  return `오늘은 ${withIga(dailyMood)} ${tone} 쪽에 힘이 실립니다.`;
+}
 
-  if (animal && mood && godBit) {
-    return `오늘의 ${dailyMood}·${godBit} 흐름 속에서 ${animal.label}띠의 ${withIga(mood)} ${tone} 쪽으로 기울어 있습니다`;
-  }
-  if (animal && mood) {
-    return `오늘의 ${dailyMood} 속에서 ${animal.label}띠의 ${withIga(mood)} ${tone} 흐름과 맞물립니다`;
-  }
-  if (animal) {
-    return `오늘의 ${dailyMood} 속에서 ${animal.label}띠의 기운이 ${tone} 쪽으로 기울어 있습니다`;
-  }
-  return `오늘은 ${withIga(dailyMood)} ${tone} 기운을 두드러지게 합니다`;
+/**
+ * 내 고유의 결과 오늘의 만남 — 하나만 골라 엮는다.
+ * 띠·별자리·MBTI·혈액형을 한 문장에 다 넣으면 읽기 어려운 장문이 된다.
+ */
+function buildBaseMeetLine(profile: Profile, profileSalt: string, date: Date): string | null {
+  const mbtiRec = getMbti(profile.mbti);
+  const blood = getBloodType(profile.bloodType);
+  const west = resolveWesternZodiac(profile);
+  const animal = getZodiacAnimalRecord(getZodiacAnimal(profile.birthDate));
+  const mood = getFiveElement(getElement(profile.birthDate))?.mood;
+
+  const options = [
+    animal && mood ? `${animal.label}띠의 ${withIga(mood)} 오늘 흐름과 잘 맞물립니다.` : null,
+    west ? `${west.label} 기질이 오늘 흐름을 타기 쉽습니다.` : null,
+    mbtiRec?.keywords[0] ? `평소의 ${mbtiRec.keywords[0]} 결이 오늘은 힘이 됩니다.` : null,
+    blood?.keywords[0]
+      ? `${blood.label}형 특유의 ${withIga(blood.keywords[0])} 오늘은 빛을 냅니다.`
+      : null,
+  ].filter((line): line is string => Boolean(line));
+
+  return pickDailyFrom(options, `fortune-base:${profileSalt}`, date);
 }
 
 function buildInsightChips(profile: Profile, tarotTitle: string, tones: PillarTone[]): string[] {
@@ -237,7 +226,10 @@ function localYmd(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-/** 출생 시각이 있을 때 시주 × 오늘 일진 맞음/어긋남 — 점수와 분리된 문장만 */
+/**
+ * 출생 시각이 있을 때 시주 × 오늘 일진 맞음/어긋남 — 지도 카드용 쉬운 말.
+ * 「시주 정사 · 일진 신사 · 화극금」 같은 코드는 사주 탭에만 두고 여기선 뜻만 전한다.
+ */
 function buildHourPillarContext(profile: Profile, date: Date): string | null {
   const birthDate = profile.birthDate?.trim();
   if (!birthDate || !profile.birthTime) return null;
@@ -245,9 +237,12 @@ function buildHourPillarContext(profile: Profile, date: Date): string | null {
   const input = { birthDate, birthTime: profile.birthTime };
   const natal = computeFourPillars(input);
   const todayPeriod = getManseryeokPeriod(input, date, 'day');
-  if (!natal || !todayPeriod) return null;
+  if (!natal?.hour || !todayPeriod) return null;
 
-  return buildHourPillarAlignLine({ natal, todayPeriod })?.text ?? null;
+  const verdict = getPillarAlignVerdict(natal.hour, todayPeriod.pillar);
+  if (verdict === '맞음') return '태어난 시와 오늘이 맞물리는 날입니다.';
+  if (verdict === '어긋남') return '태어난 시와 오늘이 엇갈립니다. 오늘은 서두르지 않는 편이 낫습니다.';
+  return null;
 }
 
 /** 만세력 없을 때만 — 예전 해시 (58~97) */
@@ -294,17 +289,10 @@ function buildIntegratedFortuneNow(
     : pickSajuTones(seed);
 
   const tarot = getDailyTarot(profileSalt, date);
-  const trait = buildTraitPhrase(profile);
   const theme = pickDaily('home', `home:${profile.birthDate ?? 'anon'}`, date);
   const dailyMood = theme.keyword;
   const primaryTone = tones[0] ?? '성장';
   const secondaryTone = tones[1];
-  const sajuPhrase = buildSajuPhrase(
-    profile,
-    primaryTone,
-    dailyMood,
-    periodScore?.selfTodayTenGod,
-  );
 
   const blood = getBloodType(profile.bloodType);
   const mbtiRec = getMbti(profile.mbti);
@@ -337,14 +325,13 @@ function buildIntegratedFortuneNow(
   const name = profile.name?.trim() || '당신';
   const headline = `${name}의 오늘`;
 
-  const traitSubject = withIga(trait);
-
-  const hourContext = buildHourPillarContext(profile, date);
+  // 지도 카드는 한 문장에 하나씩, 쉬운 말로 — 전문 코드는 사주 탭에 둔다
   const summary = joinSentences([
-    `오늘은 ${traitSubject} ${stripSentenceEnd(sajuPhrase)}.`,
-    hourContext,
+    buildTodayLead(primaryTone, dailyMood, periodScore?.selfTodayTenGod),
+    buildHourPillarContext(profile, date),
+    buildBaseMeetLine(profile, profileSalt, date),
     theme.focus,
-    `이 흐름 위에 「${tarot.title}」의 기운이 겹쳐 ${stripSentenceEnd(tarot.blurb)}.`,
+    tarot.summary ? `타로 「${tarot.title}」 — ${tarot.summary}` : null,
   ]);
 
   const luckTags = [theme.keyword, ...buildLuckTags(tones)].filter(

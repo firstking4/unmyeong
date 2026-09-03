@@ -141,3 +141,32 @@ export function pickDaily(domain: DailyDomain, salt: string, date = new Date()):
   }
   return variant;
 }
+
+/**
+ * 하루에 서로 다른 두 변주가 필요할 때 — 같은 순열에서 이웃한 두 칸.
+ * 한 화면에서 팩 문장을 두 군데 쓸 때 같은 변주가 겹치지 않음을 보장한다.
+ */
+export function pickDailyPair(
+  domain: DailyDomain,
+  salt: string,
+  date = new Date(),
+): [DailyVariant, DailyVariant] {
+  const pack = PACKS[domain];
+  const variants = pack.variants;
+  const fullSalt = `${pack.version}:${salt}`;
+  if (variants.length === 0) throw new Error(`Daily pack empty: ${domain}`);
+  if (variants.length === 1) return [variants[0]!, variants[0]!];
+
+  const day = dayNumber(date);
+  if (variants.length === 2) {
+    const first = variants[(day + hash(fullSalt)) % 2]!;
+    return [first, variants[(day + hash(fullSalt) + 1) % 2]!];
+  }
+  const cycle = Math.floor(day / variants.length);
+  const order = cycleOrder(variants.length, fullSalt, cycle);
+  const position = day - cycle * variants.length;
+  return [
+    variants[order[position]!]!,
+    variants[order[(position + 1) % variants.length]!]!,
+  ];
+}

@@ -2,6 +2,7 @@ import physiognomySeed from '@/data/seed/physiognomy.json';
 
 import type { PhysiognomyCategory, SeedRecord } from './data/types';
 import { pickDaily, pickDailyFrom } from './daily/pick';
+import { withIga } from './korean/particle';
 import { endSentence, joinSentences } from './korean/sentence';
 
 const collection = physiognomySeed as {
@@ -118,7 +119,7 @@ export function buildTodayPhysiognomy(
   const summary = featured?.option
     ? joinSentences([
         theme.focus,
-        `오늘은 ${featured.category.label}이 중심입니다. ${featured.option.summary}`,
+        `오늘은 ${withIga(featured.category.label)} 중심입니다. ${featured.option.summary}`,
       ])
     : joinSentences([composite.summary, theme.focus]);
 

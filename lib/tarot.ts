@@ -1,5 +1,5 @@
 import { pickDailyTarotCard } from '@/lib/data/catalog';
-import { pickDaily } from '@/lib/daily/pick';
+import { pickDailyPair } from '@/lib/daily/pick';
 import { hasFinalConsonant, withEulReul, withIga } from '@/lib/korean/particle';
 import { endSentence, joinSentences } from '@/lib/korean/sentence';
 import { tarotEnglishName } from '@/lib/tarotEnglishNames';
@@ -58,7 +58,12 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
   const reversed = hashSeed(`${seed}:rev`) % 2 === 1;
   const title = card.title ?? card.label;
   // 프로필 salt — dayNumber와 함께 날짜마다 변주가 바뀌게 한다 (카드 id salt는 연속일 동일 문구 가능).
-  const theme = pickDaily('tarot', `tarot:${profile.birthDate ?? 'anon'}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}`, date);
+  // 팩 문장이 한 화면의 여러 필드에 다시 쓰이므로, 겹치지 않는 두 변주를 함께 받는다.
+  const [theme, theme2] = pickDailyPair(
+    'tarot',
+    `tarot:${profile.birthDate ?? 'anon'}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}`,
+    date,
+  );
   const reverseWord = theme.reverseKeyword ?? '점검';
   const seedHints = card.hints;
 
@@ -69,8 +74,8 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
       : `${title}의 기운이 안쪽으로 가라앉아 있습니다. 속도를 낮추고 ${theme.keyword} 쪽에서 점검해 보세요.`;
 
   const blurb = reversed
-    ? `${reversedCore} ${theme.focus}`
-    : `${uprightCore} ${theme.focus}`;
+    ? joinSentences([reversedCore, theme.focus])
+    : joinSentences([uprightCore, theme.focus]);
 
   const summary = card.summary;
   const headline = reversed
@@ -98,20 +103,20 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
         {
           label: '일·재능',
           text: seedHints?.work
-            ? joinSentences([`역방향 · ${seedHints.work}`, theme.caution])
+            ? joinSentences([`역방향 · ${seedHints.work}`, theme2.caution])
             : joinSentences([
                 '서두른 결정은 되감기 쉽습니다.',
-                theme.caution,
+                theme2.caution,
                 '한 가지 업무만 우선순위로 남겨 보세요.',
               ]),
         },
         {
           label: '성장',
           text: seedHints?.growth
-            ? joinSentences([seedHints.growth, theme.focus])
+            ? joinSentences([seedHints.growth, theme2.focus])
             : joinSentences([
                 `${withIga(title)} 가리키는 교훈을 안으로 가져가 보세요.`,
-                theme.focus,
+                theme2.focus,
               ]),
         },
         { label: '오늘의 한 가지', text: endSentence(theme.action) },
@@ -130,17 +135,17 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
         {
           label: '일·재능',
           text: seedHints?.work
-            ? joinSentences([seedHints.work, theme.focus])
+            ? joinSentences([seedHints.work, theme2.focus])
             : joinSentences([
-                theme.focus,
+                theme2.focus,
                 `키워드 ‘${theme.keyword}’${hasFinalConsonant(theme.keyword) ? '을' : '를'} 오늘의 업무 한 곳에 적용해 보세요.`,
               ]),
         },
         {
           label: '성장',
           text: seedHints?.growth
-            ? joinSentences([seedHints.growth, theme.action])
-            : joinSentences([uprightCore, theme.action]),
+            ? joinSentences([seedHints.growth, theme2.action])
+            : joinSentences([uprightCore, theme2.action]),
         },
         { label: '오늘의 한 가지', text: endSentence(theme.action) },
         { label: '주의', text: endSentence(theme.caution) },
