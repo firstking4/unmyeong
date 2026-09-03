@@ -25,6 +25,14 @@ export function stripSentenceEnd(text: string): string {
 }
 
 /** 빈 조각을 걸러내고, 각 조각을 문장으로 닫아 한 칸 띄워 잇는다. */
+/** 마침표 뒤 공백을 기준으로 문장 단위로 나눈다. 시드 데이터처럼 마침표로 끝나는 문장용. */
+export function splitSentences(text: string): string[] {
+  return text
+    .split(/(?<=\.)\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 export function joinSentences(parts: (string | null | undefined)[]): string {
   return parts
     .map((part) => (part ? endSentence(part) : ''))

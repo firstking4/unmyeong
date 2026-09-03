@@ -328,17 +328,18 @@ const RELATIONSHIP_TODAY: Record<string, string[]> = {
   정인: ['배움·돌봄', '받침·정성', '돌봄·배움'],
 };
 
+// 오늘·이달·올해에서 같은 십신이 같은 글자로 나오지 않게 스코프 간에도 문자열을 나눈다
 const RELATIONSHIP_MONTH: Record<string, string[]> = {
   비견: ['동료·경쟁', '동료·협력'],
   겁재: ['속도 경쟁', '추진 경쟁'],
   식신: ['표현·제작', '만듦·공유'],
   상관: ['피드백·개선', '재치·개선'],
-  편재: ['기회·확장', '실행·확장'],
-  정재: ['축적·정리', '관리·축적'],
+  편재: ['기회·발굴', '실행·성과'],
+  정재: ['축적·정리', '관리·정돈'],
   편관: ['책임·마감', '기준·마감'],
   정관: ['질서·약속', '체계·약속'],
   편인: ['탐구·혼자', '사색·혼자'],
-  정인: ['배움·돌봄', '배움·받침'],
+  정인: ['배움·채움', '배움·받침'],
 };
 
 const RELATIONSHIP_YEAR: Record<string, string[]> = {
@@ -410,6 +411,27 @@ function relationshipLabel(
     return pickLine(variants, `rel-label:${scope}:${god}:${pairSeed}`, date);
   }
   return easyFocus(god) || tenGodPlain(god);
+}
+
+/**
+ * 같은 십신의 다음 변주.
+ * 카드에서 쓴 표현을 상세에서 그대로 반복하면 한 화면에 같은 말이 도배되므로,
+ * 상세 블록은 다음 표현을 쓴다. 변주가 하나뿐이면 그대로.
+ */
+function relationshipLabelAlt(
+  scope: '오늘' | '이달' | '올해',
+  god: string,
+  pairSeed: string,
+  date: Date,
+): string {
+  const map =
+    scope === '오늘' ? RELATIONSHIP_TODAY : scope === '이달' ? RELATIONSHIP_MONTH : RELATIONSHIP_YEAR;
+  const variants = map[god];
+  if (!variants || variants.length === 0) return easyFocus(god) || tenGodPlain(god);
+  if (variants.length === 1) return variants[0]!;
+  const base = pickLine(variants, `rel-label:${scope}:${god}:${pairSeed}`, date);
+  const index = variants.indexOf(base);
+  return variants[(index + 1) % variants.length]!;
 }
 
 function relationshipPairLabel(god: string): string {
@@ -485,15 +507,21 @@ function buildTodayDriverLine(
       `오늘은 ${kwFor(neg.key)} 기운이 무겁게 작동해 속도 조절이 필요합니다.`,
     );
   }
-  if (pos && neg && pos.delta >= 6 && neg.delta <= -6 && pos.key !== neg.key) {
+  // 같은 십신끼리 밀고 견제한다고 하면 말이 안 되므로 라벨이 다를 때만 둔다
+  if (pos && neg && pos.delta >= 6 && neg.delta <= -6 && kwFor(pos.key) !== kwFor(neg.key)) {
     options.push(
       `오늘은 ${kwFor(pos.key)} 결이 밀어 주고 ${kwFor(neg.key)} 결이 견제하는 하루입니다.`,
     );
   }
-  // 어느 날에도 고정되지 않도록 오늘 십신 라벨이 들어간 문장을 항상 둔다
+  // 어느 날에도 고정되지 않도록 오늘 십신 라벨이 들어간 문장을 항상 둔다.
+  // 같은 기운끼리는 X·X로 나열하지 않는다.
   options.push(
-    `오늘은 ${selfLabel}·${otherLabel} 기운이 고르게 맞물립니다.`,
-    `오늘은 속자리 ${withIga(`${sb}·${ob}`)} 조용히 받치는 하루입니다.`,
+    selfLabel === otherLabel
+      ? `오늘은 둘 다 ${selfLabel} 기운이라 결이 선명합니다.`
+      : `오늘은 ${selfLabel}·${otherLabel} 기운이 고르게 맞물립니다.`,
+    sb === ob
+      ? `오늘은 속자리 ${withIga(sb)} 가만히 받치는 하루입니다.`
+      : `오늘은 속자리 ${withIga(`${sb}·${ob}`)} 조용히 받치는 하루입니다.`,
   );
   return pickLine(options, `gunghap-driver:${pairSeed}`, date);
 }
@@ -516,8 +544,9 @@ function buildRelationTodayLine(
 ): string {
   const animalEasy = EASY_ANIMAL[animalKind] ?? '평범한 결';
   const elementEasy = EASY_ELEMENT[elementKind] ?? '비슷한 기운';
-  const selfLabel = relationshipLabel('오늘', selfGod, pairSeed, date);
-  const otherLabel = relationshipLabel('오늘', otherGod, pairSeed, date);
+  // 카드·첫 문장과 같은 표현이 반복되지 않게 다음 변주를 쓴다
+  const selfLabel = relationshipLabelAlt('오늘', selfGod, pairSeed, date);
+  const otherLabel = relationshipLabelAlt('오늘', otherGod, pairSeed, date);
   const sb = BRANCH_FOCUS[selfBranch] ?? selfBranch;
   const ob = BRANCH_FOCUS[otherBranch] ?? otherBranch;
   const tone = blendedTodayTone(selfGod, otherGod, selfBranch, otherBranch);
@@ -528,10 +557,14 @@ function buildRelationTodayLine(
   // 여기서 또 쓰면 한 화면에 같은 말이 도배되므로, 라벨을 쓰는 템플릿은 하나만 둔다.
   return pickLine(
     [
-      `${animalEasy}인 두 사람, 오늘은 ${selfLabel}·${otherLabel} 기운이 만납니다.`,
+      selfLabel === otherLabel
+        ? `${animalEasy}인 두 사람, 오늘은 둘 다 ${selfLabel} 기운에 놓입니다.`
+        : `${animalEasy}인 두 사람, 오늘은 ${selfLabel}·${otherLabel} 기운이 만납니다.`,
       `${pairLabel} 결로 이어진 두 사람에게 오늘은 ${grade} 흐름이 얹힙니다.`,
       `${elementEasy}이 오늘의 ${grade} 흐름을 받칩니다.`,
-      `${withRo(animalEasy)} 이어진 사이, 오늘은 속자리 ${withIga(`${sb}·${ob}`)} 결을 더합니다.`,
+      sb === ob
+        ? `${withRo(animalEasy)} 이어진 사이, 오늘은 속자리 ${withIga(sb)} 결을 더합니다.`
+        : `${withRo(animalEasy)} 이어진 사이, 오늘은 속자리 ${withIga(`${sb}·${ob}`)} 결을 더합니다.`,
       `둘을 잇는 ${pairLabel} 결, 오늘은 ${toneBreath} 호흡으로 이어가면 좋습니다.`,
       `평소 ${elementEasy}이라도 오늘은 ${grade} 흐름에 맞춰 보면 좋습니다.`,
     ],
@@ -600,8 +633,10 @@ function dualEasyLine(
   pairSeed: string,
   date: Date,
 ): string {
-  const selfLabel = relationshipLabel(scope, selfGod, pairSeed, date);
-  const otherLabel = relationshipLabel(scope, otherGod, pairSeed, date);
+  // 카드(summaryLine)와 같은 라벨이 한 화면에 그대로 반복되지 않게
+  // 이 블록은 같은 십신의 다음 변주를 쓴다
+  const selfLabel = relationshipLabelAlt(scope, selfGod, pairSeed, date);
+  const otherLabel = relationshipLabelAlt(scope, otherGod, pairSeed, date);
   const topic = withEun(scope);
   const salt = `gunghap-rel:${scope}:${pairSeed}`;
 

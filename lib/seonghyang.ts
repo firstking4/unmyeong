@@ -8,7 +8,7 @@ import {
 import type { SeedRecord } from '@/lib/data/types';
 import { pickDaily, pickDailyFrom } from '@/lib/daily/pick';
 import { hasFinalConsonant, withEulReul } from '@/lib/korean/particle';
-import { endSentence, joinSentences, stripSentenceEnd } from '@/lib/korean/sentence';
+import { endSentence, joinSentences, splitSentences, stripSentenceEnd } from '@/lib/korean/sentence';
 import {
   BIG_FIVE_LABELS,
   type BigFiveKey,
@@ -182,8 +182,17 @@ function buildTodaySeonghyang(
     summaryParts.push(mbtiReady.summary);
   }
 
-  const relationship = mbtiSeed?.hints?.love
-    ? joinSentences([theme.relationship, mbtiSeed.hints.love])
+  // MBTI 관계 힌트는 타입 고정 문장이라 매일 통째로 붙이면 어제 문장이 된다.
+  // 문장 하나만 날마다 돌리고, 어떤 날은 오늘 테마만 둔다.
+  const loveHint = mbtiSeed?.hints?.love
+    ? pickDailyFrom(
+        [...splitSentences(mbtiSeed.hints.love), null],
+        `${mbtiSeed.id}:love`,
+        date,
+      )
+    : null;
+  const relationship = loveHint
+    ? joinSentences([theme.relationship, loveHint])
     : endSentence(theme.relationship);
   const action = endSentence(theme.action);
   const caution = watch
@@ -242,26 +251,45 @@ export function buildTodayMbti(
       headline: `${mbti.label}, ${theme.headline}`,
       meta: mbtiMeta(mbti) ? `MBTI · ${mbtiMeta(mbti)}` : `MBTI · ${mbti.label}`,
       keywords: unique([theme.keyword, strength, ...(mbti.keywords ?? [])]).slice(0, 4),
+      // 타입 전체 소개(mbti.summary)는 MBTI 섹션의 고정 설명이다.
+      // 오늘 풀이에는 싣지 않고 오늘 테마와 오늘의 강점만 엮는다.
       summary: joinSentences([
-        mbti.summary,
-        `오늘은 ‘${theme.keyword}’ 흐름 위에서 ${strength} 쪽을 가볍게 살려 보세요.`,
         theme.focus,
+        `오늘은 ‘${theme.keyword}’ 흐름 위에서 ${strength} 쪽을 가볍게 살려 보세요.`,
       ]),
       hints: [
         {
           label: '관계',
-          text: mbti.hints?.love
-            ? joinSentences([mbti.hints.love, theme.relationship])
-            : endSentence(theme.relationship),
+          text: (() => {
+            const love = mbti.hints?.love
+              ? pickDailyFrom(
+                  [...splitSentences(mbti.hints.love), null],
+                  `${mbti.id}:love`,
+                  date,
+                )
+              : null;
+            return love
+              ? joinSentences([theme.relationship, love])
+              : endSentence(theme.relationship);
+          })(),
         },
         {
           label: '일·재능',
-          text: mbti.hints?.work
-            ? joinSentences([mbti.hints.work, theme.focus])
-            : joinSentences([
-                theme.focus,
-                `키워드 ‘${strength}’${hasFinalConsonant(strength) ? '을' : '를'} 업무 한곳에 적용해 보세요.`,
-              ]),
+          text: (() => {
+            const work = mbti.hints?.work
+              ? pickDailyFrom(
+                  [...splitSentences(mbti.hints.work), null],
+                  `${mbti.id}:work`,
+                  date,
+                )
+              : null;
+            return work
+              ? joinSentences([theme.focus, work])
+              : joinSentences([
+                  theme.focus,
+                  `키워드 ‘${strength}’${hasFinalConsonant(strength) ? '을' : '를'} 업무 한곳에 적용해 보세요.`,
+                ]);
+          })(),
         },
         { label: '오늘의 한 가지', text: endSentence(theme.action) },
         {

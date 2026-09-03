@@ -212,6 +212,26 @@ if (badParticles.length) {
   console.log('  없음');
 }
 
+console.log('\n=== 같은 말 나열 검사 ===');
+/**
+ * `동행·동행`처럼 같은 말을 ·로 이어 쓴 경우.
+ * 왼쪽 경계가 한글·이 아니어야 `약속·속도`처럼 글자가 우연히 닿은 오탐을 피한다.
+ */
+const DUP_COMPOUND = /(?<![가-힣·])([가-힣]{2,})·\1/g;
+const dupCompounds: string[] = [];
+for (const line of allText.split('\n')) {
+  for (const match of line.matchAll(DUP_COMPOUND)) {
+    dupCompounds.push(`${match[0]} … ${line.slice(0, 70)}`);
+  }
+}
+if (dupCompounds.length) {
+  console.log(`  ⚠ ${dupCompounds.length}건`);
+  [...new Set(dupCompounds)].slice(0, 6).forEach((s) => console.log(`    · ${s}`));
+  problems.push(`같은 말 나열 ${dupCompounds.length}건`);
+} else {
+  console.log('  없음');
+}
+
 console.log('\n=== 지인 3일치 실제 문장 ===');
 for (let i = 0; i < 3; i++) {
   const g = gung[i] as any;
