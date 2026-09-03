@@ -1,7 +1,7 @@
 import physiognomySeed from '@/data/seed/physiognomy.json';
 
 import type { PhysiognomyCategory, SeedRecord } from './data/types';
-import { pickDaily } from './daily/pick';
+import { pickDaily, pickDailyFrom } from './daily/pick';
 import { endSentence, joinSentences } from './korean/sentence';
 
 const collection = physiognomySeed as {
@@ -106,6 +106,22 @@ export function buildTodayPhysiognomy(
     date,
   );
 
+  // 선택 특징의 고정 설명을 매일 통째로 실으면 어제 문장이 된다.
+  // 오늘의 중심 특징 하나를 날마다 돌려 오늘 흐름 옆에 둔다.
+  // 전체 합성(composite.summary·hints)은 아래 「해설」 섹션에서 그대로 본다.
+  const featured = pickDailyFrom(
+    composite.picks,
+    `physiognomy:featured:${selectedIds}:${personSalt ?? ''}`,
+    date,
+  );
+
+  const summary = featured?.option
+    ? joinSentences([
+        theme.focus,
+        `오늘은 ${featured.category.label}이 중심입니다. ${featured.option.summary}`,
+      ])
+    : joinSentences([composite.summary, theme.focus]);
+
   return {
     dateLabel: date.toLocaleDateString('ko-KR', {
       year: 'numeric',
@@ -117,10 +133,22 @@ export function buildTodayPhysiognomy(
     keywords: [theme.keyword, ...composite.keywords].filter(
       (word, index, all) => Boolean(word) && all.indexOf(word) === index,
     ).slice(0, 4),
-    summary: joinSentences([composite.summary, theme.focus]),
+    summary,
     hints: [
-      { label: '관계', text: joinSentences([composite.hints.love, theme.relationship]) },
-      { label: '일·재능', text: joinSentences([composite.hints.work, theme.action]) },
+      {
+        label: '관계',
+        text: joinSentences([
+          featured?.option?.hints?.love ?? composite.hints.love,
+          theme.relationship,
+        ]),
+      },
+      {
+        label: '일·재능',
+        text: joinSentences([
+          featured?.option?.hints?.work ?? composite.hints.work,
+          theme.action,
+        ]),
+      },
       { label: '오늘의 주의', text: endSentence(theme.caution) },
     ],
   };

@@ -156,7 +156,24 @@ function buildTodaySeonghyang(
   const labels = [west.label];
   if (mbtiSeed) labels.push(mbtiSeed.label);
 
-  const summaryParts = [west.summary, theme.focus];
+  // 별자리 전체 소개(west.summary)는 별자리 섹션의 고정 설명이다.
+  // 오늘 카드에 통째로 실으면 매일 같은 문장이 앞에 서므로,
+  // 키워드 하나만 골라 오늘 흐름과 엮어 날마다 다른 문장이 되게 한다.
+  const signKw = pickDailyFrom(west.keywords ?? [], `${west.id}:sign-kw`, date);
+  const signClause = signKw
+    ? pickDailyFrom(
+        [
+          `${west.label}의 ${signKw} 기운이 오늘 흐름과 만납니다.`,
+          `${west.label}답게 오늘은 ${signKw} 쪽이 살아납니다.`,
+          `${west.element} 기운 위에서 ${signKw} 결이 도드라집니다.`,
+          `오늘은 ${west.label}의 ${signKw} 면이 앞에 섭니다.`,
+        ],
+        `${west.id}:sign-clause`,
+        date,
+      )
+    : null;
+
+  const summaryParts = [theme.focus, signClause];
   if (mbtiSeed && strength) {
     summaryParts.push(
       `${mbtiSeed.label}로는 ‘${theme.keyword}’ 흐름 위에서 ${strength} 쪽을 가볍게 살려 보세요.`,

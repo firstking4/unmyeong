@@ -308,100 +308,6 @@ const BRANCH_FOCUS: Record<string, string> = {
   정인: '배움',
 };
 
-/** 상세 본문 첫 줄 — 띠·오행 다변화 */
-const ANIMAL_SUMMARY: Record<string, string[]> = {
-  같음: [
-    '띠 궁합이 비슷하고',
-    '같은 결의 띠이고',
-    '띠 기운이 닮았고',
-    '띠가 같은 자리에 있고',
-    '띠에서 같은 결이 보이고',
-    '띠 흐름이 겹치고',
-  ],
-  육합: [
-    '띠가 잘 맞고',
-    '궁합 좋은 띠이고',
-    '띠가 서로 돕는 쪽이고',
-    '띠끼리 손이 맞고',
-    '띠가 짝을 이루고',
-    '띠 궁합이 순하고',
-  ],
-  삼합: [
-    '띠가 한팀 같고',
-    '따뜻하게 맞는 띠이고',
-    '띠 궁합이 좋고',
-    '띠가 서로를 밀어 주고',
-    '띠가 한 방향을 보고',
-    '띠 기운이 모이는 쪽이고',
-  ],
-  방합: [
-    '띠가 가깝고',
-    '친근한 띠 궁합이고',
-    '띠가 편하게 맞고',
-    '띠끼리 결이 비슷하고',
-    '띠가 나란한 자리이고',
-    '띠 사이가 무리 없고',
-  ],
-  육충: [
-    '띠 결이 서로 다르고',
-    '띠가 서로를 흔들고',
-    '띠 방향이 엇갈리고',
-    '띠끼리 결이 마주 서고',
-    '띠가 서로에게 자극이 되고',
-    '띠 사이가 팽팽하고',
-  ],
-  흐름: [
-    '띠 궁합은 무난하고',
-    '띠는 평범한 편이고',
-    '띠 기운은 특별하지 않고',
-    '띠끼리 큰 영향은 없고',
-    '띠는 순한 쪽이고',
-    '띠 사이가 담담하고',
-  ],
-};
-
-const ELEMENT_SUMMARY: Record<string, string[]> = {
-  같음: [
-    '오행도 비슷합니다.',
-    '오행 기운도 가깝습니다.',
-    '오행이 잘 맞습니다.',
-    '오행이 같은 결에 놓입니다.',
-    '오행에서도 닮은 면이 보입니다.',
-    '오행 흐름이 겹칩니다.',
-  ],
-  생함: [
-    '오행은 서로 돕는 쪽입니다.',
-    '오행이 내게 도움이 됩니다.',
-    '오행이 나를 살립니다.',
-    '오행이 내 편으로 흐릅니다.',
-    '오행에서 내가 기운을 받습니다.',
-    '오행이 나를 받쳐 줍니다.',
-  ],
-  생받음: [
-    '오행은 상대를 돕는 쪽입니다.',
-    '오행이 상대를 살립니다.',
-    '오행이 상대 편입니다.',
-    '오행이 상대에게 흐릅니다.',
-    '오행에서 내가 기운을 내주는 쪽입니다.',
-    '오행이 상대를 받쳐 줍니다.',
-  ],
-  극함: [
-    '오행은 내가 방향을 내는 쪽입니다.',
-    '오행에서 내 힘이 앞섭니다.',
-    '오행에 팽팽함이 있습니다.',
-    '오행에서 내가 상대를 다듬습니다.',
-    '오행이 서로를 자극합니다.',
-    '오행은 속도 조절이 필요한 쪽입니다.',
-  ],
-  극받음: [
-    '오행은 상대를 따라가는 쪽입니다.',
-    '오행에서 상대 쪽에 힘이 실립니다.',
-    '오행은 조율이 필요합니다.',
-    '오행에서 상대가 방향을 냅니다.',
-    '오행이 나를 다듬어 주는 쪽입니다.',
-    '오행은 속도를 맞춰야 합니다.',
-  ],
-};
 
 /** 궁합 오늘·이달·올해 — 관계 맥락 짧은 말 (tenGodPlain 잘림 대신) */
 const RELATIONSHIP_TODAY: Record<string, string> = {
@@ -514,24 +420,108 @@ function pairNames(selfName: string, otherName: string): string {
   return `${withGwa(selfName)} ${otherName}`;
 }
 
-function buildSummaryIntro(
+/**
+ * 자세한 풀이 첫 문장 — 오늘 점수를 실제로 움직인 요소를 짚는다.
+ *
+ * 띠·오행·관계 십신(생년 고정)만으로 첫 문장을 열면 어법을 돌려도
+ * 매일 같은 읽기가 된다. 오늘의 십신·점수 부품은 매일 바뀌는 정보라
+ * 첫 문장부터 날마다 새로워진다.
+ */
+function buildTodayDriverLine(
   selfName: string,
   otherName: string,
-  animalKind: string,
-  elementKind: string,
+  selfGod: string,
+  otherGod: string,
+  selfBranch: string,
+  otherBranch: string,
+  scoreParts: CompatibilityScorePart[],
   pairSeed: string,
   date: Date,
 ): string {
-  const animalOptions = ANIMAL_SUMMARY[animalKind] ?? ['띠 궁합은 무난하고'];
-  const elementOptions = ELEMENT_SUMMARY[elementKind] ?? ['오행은 비슷합니다.'];
-  // 두 절이 같은 주기로 함께 넘어가지 않게 salt를 나눈다
-  const animalClause = pickLine(animalOptions, `gunghap-intro-animal:${animalKind}:${pairSeed}`, date);
-  const elementClause = pickLine(
-    elementOptions,
-    `gunghap-intro-element:${elementKind}:${pairSeed}`,
+  const selfLabel = relationshipLabel('오늘', selfGod);
+  const otherLabel = relationshipLabel('오늘', otherGod);
+  const sb = BRANCH_FOCUS[selfBranch] ?? selfBranch;
+  const ob = BRANCH_FOCUS[otherBranch] ?? otherBranch;
+
+  const kwFor = (key: string): string => {
+    if (key === 'todaySelf') return selfLabel;
+    if (key === 'todayOther') return otherLabel;
+    if (key === 'todaySelfBranch') return sb;
+    if (key === 'todayOtherBranch') return ob;
+    return '';
+  };
+  const whoFor = (key: string): string =>
+    key === 'todaySelf' || key === 'todaySelfBranch' ? selfName : otherName;
+
+  const todayParts = scoreParts.filter((p) => p.key.startsWith('today') && p.key !== 'todaySame');
+  const byDeltaDesc = [...todayParts].sort((a, b) => b.delta - a.delta);
+  const pos = byDeltaDesc[0];
+  const neg = byDeltaDesc[byDeltaDesc.length - 1];
+
+  const options: string[] = [];
+  if (pos && pos.delta >= 6) {
+    options.push(
+      `오늘은 ${whoFor(pos.key)} 쪽 ${kwFor(pos.key)} 기운이 궁합을 끌어올립니다.`,
+      `오늘 흐름은 ${whoFor(pos.key)}의 ${kwFor(pos.key)} 기운 덕이 큽니다.`,
+    );
+  }
+  if (neg && neg.delta <= -6) {
+    options.push(
+      `오늘은 ${whoFor(neg.key)} 쪽 ${kwFor(neg.key)} 기운이 발목을 잡을 수 있어요.`,
+      `오늘은 ${kwFor(neg.key)} 기운이 무겁게 작동해 속도 조절이 필요합니다.`,
+    );
+  }
+  if (pos && neg && pos.delta >= 6 && neg.delta <= -6 && pos.key !== neg.key) {
+    options.push(
+      `오늘은 ${kwFor(pos.key)} 기운이 밀어 주고 ${kwFor(neg.key)} 기운이 견제하는 하루입니다.`,
+    );
+  }
+  // 어느 날에도 고정되지 않도록 오늘 십신 라벨이 들어간 문장을 항상 둔다
+  options.push(
+    `오늘은 ${selfLabel}·${otherLabel} 기운이 고르게 맞물립니다.`,
+    `오늘은 속자리 ${sb}·${ob}가 조용히 받치는 하루입니다.`,
+  );
+  return pickLine(options, `gunghap-driver:${pairSeed}`, date);
+}
+
+/**
+ * 자세한 풀이 둘째 문장 — 관계의 바탕(띠·오행·관계 십신)은 고정값이라
+ * 단독으로 매일 서면 어제 문장이 된다. 항상 오늘의 기운과 한 문장에 엮는다.
+ */
+function buildRelationTodayLine(
+  animalKind: string,
+  elementKind: string,
+  pairLabel: string,
+  selfGod: string,
+  otherGod: string,
+  selfBranch: string,
+  otherBranch: string,
+  grade: CompatibilityGrade,
+  pairSeed: string,
+  date: Date,
+): string {
+  const animalEasy = EASY_ANIMAL[animalKind] ?? '평범한 결';
+  const elementEasy = EASY_ELEMENT[elementKind] ?? '비슷한 기운';
+  const selfLabel = relationshipLabel('오늘', selfGod);
+  const otherLabel = relationshipLabel('오늘', otherGod);
+  const sb = BRANCH_FOCUS[selfBranch] ?? selfBranch;
+  const ob = BRANCH_FOCUS[otherBranch] ?? otherBranch;
+  const tone = blendedTodayTone(selfGod, otherGod, selfBranch, otherBranch);
+  const toneBreath =
+    tone === '주의' ? '속도를 낮춘' : tone === '조율' ? '균형을 잡는' : '편안한';
+
+  return pickLine(
+    [
+      `${animalEasy}인 두 사람, 오늘은 ${selfLabel}·${otherLabel} 기운이 만납니다.`,
+      `${pairLabel} 결로 이어진 두 사람에게 오늘은 ${grade} 흐름이 얹힙니다.`,
+      `${elementEasy}이 오늘의 ${grade} 흐름을 받칩니다.`,
+      `${withRo(animalEasy)} 이어진 사이, 오늘은 속자리 ${sb}·${ob}가 결을 더합니다.`,
+      `둘을 잇는 ${pairLabel} 결 위로 오늘 ${selfLabel}·${otherLabel} 기운이 놓입니다.`,
+      `평소 ${elementEasy}이라도 오늘은 ${toneBreath} 호흡으로 만나면 좋습니다.`,
+    ],
+    `gunghap-summary-rel:${pairSeed}`,
     date,
   );
-  return `${withGwa(selfName)} ${withEun(otherName)} ${animalClause} ${elementClause}`;
 }
 
 function buildSummaryLine(
@@ -1045,19 +1035,30 @@ export function buildTodayCompatibility(
     date,
   ).slice(0, 6);
 
+  // 자세한 풀이 — 고정 소개(띠·오행·관계 나열)는 매일 같은 읽기라 두지 않는다.
+  // 오늘 점수를 움직인 요소가 앞에 오고, 관계 바탕은 오늘과 엮인 형태로만 선다.
   const summary = [
-    buildSummaryIntro(selfName, otherName, engine.animalKind, engine.elementKind, pairSeed, date),
-    // 관계 십신은 생년 기준이라 고정이다. 문장 형태만이라도 돌려 같은 말이 매일 반복되지 않게 한다.
-    pickLine(
-      [
-        `관계상 상대는 나에게 ${pairLabel} 쪽이에요.`,
-        `둘 사이에는 ${pairLabel} 결이 흐릅니다.`,
-        `상대는 내게 ${pairLabel} 자리에 놓입니다.`,
-        `관계의 바탕은 ${pairLabel} 쪽입니다.`,
-        `상대에게서 ${pairLabel} 기운을 받는 사이입니다.`,
-        `두 사람을 잇는 결은 ${pairLabel}입니다.`,
-      ],
-      `gunghap-pair-label:${pairSeed}`,
+    buildTodayDriverLine(
+      selfName,
+      otherName,
+      engine.selfTodayTenGod,
+      engine.otherTodayTenGod,
+      engine.selfTodayBranchTenGod,
+      engine.otherTodayBranchTenGod,
+      scoreParts,
+      pairSeed,
+      date,
+    ),
+    buildRelationTodayLine(
+      engine.animalKind,
+      engine.elementKind,
+      pairLabel,
+      engine.selfTodayTenGod,
+      engine.otherTodayTenGod,
+      engine.selfTodayBranchTenGod,
+      engine.otherTodayBranchTenGod,
+      grade,
+      pairSeed,
       date,
     ),
   ].join(' ');
