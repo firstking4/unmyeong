@@ -8,6 +8,7 @@ import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
 import { paperShadow, radius, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
+import { useContacts } from '@/context/ContactsContext';
 import { isFortuneReady, useProfile } from '@/context/ProfileContext';
 import {
   buildTodayKeywords,
@@ -34,12 +35,16 @@ function primarySource(keyword: TodayKeyword): KeywordSource {
 export function TodayKeywords({ onPressMapKeyword }: { onPressMapKeyword?: () => void }) {
   const c = Colors[useColorScheme() ?? 'light'];
   const { profile } = useProfile();
+  const { contacts, loaded: contactsLoaded } = useContacts();
   const router = useRouter();
   const ready = isFortuneReady(profile);
   const dateKey = useLocalDateKey();
   const { keywords, sources } = useMemo(
-    () => (ready ? buildTodayKeywords(profile) : { keywords: [], sources: [] as KeywordSource[] }),
-    [profile, ready, dateKey],
+    () =>
+      ready && contactsLoaded
+        ? buildTodayKeywords(profile, new Date(), contacts)
+        : { keywords: [], sources: [] as KeywordSource[] },
+    [profile, ready, contacts, contactsLoaded, dateKey],
   );
 
   const handlePress = (keyword: TodayKeyword) => {

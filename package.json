@@ -77,6 +77,7 @@
     "check:gunghap-distribution": "ts-node --project scripts/check/tsconfig.json -r tsconfig-paths/register scripts/check/gunghap-distribution.ts",
     "check:gunghap-weight": "ts-node --project scripts/check/tsconfig.json -r tsconfig-paths/register scripts/check/gunghap-weight-sim.ts",
     "check:gunghap-stigma": "ts-node --project scripts/check/tsconfig.json -r tsconfig-paths/register scripts/check/gunghap-fixed-negative.ts",
+    "check:gunghap-repeat": "ts-node --project scripts/check/tsconfig.json -r tsconfig-paths/register scripts/check/gunghap-repeat.ts",
     "verify:firebase": "node scripts/verify-firebase-config.mjs",
     "analytics:debug:on": "node scripts/firebase-debugview.mjs on",
     "analytics:debug:off": "node scripts/firebase-debugview.mjs off",

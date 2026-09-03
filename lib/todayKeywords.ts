@@ -1,12 +1,13 @@
 import { getBloodType } from '@/lib/data/catalog';
 import { buildIntegratedFortune, luckTagForTone } from '@/lib/fortune';
+import { buildTodayCompatibility } from '@/lib/gunghap';
 import { keywordPolarity, type KeywordPolarity } from '@/lib/keywordPolarity';
 import { buildTodayPhysiognomy, countPhysiognomySelections } from '@/lib/physiognomy';
 import { buildSajuReading } from '@/lib/saju';
 import { buildSeonghyangReading } from '@/lib/seonghyang';
 import { buildTarotReading } from '@/lib/tarot';
 import { memoLast } from '@/lib/memoLast';
-import type { Profile } from '@/lib/types';
+import type { ContactProfile, Profile } from '@/lib/types';
 
 export type { KeywordPolarity };
 export type KeywordSource = '지도' | '성향' | '사주' | '타로' | '지인' | '관상';
@@ -163,7 +164,25 @@ function pickDisplayKeywords(bag: Map<string, TodayKeyword>): TodayKeyword[] {
  */
 const keywordsMemo: { key: string; value: TodayKeywordSet | undefined } = { key: '', value: undefined };
 
-export function buildTodayKeywords(profile: Profile, date = new Date()): TodayKeywordSet {
+/**
+ * 허브에 올릴 지인 수.
+ *
+ * 궁합은 지인 한 명마다 만세력을 돌려야 해서 지도 탭에서 전원을 계산하면 비싸다.
+ * 고정(★)한 지인이 있으면 그쪽을, 없으면 목록 앞에서 몇 명만 쓴다.
+ */
+const HUB_CONTACT_LIMIT = 2;
+const HUB_KEYWORDS_PER_CONTACT = 2;
+
+function hubContacts(contacts: ContactProfile[]): ContactProfile[] {
+  const pinned = contacts.filter((contact) => contact.pinned);
+  return (pinned.length > 0 ? pinned : contacts).slice(0, HUB_CONTACT_LIMIT);
+}
+
+export function buildTodayKeywords(
+  profile: Profile,
+  date = new Date(),
+  contacts: ContactProfile[] = [],
+): TodayKeywordSet {
   const dateKey = ymd(date);
   // 관상 키워드도 들어가므로 얼굴 특징 선택까지 키에 넣는다
   const physiognomyKey = profile.physiognomy
@@ -173,14 +192,21 @@ export function buildTodayKeywords(profile: Profile, date = new Date()): TodayKe
         .map(([category, option]) => `${category}=${option}`)
         .join(',')
     : '';
-  const key = `${dateKey}:${profile.birthDate ?? ''}:${profile.birthTime ?? ''}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}:${profile.name ?? ''}:${profile.gender ?? ''}:${physiognomyKey}`;
-  return memoLast(keywordsMemo, key, () => buildTodayKeywordsNow(profile, date, dateKey));
+  // 허브에 올리는 지인이 달라지면 키워드도 갱신해야 한다
+  const contactsKey = hubContacts(contacts)
+    .map((contact) => `${contact.birthDate ?? ''}|${contact.birthTime ?? ''}`)
+    .join(';');
+  const key = `${dateKey}:${profile.birthDate ?? ''}:${profile.birthTime ?? ''}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}:${profile.name ?? ''}:${profile.gender ?? ''}:${physiognomyKey}:${contactsKey}`;
+  return memoLast(keywordsMemo, key, () =>
+    buildTodayKeywordsNow(profile, date, dateKey, hubContacts(contacts)),
+  );
 }
 
 function buildTodayKeywordsNow(
   profile: Profile,
   date: Date,
   dateKey: string,
+  contacts: ContactProfile[],
 ): TodayKeywordSet {
   const seed = fortuneSeed(profile, dateKey);
   const bag = new Map<string, TodayKeyword>();
@@ -211,6 +237,16 @@ function buildTodayKeywordsNow(
         '사주',
       );
       addWords(bag, today.keywords, '사주');
+    }
+  }
+
+  // 지인 — 지인 탭 오늘 카드와 동일 빌더. 고정(★)한 지인부터 앞에서 몇 명만
+  for (const contact of contacts) {
+    const compatibility = buildTodayCompatibility(profile, contact, date);
+    if (!compatibility.ready) continue;
+    addWords(bag, compatibility.keywords.slice(0, HUB_KEYWORDS_PER_CONTACT), '지인');
+    if (compatibility.grade === '주의' || compatibility.grade === '조심') {
+      addWords(bag, ['조심'], '지인', true);
     }
   }
 
