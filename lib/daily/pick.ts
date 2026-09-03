@@ -119,6 +119,19 @@ export function pickDailyFrom<T>(items: T[], salt: string, date = new Date()): T
   return items[order[day - cycle * length]!]!;
 }
 
+/**
+ * 날마다 다른 순서로 섞는다.
+ *
+ * 값 자체가 고정인 항목(띠 결·오행처럼 생년으로 정해지는 것)이 늘 같은 자리에
+ * 오면 매일 같은 단어로 시작하는 것처럼 읽힌다. 자리만 돌려 그걸 막는다.
+ * 한 바퀴 안 중복을 막는 `pickDailyFrom`과 달리 여기서는 순서만 바꾼다.
+ */
+export function shuffleDaily<T>(items: T[], salt: string, date = new Date()): T[] {
+  if (items.length < 2) return [...items];
+  const order = shuffledOrder(items.length, hash(`${salt}:${dayNumber(date)}`));
+  return order.map((index) => items[index]!);
+}
+
 /** 날짜가 하루 바뀌면 다음 변주로. salt로 도메인·프로필별 순서. */
 export function pickDaily(domain: DailyDomain, salt: string, date = new Date()): DailyVariant {
   const pack = PACKS[domain];

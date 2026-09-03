@@ -10,7 +10,7 @@ import {
   rawTotalToTodayScore,
   type GunghapTarotReading,
 } from '@/lib/gunghapTarot';
-import { localYmd, pickDailyFrom } from '@/lib/daily/pick';
+import { localYmd, pickDailyFrom, shuffleDaily } from '@/lib/daily/pick';
 import {
   resolveParticles,
   withEulReul,
@@ -888,13 +888,19 @@ export function buildTodayCompatibility(
 
   const pairSeed = `${self.birthDate}:${other.birthDate}`;
 
-  const keywords = uniqueWords([
-    animalEasy,
-    toneKw,
-    ...((EASY_FOCUS[pairGod] ?? []).slice(0, 2)),
-    elementEasy.replace(/ 기운$/, ''),
-    ...tarot.keywords,
-  ]).slice(0, 6);
+  // 띠 결·오행·관계 십신은 생년으로 정해져 값이 고정이다. 순서까지 고정이면
+  // 늘 같은 단어로 시작해 매일 같은 카드처럼 보인다. 자리를 날마다 돌린다.
+  const keywords = shuffleDaily(
+    uniqueWords([
+      animalEasy,
+      toneKw,
+      ...((EASY_FOCUS[pairGod] ?? []).slice(0, 2)),
+      elementEasy.replace(/ 기운$/, ''),
+      ...tarot.keywords,
+    ]),
+    `gunghap-keywords:${pairSeed}`,
+    date,
+  ).slice(0, 6);
 
   const summary = [
     buildSummaryIntro(selfName, otherName, engine.animalKind, engine.elementKind, pairSeed, date),
