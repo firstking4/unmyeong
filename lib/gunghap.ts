@@ -17,6 +17,7 @@ import {
   withEun,
   withGwa,
   withIga,
+  withRo,
 } from '@/lib/korean/particle';
 import { type Element, type ZodiacAnimal } from '@/lib/saju';
 import type { ContactProfile, Profile } from '@/lib/types';
@@ -289,6 +290,24 @@ const EASY_ELEMENT: Record<string, string> = {
   극받음: '상대가 이끄는 기운',
 };
 
+/**
+ * 일지 십신 한 단어 표기 — 속자리 문장용.
+ * 겉(일간) 표기 `EASY_FOCUS`와 같은 단어가 나오면 문장 안에서 중복으로 읽혀
+ * 의도적으로 다른 어휘를 둔다. 고정값이 아니라 오늘의 일지라 매일 바뀐다.
+ */
+const BRANCH_FOCUS: Record<string, string> = {
+  비견: '동행',
+  겁재: '추진',
+  식신: '나눔',
+  상관: '새로운 시각',
+  편재: '움직임',
+  정재: '챙김',
+  편관: '중심',
+  정관: '기준',
+  편인: '사색',
+  정인: '배움',
+};
+
 /** 상세 본문 첫 줄 — 띠·오행 다변화 */
 const ANIMAL_SUMMARY: Record<string, string[]> = {
   같음: [
@@ -520,13 +539,15 @@ function buildSummaryLine(
   otherName: string,
   selfGod: string,
   otherGod: string,
+  selfBranch: string,
+  otherBranch: string,
   grade: CompatibilityGrade,
   pairSeed: string,
   date: Date,
 ): string {
   const selfLabel = relationshipLabel('오늘', selfGod);
   const otherLabel = relationshipLabel('오늘', otherGod);
-  const meetTone = meetingTone(selfGod, otherGod);
+  const meetTone = blendedTodayTone(selfGod, otherGod, selfBranch, otherBranch);
   const meetClause =
     meetTone === '주의'
       ? '말과 거리를 살필'
@@ -594,13 +615,13 @@ function dualEasyLine(
               `${topic} 둘 다 ${selfLabel} 분위기예요.`,
               `${topic} 나란히 ${selfLabel} 흐름에 놓여요.`,
               `${topic} 서로 ${selfLabel} 리듬이에요.`,
-              `${topic} 두 사람 모두 ${selfLabel} 결로 흘러요.`,
+              `${topic} 두 사람 모두 ${withRo(selfLabel)} 흘러요.`,
             ]
           : [
               `${topic} 둘 다 ${selfLabel} 방향이에요.`,
               `${topic} 둘 다 ${selfLabel} 흐름이에요.`,
               `${topic} 나란히 ${selfLabel} 쪽을 봐요.`,
-              `${topic} 서로 ${selfLabel} 결로 가요.`,
+              `${topic} 서로 ${withRo(selfLabel)} 결로 가요.`,
               `${topic} 두 사람 모두 ${selfLabel} 방향에 서 있어요.`,
             ];
     return pickLine(options, salt, date);
@@ -626,7 +647,7 @@ function dualEasyLine(
         `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 흐름이에요.`,
         `${topic} 내 쪽 ${selfLabel}, 상대 쪽 ${otherLabel} 환경이에요.`,
         `${topic} 나 ${selfLabel}, 상대 ${otherLabel} 리듬이에요.`,
-        `${topic} 내 결이 ${selfLabel}, 상대 결이 ${otherLabel}로 흘러요.`,
+        `${topic} 내 결이 ${selfLabel}, 상대 결이 ${withRo(otherLabel)} 흘러요.`,
         `${topic} ${selfLabel} 자리의 나와 ${otherLabel} 자리의 상대예요.`,
         `${topic} 나에게 ${selfLabel}, 상대에게 ${otherLabel} 기운이 들어와요.`,
       ],
@@ -662,19 +683,74 @@ const MOOD_GRADE_LABELS: Record<CompatibilityGrade, string[]> = {
   최고: ['최고', '기운 좋음'],
 };
 
-function toneKeyword(selfGod: string, otherGod: string): string {
-  const tone = meetingTone(selfGod, otherGod);
-  return MOOD_TONE_LABELS[tone][0];
+type TodayTone = ReturnType<typeof meetingTone>;
+
+/**
+ * 겉(일간) 톤과 속(일지) 톤 중 조심스러운 쪽을 따른다.
+ * 일간 10일 주기만 쓰면 만남 톤이 10일마다 그대로 돌아온다.
+ * 일지를 섞으면 60일 주기가 되고, 점수(일지 델타 포함)와도 어긋나지 않는다.
+ */
+function blendedTodayTone(
+  selfGod: string,
+  otherGod: string,
+  selfBranch: string,
+  otherBranch: string,
+): TodayTone {
+  const stemTone = meetingTone(selfGod, otherGod);
+  const branchTone = meetingTone(selfBranch, otherBranch);
+  const rank: Record<TodayTone, number> = { 순조: 0, 조율: 1, 주의: 2 };
+  return rank[branchTone] > rank[stemTone] ? branchTone : stemTone;
+}
+
+/**
+ * 오늘 일지(속자리) 한 줄 — 60일 주기의 정보를 문장에 싣는다.
+ * 같은 십신이면 나란히 놓인 형태로, 다르면 각자 자리로 적는다.
+ */
+function branchUnderLine(
+  selfBranch: string,
+  otherBranch: string,
+  pairSeed: string,
+  date: Date,
+  saltSuffix = '',
+): string {
+  const sb = BRANCH_FOCUS[selfBranch] ?? selfBranch;
+  const ob = BRANCH_FOCUS[otherBranch] ?? otherBranch;
+  if (selfBranch === otherBranch) {
+    return pickLine(
+      [
+        `속자리에는 둘 다 ${sb} 기운이 깔려 있어요.`,
+        `밑바탕 기운도 ${sb} 쪽으로 겹칩니다.`,
+        `속마음 자리도 나란히 ${sb}입니다.`,
+        `겉과 속이 모두 ${sb} 쪽이라 결이 선명합니다.`,
+      ],
+      `gunghap-branch-same:${pairSeed}${saltSuffix}`,
+      date,
+    );
+  }
+  return pickLine(
+    [
+      `속자리에는 나는 ${sb}, 상대는 ${ob} 기운이 깔려 있어요.`,
+      `겉 아래 속에는 ${sb}·${ob} 결이 흐릅니다.`,
+      `밑바탕에는 나에게 ${sb}, 상대에게 ${ob} 기운이 놓여 있어요.`,
+      `속마음 자리는 나는 ${sb}, 상대는 ${ob} 쪽입니다.`,
+      `보이는 결 아래로 ${sb}·${ob} 기운이 함께 움직입니다.`,
+      `속자리의 기운은 각각 ${sb}·${ob} 쪽을 향합니다.`,
+    ],
+    `gunghap-branch:${pairSeed}${saltSuffix}`,
+    date,
+  );
 }
 
 function buildMoodHeadline(
   selfGod: string,
   otherGod: string,
+  selfBranch: string,
+  otherBranch: string,
   grade: CompatibilityGrade,
   pairSeed: string,
   date: Date,
 ): string {
-  const tone = meetingTone(selfGod, otherGod);
+  const tone = blendedTodayTone(selfGod, otherGod, selfBranch, otherBranch);
   const toneLabels = MOOD_TONE_LABELS[tone];
   const gradeLabels = MOOD_GRADE_LABELS[grade];
   const tonePart = pickLine(toneLabels, `gunghap-mood-tone:${pairSeed}`, date);
@@ -701,14 +777,22 @@ function guidanceVariantsForGod(god: string): string[] {
   return EASY_GUIDANCE_VARIANTS[god] ?? [];
 }
 
-function dynamicGuidanceLines(selfGod: string, otherGod: string): string[] {
+function dynamicGuidanceLines(
+  selfGod: string,
+  otherGod: string,
+  selfBranch = '',
+  otherBranch = '',
+): string[] {
+  // 겉(일간)·속(일지) 십신의 초점을 함께 쓴다. 일지가 들어가 60일 주기가 된다
   const focus = uniqueWords([
     ...(EASY_FOCUS[selfGod] ?? []),
     ...(EASY_FOCUS[otherGod] ?? []),
+    ...(BRANCH_FOCUS[selfBranch] ? [BRANCH_FOCUS[selfBranch]] : []),
+    ...(BRANCH_FOCUS[otherBranch] ? [BRANCH_FOCUS[otherBranch]] : []),
   ]);
   if (focus.length === 0) return [];
 
-  const tone = meetingTone(selfGod, otherGod);
+  const tone = blendedTodayTone(selfGod, otherGod, selfBranch, otherBranch);
   const pair = focus.slice(0, 2).join('·');
   const triple = focus.slice(0, 3).join('·');
   const lines = [
@@ -737,14 +821,21 @@ function dynamicGuidanceLines(selfGod: string, otherGod: string): string[] {
   return lines;
 }
 
-function dynamicCautionLines(selfGod: string, otherGod: string): string[] {
+function dynamicCautionLines(
+  selfGod: string,
+  otherGod: string,
+  selfBranch = '',
+  otherBranch = '',
+): string[] {
   const focus = uniqueWords([
     ...(EASY_FOCUS[selfGod] ?? []),
     ...(EASY_FOCUS[otherGod] ?? []),
+    ...(BRANCH_FOCUS[selfBranch] ? [BRANCH_FOCUS[selfBranch]] : []),
+    ...(BRANCH_FOCUS[otherBranch] ? [BRANCH_FOCUS[otherBranch]] : []),
   ]);
   if (focus.length === 0) return [];
 
-  const tone = meetingTone(selfGod, otherGod);
+  const tone = blendedTodayTone(selfGod, otherGod, selfBranch, otherBranch);
   const pair = focus.slice(0, 2).join('·');
   const triple = focus.slice(0, 3).join('·');
   const lines = [
@@ -771,16 +862,18 @@ function dynamicCautionLines(selfGod: string, otherGod: string): string[] {
 function buildGuidance(
   selfGod: string,
   otherGod: string,
+  selfBranch: string,
+  otherBranch: string,
   date: Date,
   pairSeed: string,
 ): string {
-  const tone = meetingTone(selfGod, otherGod);
+  const tone = blendedTodayTone(selfGod, otherGod, selfBranch, otherBranch);
 
   const candidates: string[] = [];
-  for (const god of prioritizedCautionGods(selfGod, otherGod)) {
+  for (const god of prioritizedCautionGods(selfGod, otherGod, selfBranch, otherBranch)) {
     candidates.push(...guidanceVariantsForGod(god));
   }
-  candidates.push(...dynamicGuidanceLines(selfGod, otherGod));
+  candidates.push(...dynamicGuidanceLines(selfGod, otherGod, selfBranch, otherBranch));
   candidates.push(...GENERIC_GUIDANCE[tone]);
 
   const unique = candidates.filter((line, i, all) => Boolean(line) && all.indexOf(line) === i);
@@ -788,7 +881,12 @@ function buildGuidance(
   return pickLine(unique, `gunghap-guidance:${pairSeed}`, date);
 }
 
-function prioritizedCautionGods(selfGod: string, otherGod: string): string[] {
+function prioritizedCautionGods(
+  selfGod: string,
+  otherGod: string,
+  selfBranch = '',
+  otherBranch = '',
+): string[] {
   const gods: string[] = [];
   const push = (god: string) => {
     if (god && gods.indexOf(god) === -1) gods.push(god);
@@ -796,8 +894,13 @@ function prioritizedCautionGods(selfGod: string, otherGod: string): string[] {
 
   if (HARD_GODS.has(selfGod)) push(selfGod);
   if (HARD_GODS.has(otherGod)) push(otherGod);
+  // 속자리(일지)에 어려운 기운이 있으면 그쪽 조언도 후보에 넣는다
+  if (HARD_GODS.has(selfBranch)) push(selfBranch);
+  if (HARD_GODS.has(otherBranch)) push(otherBranch);
   push(selfGod);
   push(otherGod);
+  push(selfBranch);
+  push(otherBranch);
 
   const assertive = new Set(['비견', '식신', '편재', '편인']);
   if (assertive.has(selfGod)) push(selfGod);
@@ -810,16 +913,18 @@ function prioritizedCautionGods(selfGod: string, otherGod: string): string[] {
 function buildCaution(
   selfGod: string,
   otherGod: string,
+  selfBranch: string,
+  otherBranch: string,
   animalKind: string,
   elementKind: string,
   date: Date,
   pairSeed: string,
 ): string {
   const candidates: string[] = [];
-  for (const god of prioritizedCautionGods(selfGod, otherGod)) {
+  for (const god of prioritizedCautionGods(selfGod, otherGod, selfBranch, otherBranch)) {
     candidates.push(...cautionVariantsForGod(god));
   }
-  candidates.push(...dynamicCautionLines(selfGod, otherGod));
+  candidates.push(...dynamicCautionLines(selfGod, otherGod, selfBranch, otherBranch));
   candidates.push(...(ANIMAL_CAUTION[animalKind] ?? []));
   candidates.push(...(ELEMENT_CAUTION[elementKind] ?? []));
   candidates.push(...GENERIC_CAUTION);
@@ -911,7 +1016,15 @@ export function buildTodayCompatibility(
   const selfName = self.name.trim();
   const grade = gradeFromScore(score);
   const pairGod = engine.otherToSelfTenGod;
-  const toneKw = toneKeyword(engine.selfTodayTenGod, engine.otherTodayTenGod);
+  const toneKw =
+    MOOD_TONE_LABELS[
+      blendedTodayTone(
+        engine.selfTodayTenGod,
+        engine.otherTodayTenGod,
+        engine.selfTodayBranchTenGod,
+        engine.otherTodayBranchTenGod,
+      )
+    ][0];
   const animalEasy = EASY_ANIMAL[engine.animalKind] ?? '평범한 결';
   const elementEasy = EASY_ELEMENT[engine.elementKind] ?? '기운';
   const pairLabel = relationshipPairLabel(pairGod);
@@ -949,18 +1062,37 @@ export function buildTodayCompatibility(
     ),
   ].join(' ');
 
-  const summaryLine = buildSummaryLine(
-    selfName,
-    otherName,
-    engine.selfTodayTenGod,
-    engine.otherTodayTenGod,
-    grade,
-    pairSeed,
-    date,
-  );
+  const summaryLine = [
+    buildSummaryLine(
+      selfName,
+      otherName,
+      engine.selfTodayTenGod,
+      engine.otherTodayTenGod,
+      engine.selfTodayBranchTenGod,
+      engine.otherTodayBranchTenGod,
+      grade,
+      pairSeed,
+      date,
+    ),
+    // 일지(속자리) 문장 — 일간 10일 주기와 어긋나 60일 주기의 정보가 된다
+    branchUnderLine(
+      engine.selfTodayBranchTenGod,
+      engine.otherTodayBranchTenGod,
+      pairSeed,
+      date,
+    ),
+  ].join(' ');
 
   const relationship = [
     dualEasyLine('오늘', engine.selfTodayTenGod, engine.otherTodayTenGod, pairSeed, date),
+    // 카드의 속자리 문장과 템플릿이 겹치지 않게 salt를 다르게 둔다
+    branchUnderLine(
+      engine.selfTodayBranchTenGod,
+      engine.otherTodayBranchTenGod,
+      pairSeed,
+      date,
+      ':rel',
+    ),
     dualEasyLine('이달', engine.selfMonthTenGod, engine.otherMonthTenGod, pairSeed, date),
     dualEasyLine('올해', engine.selfYearTenGod, engine.otherYearTenGod, pairSeed, date),
     elementRelationshipLine(engine.elementKind, pairSeed, date),
@@ -983,6 +1115,8 @@ export function buildTodayCompatibility(
     moodHeadline: buildMoodHeadline(
       engine.selfTodayTenGod,
       engine.otherTodayTenGod,
+      engine.selfTodayBranchTenGod,
+      engine.otherTodayBranchTenGod,
       grade,
       pairSeed,
       date,
@@ -994,6 +1128,8 @@ export function buildTodayCompatibility(
       buildGuidance(
         engine.selfTodayTenGod,
         engine.otherTodayTenGod,
+        engine.selfTodayBranchTenGod,
+        engine.otherTodayBranchTenGod,
         date,
         pairSeed,
       ),
@@ -1001,6 +1137,8 @@ export function buildTodayCompatibility(
     caution: buildCaution(
       engine.selfTodayTenGod,
       engine.otherTodayTenGod,
+      engine.selfTodayBranchTenGod,
+      engine.otherTodayBranchTenGod,
       engine.animalKind,
       engine.elementKind,
       date,

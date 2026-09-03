@@ -112,6 +112,37 @@ const TODAY_SELF_TEN_GOD_DELTA: Record<string, number> = {
 const SAME_TODAY_TEN_GOD_BONUS = 6;
 
 /**
+ * 오늘 일지(속자리) 십신 — 일간(겉)의 약 0.4배.
+ *
+ * 일간 십신은 10일, 일지 십신은 12일 주기라 둘을 합치면 60일 주기가 된다.
+ * 개인 운세(`personalFortune.ts`의 간:지 32:14)와 같은 비율 감각이다.
+ */
+const TODAY_SELF_BRANCH_TEN_GOD_DELTA: Record<string, number> = {
+  정재: 6,
+  식신: 6,
+  정인: 4,
+  정관: 3,
+  편재: 2,
+  비견: 0,
+  편인: -2,
+  상관: -3,
+  겁재: -4,
+  편관: -6,
+};
+const TODAY_OTHER_BRANCH_TEN_GOD_DELTA: Record<string, number> = {
+  정재: 10,
+  식신: 8,
+  정인: 6,
+  정관: 5,
+  편재: 3,
+  비견: 0,
+  편인: -3,
+  상관: -5,
+  겁재: -6,
+  편관: -10,
+};
+
+/**
  * 이달 월주 십신 — 오늘(×2)의 약 1/2.
  * 절기 월주가 해·달마다 바뀌어 연간 톤을 조금 흔든다.
  */
@@ -181,8 +212,8 @@ const SAME_YEAR_TEN_GOD_BONUS = 2;
  * 확인: `npm run check:gunghap-distribution`
  */
 const SCORE_ORIGIN = 44;
-/** 항목만점: 오늘(46) + 이달(23) + 올해(4+6+2=12) */
-const MAX_POSITIVE_SUM = 46 + 23 + 12; // 81
+/** 항목만점: 오늘(간 46 + 지 16 = 62) + 이달(23) + 올해(4+6+2=12) */
+const MAX_POSITIVE_SUM = 62 + 23 + 12; // 97
 /** 환산 분모 — 만점 비율보다 타이트하게 잡아 상단(80·90대)을 연다 */
 const SCORE_SCALE_MAX = 94;
 const SCORE_FLOOR = 0;
@@ -345,6 +376,14 @@ function todayOtherTenGodDelta(god: string): number {
   return TODAY_OTHER_TEN_GOD_DELTA[god] ?? 0;
 }
 
+function todaySelfBranchTenGodDelta(god: string): number {
+  return TODAY_SELF_BRANCH_TEN_GOD_DELTA[god] ?? 0;
+}
+
+function todayOtherBranchTenGodDelta(god: string): number {
+  return TODAY_OTHER_BRANCH_TEN_GOD_DELTA[god] ?? 0;
+}
+
 function monthSelfTenGodDelta(god: string): number {
   return MONTH_SELF_TEN_GOD_DELTA[god] ?? 0;
 }
@@ -373,6 +412,8 @@ function formatDelta(delta: number): string {
 export function buildCompatibilityScoreParts(input: {
   selfTodayTenGod: string;
   otherTodayTenGod: string;
+  selfTodayBranchTenGod: string;
+  otherTodayBranchTenGod: string;
   selfMonthTenGod: string;
   otherMonthTenGod: string;
   selfYearTenGod: string;
@@ -388,6 +429,16 @@ export function buildCompatibilityScoreParts(input: {
       key: 'todayOther',
       label: `오늘(지인) ${input.otherTodayTenGod}`,
       delta: todayOtherTenGodDelta(input.otherTodayTenGod),
+    },
+    {
+      key: 'todaySelfBranch',
+      label: `오늘 속자리(나) ${input.selfTodayBranchTenGod}`,
+      delta: todaySelfBranchTenGodDelta(input.selfTodayBranchTenGod),
+    },
+    {
+      key: 'todayOtherBranch',
+      label: `오늘 속자리(지인) ${input.otherTodayBranchTenGod}`,
+      delta: todayOtherBranchTenGodDelta(input.otherTodayBranchTenGod),
     },
   ];
 
@@ -533,6 +584,8 @@ export function computeCompatibility(
   const { parts, rawTotal, score: todayRawScore } = buildCompatibilityScoreParts({
     selfTodayTenGod: selfToday.stemTenGod,
     otherTodayTenGod: otherToday.stemTenGod,
+    selfTodayBranchTenGod: selfToday.branchTenGod,
+    otherTodayBranchTenGod: otherToday.branchTenGod,
     selfMonthTenGod: selfMonth.stemTenGod,
     otherMonthTenGod: otherMonth.stemTenGod,
     selfYearTenGod: selfYear.stemTenGod,
@@ -561,6 +614,8 @@ export function computeCompatibility(
     todayPillarKorean: selfToday.pillar.korean,
     selfTodayTenGod: selfToday.stemTenGod,
     otherTodayTenGod: otherToday.stemTenGod,
+    selfTodayBranchTenGod: selfToday.branchTenGod,
+    otherTodayBranchTenGod: otherToday.branchTenGod,
     monthPillarKorean: selfMonth.pillar.korean,
     selfMonthTenGod: selfMonth.stemTenGod,
     otherMonthTenGod: otherMonth.stemTenGod,

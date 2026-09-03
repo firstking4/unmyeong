@@ -65,6 +65,14 @@ for (const [name, get] of [
 
 console.log('\n=== 지인 (오늘 궁합) ===');
 const gung = days.map((d) => buildTodayCompatibility(profile, contact, d));
+/**
+ * caution·guidance는 후보 풀이 오늘 십신(일간+일지)으로 매일 바뀐다.
+ * 어제 풀과 오늘 풀이 다르면 순열이 새로 섞여 같은 문장이 이틀 연속 뜰 수 있어
+ * 순열만으로는 0을 보장할 수 없다. 60일 실측 하한은 약 0.8%
+ * (`npm run check:gunghap-repeat`). 14일 창에서 1회까지를 구조적 하한으로 둔다.
+ * 완전 제거는 어제 십신 재계산이 필요하고 목록 화면 비용이 커져 채택하지 않았다.
+ */
+const POOL_VARIES = new Set(['guidance', 'caution']);
 for (const [name, get] of [
   ['summary', (g: any) => g?.summary],
   ['summaryLine', (g: any) => g?.summaryLine],
@@ -74,7 +82,8 @@ for (const [name, get] of [
   ['relationship', (g: any) => g?.relationship],
 ] as const) {
   const r = report(name, gung.map(get));
-  if (r.consecutive > 0) problems.push(`지인 ${name} 연속중복`);
+  const limit = POOL_VARIES.has(name) ? 1 : 0;
+  if (r.consecutive > limit) problems.push(`지인 ${name} 연속중복`);
 }
 
 console.log('\n=== 타로 (오늘의 카드) ===');
@@ -166,8 +175,23 @@ for (const line of allText.split('\n')) {
     }
   }
 }
+/**
+ * 으로/로 — 받침 있는 글자(ㄹ 제외) 뒤 `로`, 받침 없는 글자 뒤 `으로`는 틀리다.
+ * 뒤에 공백이 오는 조사 위치만 본다(단어 중간의 `노력`·`재무로서` 같은 오탐 회피).
+ */
+const WRONG_RO = /([가-힣])(으로|로)(?=\s)/g;
+for (const line of allText.split('\n')) {
+  for (const match of line.matchAll(WRONG_RO)) {
+    const [, prev, particle] = match;
+    const jong = (prev.charCodeAt(0) - 0xac00) % 28;
+    const wantEuro = jong !== 0 && jong !== 8; // 받침 있고 ㄹ 아니면 으로
+    if ((particle === '으로') !== wantEuro) {
+      badParticles.push(`${prev}${particle} … ${line.slice(0, 70)}`);
+    }
+  }
+}
 if (badParticles.length) {
-  console.log(`  ⚠ ${badParticles.length}건 (받침 없는 글자 + 이/은/과/을)`);
+  console.log(`  ⚠ ${badParticles.length}건 (받침 없는 글자 + 이/은/과/을, 받침 어긋난 로/으로)`);
   [...new Set(badParticles)].slice(0, 6).forEach((s) => console.log(`    · ${s}`));
   problems.push(`받침 안 맞는 조사 ${badParticles.length}건`);
 } else {

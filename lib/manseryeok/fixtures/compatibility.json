@@ -19,6 +19,8 @@
       "otherToSelfTenGod": "식신",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "상관",
+      "selfTodayBranchTenGod": "편재",
+      "otherTodayBranchTenGod": "식신",
       "selfMonthTenGod": "편인",
       "otherMonthTenGod": "편관",
       "selfYearTenGod": "편인",
@@ -30,16 +32,18 @@
       "partDeltas": [
         16,
         -12,
+        2,
+        8,
         -3,
         -12,
         -2,
         -6
       ],
-      "rawTotal": -19,
-      "todayScore": 27,
-      "baseCorrectionBonus": 31,
-      "dailyDelta": -19,
-      "score": 58
+      "rawTotal": -9,
+      "todayScore": 37,
+      "baseCorrectionBonus": 26,
+      "dailyDelta": -9,
+      "score": 63
     }
   },
   {
@@ -62,6 +66,8 @@
       "otherToSelfTenGod": "비견",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "정재",
+      "selfTodayBranchTenGod": "편재",
+      "otherTodayBranchTenGod": "편재",
       "selfMonthTenGod": "편인",
       "otherMonthTenGod": "편인",
       "selfYearTenGod": "편인",
@@ -73,6 +79,8 @@
       "partDeltas": [
         16,
         24,
+        2,
+        3,
         6,
         -3,
         -4,
@@ -81,11 +89,11 @@
         -2,
         2
       ],
-      "rawTotal": 40,
-      "todayScore": 89,
-      "baseCorrectionBonus": 4,
-      "dailyDelta": 40,
-      "score": 93
+      "rawTotal": 45,
+      "todayScore": 95,
+      "baseCorrectionBonus": 2,
+      "dailyDelta": 45,
+      "score": 97
     }
   },
   {
@@ -108,6 +116,8 @@
       "otherToSelfTenGod": "식신",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "상관",
+      "selfTodayBranchTenGod": "편재",
+      "otherTodayBranchTenGod": "식신",
       "selfMonthTenGod": "편인",
       "otherMonthTenGod": "편관",
       "selfYearTenGod": "편인",
@@ -119,16 +129,18 @@
       "partDeltas": [
         16,
         -12,
+        2,
+        8,
         -3,
         -12,
         -2,
         -6
       ],
-      "rawTotal": -19,
-      "todayScore": 27,
-      "baseCorrectionBonus": 31,
-      "dailyDelta": -19,
-      "score": 58
+      "rawTotal": -9,
+      "todayScore": 37,
+      "baseCorrectionBonus": 26,
+      "dailyDelta": -9,
+      "score": 63
     }
   },
   {
@@ -151,6 +163,8 @@
       "otherToSelfTenGod": "정관",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "편인",
+      "selfTodayBranchTenGod": "편재",
+      "otherTodayBranchTenGod": "정인",
       "selfMonthTenGod": "편인",
       "otherMonthTenGod": "상관",
       "selfYearTenGod": "편인",
@@ -162,16 +176,18 @@
       "partDeltas": [
         16,
         -8,
+        2,
+        6,
         -3,
         -6,
         -2,
         -3
       ],
-      "rawTotal": -6,
-      "todayScore": 40,
-      "baseCorrectionBonus": 24,
-      "dailyDelta": -6,
-      "score": 64
+      "rawTotal": 2,
+      "todayScore": 49,
+      "baseCorrectionBonus": 21,
+      "dailyDelta": 2,
+      "score": 70
     }
   },
   {
@@ -194,6 +210,8 @@
       "otherToSelfTenGod": "편인",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "정관",
+      "selfTodayBranchTenGod": "편재",
+      "otherTodayBranchTenGod": "편관",
       "selfMonthTenGod": "편인",
       "otherMonthTenGod": "비견",
       "selfYearTenGod": "편인",
@@ -205,16 +223,18 @@
       "partDeltas": [
         16,
         12,
+        2,
+        -10,
         -3,
         0,
         -2,
         0
       ],
-      "rawTotal": 23,
-      "todayScore": 71,
-      "baseCorrectionBonus": 11,
-      "dailyDelta": 23,
-      "score": 82
+      "rawTotal": 15,
+      "todayScore": 63,
+      "baseCorrectionBonus": 14,
+      "dailyDelta": 15,
+      "score": 77
     }
   },
   {
@@ -237,6 +257,8 @@
       "otherToSelfTenGod": "식신",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "상관",
+      "selfTodayBranchTenGod": "편재",
+      "otherTodayBranchTenGod": "식신",
       "selfMonthTenGod": "편인",
       "otherMonthTenGod": "편관",
       "selfYearTenGod": "편인",
@@ -248,16 +270,18 @@
       "partDeltas": [
         16,
         -12,
+        2,
+        8,
         -3,
         -12,
         -2,
         -6
       ],
-      "rawTotal": -19,
-      "todayScore": 27,
-      "baseCorrectionBonus": 31,
-      "dailyDelta": -19,
-      "score": 58
+      "rawTotal": -9,
+      "todayScore": 37,
+      "baseCorrectionBonus": 27,
+      "dailyDelta": -9,
+      "score": 64
     }
   },
   {
@@ -280,6 +304,8 @@
       "otherToSelfTenGod": "편재",
       "selfTodayTenGod": "정재",
       "otherTodayTenGod": "겁재",
+      "selfTodayBranchTenGod": "편재",
+      "otherTodayBranchTenGod": "비견",
       "selfMonthTenGod": "편인",
       "otherMonthTenGod": "편재",
       "selfYearTenGod": "편인",
@@ -291,16 +317,18 @@
       "partDeltas": [
         16,
         -16,
+        2,
+        0,
         -3,
         4,
         -2,
         2
       ],
-      "rawTotal": 1,
-      "todayScore": 48,
-      "baseCorrectionBonus": 19,
-      "dailyDelta": 1,
-      "score": 67
+      "rawTotal": 3,
+      "todayScore": 50,
+      "baseCorrectionBonus": 18,
+      "dailyDelta": 3,
+      "score": 68
     }
   }
 ]

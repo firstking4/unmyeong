@@ -102,6 +102,22 @@ endSentence(theme.action);                                  // 단독 노출
 띠 결·오행·십신은 값이 고정이므로, 나열 순서까지 고정하면 매일 같은 단어로 시작한다.
 `shuffleDaily`로 자리를 날마다 돌린다 (`buildTodayCompatibility`).
 
+## 5. 오늘 해석은 일간+일지로 — 60일 주기
+
+일간 십신만 쓰면 10일 주기라 「10일 전이랑 같은 얘기」가 돌아온다.
+**오늘에 관한 해석·점수에는 일지 십신(`getManseryeokPeriod(...).branchTenGod`)을
+함께 쓴다.** 일간 10일 × 일지 12일이 어긋나며 60일 주기가 된다.
+
+- 개인 운세: `personalFortune.ts` — 점수에 간 32 : 지 14
+- 지인 궁합: `compatibility.ts` 일지 델타(간의 약 0.4배) + `gunghap.ts`
+  `branchUnderLine`(속자리 문장) · 톤 블렌드(`blendedTodayTone`) ·
+  조심/해보기 풀에 일지 십신 포함
+- 지인 궁합 검증: `npm run check:gunghap-today-variety`
+  (10일 간격 등급 일치율이 낮을수록 좋다 — 도입 전 59.9% → 이후 49.8%)
+
+주의: 일지 델타를 넣으면 `compatibility.json` 골든 fixture가 바뀐다.
+`WRITE_COMPAT_FIXTURES=1 npm run verify:manseryeok`으로 재생성하고 diff를 리뷰한다.
+
 ## 하지 말 것
 
 - `seed % options.length` 로 오늘 문구 고르기
@@ -110,3 +126,4 @@ endSentence(theme.action);                                  // 단독 노출
 - 팩 문장을 마침표 없이 다른 문장과 이어 붙이기
 - 한 필드에 후보를 2~3개만 두고 "매일 바뀐다"고 보기
 - 지인의 띠 결·오행·십신에 부정 평가 표현 붙이기 (영구 낙인이 됨)
+- 오늘 해석을 일간 십신만으로 만들기 (10일 주기로 접힘)

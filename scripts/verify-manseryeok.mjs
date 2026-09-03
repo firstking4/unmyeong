@@ -3,7 +3,7 @@
  * 만세력 골든 검증 — `npm run verify:manseryeok`
  * 앱 어댑터와 같은 정책(jasi · 진시 OFF · 미입력 정오)으로 계산한다.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +13,7 @@ const {
   calculateFourPillars,
   getSolarTermsOfYear,
   getTenGod,
+  getBranchTenGod,
   getHeavenlyStemElement,
   HEAVENLY_STEMS,
   HEAVENLY_STEMS_HANJA,
@@ -262,6 +263,31 @@ const TODAY_SELF_TEN_GOD_DELTA = {
   편관: -16,
 };
 const SAME_TODAY_TEN_GOD_BONUS = 6;
+// lib/manseryeok/compatibility.ts 의 일지(속자리) 델타와 동일하게 둔다
+const TODAY_SELF_BRANCH_TEN_GOD_DELTA = {
+  정재: 6,
+  식신: 6,
+  정인: 4,
+  정관: 3,
+  편재: 2,
+  비견: 0,
+  편인: -2,
+  상관: -3,
+  겁재: -4,
+  편관: -6,
+};
+const TODAY_OTHER_BRANCH_TEN_GOD_DELTA = {
+  정재: 10,
+  식신: 8,
+  정인: 6,
+  정관: 5,
+  편재: 3,
+  비견: 0,
+  편인: -3,
+  상관: -5,
+  겁재: -6,
+  편관: -10,
+};
 const MONTH_OTHER_TEN_GOD_DELTA = {
   정재: 12,
   식신: 10,
@@ -419,6 +445,8 @@ function computeCompatibility(self, other, at) {
   });
   const selfTodayTenGod = getTenGod(selfNatal.dayStem, today.day.heavenlyStem);
   const otherTodayTenGod = getTenGod(otherNatal.dayStem, today.day.heavenlyStem);
+  const selfTodayBranchTenGod = getBranchTenGod(selfNatal.dayStem, today.day.earthlyBranch);
+  const otherTodayBranchTenGod = getBranchTenGod(otherNatal.dayStem, today.day.earthlyBranch);
   const selfMonthTenGod = getTenGod(selfNatal.dayStem, today.month.heavenlyStem);
   const otherMonthTenGod = getTenGod(otherNatal.dayStem, today.month.heavenlyStem);
   const selfYearTenGod = getTenGod(selfNatal.dayStem, today.year.heavenlyStem);
@@ -443,6 +471,11 @@ function computeCompatibility(self, other, at) {
   const parts = [
     { key: 'todaySelf', delta: TODAY_SELF_TEN_GOD_DELTA[selfTodayTenGod] ?? 0 },
     { key: 'todayOther', delta: TODAY_OTHER_TEN_GOD_DELTA[otherTodayTenGod] ?? 0 },
+    { key: 'todaySelfBranch', delta: TODAY_SELF_BRANCH_TEN_GOD_DELTA[selfTodayBranchTenGod] ?? 0 },
+    {
+      key: 'todayOtherBranch',
+      delta: TODAY_OTHER_BRANCH_TEN_GOD_DELTA[otherTodayBranchTenGod] ?? 0,
+    },
   ];
   if (selfTodayTenGod === otherTodayTenGod) {
     parts.push({ key: 'todaySame', delta: SAME_TODAY_TEN_GOD_BONUS });
@@ -477,6 +510,8 @@ function computeCompatibility(self, other, at) {
     otherToSelfTenGod,
     selfTodayTenGod,
     otherTodayTenGod,
+    selfTodayBranchTenGod,
+    otherTodayBranchTenGod,
     selfMonthTenGod,
     otherMonthTenGod,
     selfYearTenGod,
@@ -582,15 +617,25 @@ for (const fixture of luckFixtures) {
   check(fixture.id, ok, { expected: fixture.expected, got });
 }
 
-const compatFixtures = JSON.parse(
-  readFileSync(join(repo, 'lib/manseryeok/fixtures/compatibility.json'), 'utf8'),
-);
-for (const fixture of compatFixtures) {
-  const got = computeCompatibility(fixture.self, fixture.other, new Date(fixture.atKst));
-  check(fixture.id, JSON.stringify(got) === JSON.stringify(fixture.expected), {
-    expected: fixture.expected,
-    got,
-  });
+const compatFixturesPath = join(repo, 'lib/manseryeok/fixtures/compatibility.json');
+const compatFixtures = JSON.parse(readFileSync(compatFixturesPath, 'utf8'));
+// 궁합 점수 구조가 바뀌면 `WRITE_COMPAT_FIXTURES=1 npm run verify:manseryeok`으로
+// expected를 다시 쓴 뒤 diff를 리뷰한다.
+if (process.env.WRITE_COMPAT_FIXTURES === '1') {
+  const next = compatFixtures.map((fixture) => ({
+    ...fixture,
+    expected: computeCompatibility(fixture.self, fixture.other, new Date(fixture.atKst)),
+  }));
+  writeFileSync(compatFixturesPath, `${JSON.stringify(next, null, 2)}\n`, 'utf8');
+  console.log(`compatibility fixtures rewritten (${next.length}건)`);
+} else {
+  for (const fixture of compatFixtures) {
+    const got = computeCompatibility(fixture.self, fixture.other, new Date(fixture.atKst));
+    check(fixture.id, JSON.stringify(got) === JSON.stringify(fixture.expected), {
+      expected: fixture.expected,
+      got,
+    });
+  }
 }
 
 if (failed > 0) {

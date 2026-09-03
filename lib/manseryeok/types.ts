@@ -107,6 +107,9 @@ export type CompatibilityEngineResult = {
   todayPillarKorean: string;
   selfTodayTenGod: string;
   otherTodayTenGod: string;
+  /** 오늘 일지 십신(속자리) — 일간 10일 주기와 어긋나 60일 주기를 만든다 */
+  selfTodayBranchTenGod: string;
+  otherTodayBranchTenGod: string;
   /** 절기 기준 당월 월주 */
   monthPillarKorean: string;
   selfMonthTenGod: string;
