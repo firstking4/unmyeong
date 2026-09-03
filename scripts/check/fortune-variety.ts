@@ -190,8 +190,22 @@ for (const line of allText.split('\n')) {
     }
   }
 }
+/**
+ * `·`로 이은 복합 라벨 + 가/이 — `챙김가`처럼 받침이 어긋난 경우.
+ * 복합 라벨 바로 뒤라 관형사형(있는·같은) 오탐이 없어 안전하게 잡힌다.
+ */
+const COMPOUND_PARTICLE = /·([가-힣]+)(가|이)(?=\s)/g;
+for (const line of allText.split('\n')) {
+  for (const match of line.matchAll(COMPOUND_PARTICLE)) {
+    const [, last, particle] = match;
+    const closed = (last.charCodeAt(last.length - 1) - 0xac00) % 28 !== 0;
+    if ((closed && particle === '가') || (!closed && particle === '이')) {
+      badParticles.push(`${last}${particle} … ${line.slice(0, 70)}`);
+    }
+  }
+}
 if (badParticles.length) {
-  console.log(`  ⚠ ${badParticles.length}건 (받침 없는 글자 + 이/은/과/을, 받침 어긋난 로/으로)`);
+  console.log(`  ⚠ ${badParticles.length}건 (받침 없는 글자 + 이/은/과/을, 받침 어긋난 로/으로·복합 라벨 가/이)`);
   [...new Set(badParticles)].slice(0, 6).forEach((s) => console.log(`    · ${s}`));
   problems.push(`받침 안 맞는 조사 ${badParticles.length}건`);
 } else {

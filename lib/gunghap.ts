@@ -70,16 +70,16 @@ const HARD_GODS = new Set(['겁재', '상관', '편관']);
 
 /** 궁합 화면용 쉬운 초점 말 (전문 키워드 대신) */
 const EASY_FOCUS: Record<string, string[]> = {
-  비견: ['같은 속도', '같이하기'],
-  겁재: ['속도', '경쟁심'],
-  식신: ['표현', '나누기'],
-  상관: ['표현', '아이디어'],
-  편재: ['움직임', '기회'],
-  정재: ['챙기기', '약속'],
-  편관: ['책임', '중심 잡기'],
-  정관: ['규칙', '약속'],
-  편인: ['혼자 시간', '생각'],
-  정인: ['배움', '돌봄'],
+  비견: ['같은 속도', '같이하기', '동반'],
+  겁재: ['속도', '경쟁심', '승부'],
+  식신: ['표현', '나누기', '만들기'],
+  상관: ['표현', '아이디어', '재치'],
+  편재: ['움직임', '기회', '확장'],
+  정재: ['챙기기', '약속', '관리'],
+  편관: ['책임', '중심 잡기', '절제'],
+  정관: ['규칙', '질서', '기준'],
+  편인: ['혼자 시간', '생각', '탐구'],
+  정인: ['배움', '돌봄', '받침'],
 };
 
 /** 조심할 점 — 십신별 후보(날짜·관계 시드로 순환) */
@@ -310,43 +310,48 @@ const BRANCH_FOCUS: Record<string, string> = {
 
 
 /** 궁합 오늘·이달·올해 — 관계 맥락 짧은 말 (tenGodPlain 잘림 대신) */
-const RELATIONSHIP_TODAY: Record<string, string> = {
-  비견: '같은 페이스',
-  겁재: '서두름·결단',
-  식신: '표현·나누기',
-  상관: '표현·아이디어',
-  편재: '움직임·기회',
-  정재: '챙기기·약속',
-  편관: '압박·책임',
-  정관: '규칙·약속',
-  편인: '혼자 시간',
-  정인: '배움·돌봄',
+/**
+ * 십신 라벨 — 한 십신에 표현이 하나뿐이면 그 십신이 올 때마다 같은 말이 된다
+ * (정관만 와도 매번 「규칙·약속」). 십신당 여러 표현을 두고 날마다 돌린다.
+ * 같은 날 같은 십신은 화면 어디서든 같은 라벨이어야 하므로 salt에 날짜는 없다.
+ */
+const RELATIONSHIP_TODAY: Record<string, string[]> = {
+  비견: ['같은 페이스', '나란한 속도', '동행하는 결'],
+  겁재: ['서두름·결단', '속도·승부', '추진·경쟁'],
+  식신: ['표현·나누기', '만듦·나눔', '풀이·나누기'],
+  상관: ['표현·아이디어', '재치·발산', '아이디어·직설'],
+  편재: ['움직임·기회', '실행·확장', '기회·행동'],
+  정재: ['챙기기·약속', '관리·성실', '계획·챙김'],
+  편관: ['압박·책임', '책임·무게', '절제·긴장'],
+  정관: ['규칙·약속', '질서·기준', '체계·원칙'],
+  편인: ['혼자 시간', '사색·정리', '내면·탐구'],
+  정인: ['배움·돌봄', '받침·정성', '돌봄·배움'],
 };
 
-const RELATIONSHIP_MONTH: Record<string, string> = {
-  비견: '동료·경쟁',
-  겁재: '속도 경쟁',
-  식신: '표현·제작',
-  상관: '피드백·개선',
-  편재: '기회·확장',
-  정재: '축적·정리',
-  편관: '책임·마감',
-  정관: '질서·약속',
-  편인: '탐구·혼자',
-  정인: '배움·돌봄',
+const RELATIONSHIP_MONTH: Record<string, string[]> = {
+  비견: ['동료·경쟁', '동료·협력'],
+  겁재: ['속도 경쟁', '추진 경쟁'],
+  식신: ['표현·제작', '만듦·공유'],
+  상관: ['피드백·개선', '재치·개선'],
+  편재: ['기회·확장', '실행·확장'],
+  정재: ['축적·정리', '관리·축적'],
+  편관: ['책임·마감', '기준·마감'],
+  정관: ['질서·약속', '체계·약속'],
+  편인: ['탐구·혼자', '사색·혼자'],
+  정인: ['배움·돌봄', '배움·받침'],
 };
 
-const RELATIONSHIP_YEAR: Record<string, string> = {
-  비견: '주체성·동료',
-  겁재: '결단·속도',
-  식신: '표현·성장',
-  상관: '관찰·조율',
-  편재: '기회·확장',
-  정재: '안정·축적',
-  편관: '책임·기준',
-  정관: '질서·신뢰',
-  편인: '탐구·직관',
-  정인: '배움·기반',
+const RELATIONSHIP_YEAR: Record<string, string[]> = {
+  비견: ['주체성·동료', '독립·동료'],
+  겁재: ['결단·속도', '추진·결단'],
+  식신: ['표현·성장', '만듦·성장'],
+  상관: ['관찰·조율', '재치·조율'],
+  편재: ['기회·확장', '행동·확장'],
+  정재: ['안정·축적', '관리·축적'],
+  편관: ['책임·기준', '절제·책임'],
+  정관: ['질서·신뢰', '체계·신뢰'],
+  편인: ['탐구·직관', '사색·직관'],
+  정인: ['배움·기반', '배움·뿌리'],
 };
 
 /** 생년 관계 십신(상대→나) — 오늘·이달·올해와 구분 */
@@ -391,10 +396,19 @@ function easyFocus(god: string, limit = 2): string {
   return (EASY_FOCUS[god] ?? []).slice(0, limit).join('·');
 }
 
-function relationshipLabel(scope: '오늘' | '이달' | '올해', god: string): string {
+function relationshipLabel(
+  scope: '오늘' | '이달' | '올해',
+  god: string,
+  pairSeed: string,
+  date: Date,
+): string {
   const map =
     scope === '오늘' ? RELATIONSHIP_TODAY : scope === '이달' ? RELATIONSHIP_MONTH : RELATIONSHIP_YEAR;
-  if (map[god]) return map[god];
+  const variants = map[god];
+  if (variants?.length) {
+    // salt에 날짜를 넣지 않는다 — 같은 날 같은 십신은 카드·상세 어디서든 같은 라벨
+    return pickLine(variants, `rel-label:${scope}:${god}:${pairSeed}`, date);
+  }
   return easyFocus(god) || tenGodPlain(god);
 }
 
@@ -438,8 +452,8 @@ function buildTodayDriverLine(
   pairSeed: string,
   date: Date,
 ): string {
-  const selfLabel = relationshipLabel('오늘', selfGod);
-  const otherLabel = relationshipLabel('오늘', otherGod);
+  const selfLabel = relationshipLabel('오늘', selfGod, pairSeed, date);
+  const otherLabel = relationshipLabel('오늘', otherGod, pairSeed, date);
   const sb = BRANCH_FOCUS[selfBranch] ?? selfBranch;
   const ob = BRANCH_FOCUS[otherBranch] ?? otherBranch;
 
@@ -473,13 +487,13 @@ function buildTodayDriverLine(
   }
   if (pos && neg && pos.delta >= 6 && neg.delta <= -6 && pos.key !== neg.key) {
     options.push(
-      `오늘은 ${kwFor(pos.key)} 기운이 밀어 주고 ${kwFor(neg.key)} 기운이 견제하는 하루입니다.`,
+      `오늘은 ${kwFor(pos.key)} 결이 밀어 주고 ${kwFor(neg.key)} 결이 견제하는 하루입니다.`,
     );
   }
   // 어느 날에도 고정되지 않도록 오늘 십신 라벨이 들어간 문장을 항상 둔다
   options.push(
     `오늘은 ${selfLabel}·${otherLabel} 기운이 고르게 맞물립니다.`,
-    `오늘은 속자리 ${sb}·${ob}가 조용히 받치는 하루입니다.`,
+    `오늘은 속자리 ${withIga(`${sb}·${ob}`)} 조용히 받치는 하루입니다.`,
   );
   return pickLine(options, `gunghap-driver:${pairSeed}`, date);
 }
@@ -502,22 +516,24 @@ function buildRelationTodayLine(
 ): string {
   const animalEasy = EASY_ANIMAL[animalKind] ?? '평범한 결';
   const elementEasy = EASY_ELEMENT[elementKind] ?? '비슷한 기운';
-  const selfLabel = relationshipLabel('오늘', selfGod);
-  const otherLabel = relationshipLabel('오늘', otherGod);
+  const selfLabel = relationshipLabel('오늘', selfGod, pairSeed, date);
+  const otherLabel = relationshipLabel('오늘', otherGod, pairSeed, date);
   const sb = BRANCH_FOCUS[selfBranch] ?? selfBranch;
   const ob = BRANCH_FOCUS[otherBranch] ?? otherBranch;
   const tone = blendedTodayTone(selfGod, otherGod, selfBranch, otherBranch);
   const toneBreath =
     tone === '주의' ? '속도를 낮춘' : tone === '조율' ? '균형을 잡는' : '편안한';
 
+  // 십신 라벨(규칙·약속 등)은 첫 문장과 카드·오늘 구간에서 이미 선다.
+  // 여기서 또 쓰면 한 화면에 같은 말이 도배되므로, 라벨을 쓰는 템플릿은 하나만 둔다.
   return pickLine(
     [
       `${animalEasy}인 두 사람, 오늘은 ${selfLabel}·${otherLabel} 기운이 만납니다.`,
       `${pairLabel} 결로 이어진 두 사람에게 오늘은 ${grade} 흐름이 얹힙니다.`,
       `${elementEasy}이 오늘의 ${grade} 흐름을 받칩니다.`,
-      `${withRo(animalEasy)} 이어진 사이, 오늘은 속자리 ${sb}·${ob}가 결을 더합니다.`,
-      `둘을 잇는 ${pairLabel} 결 위로 오늘 ${selfLabel}·${otherLabel} 기운이 놓입니다.`,
-      `평소 ${elementEasy}이라도 오늘은 ${toneBreath} 호흡으로 만나면 좋습니다.`,
+      `${withRo(animalEasy)} 이어진 사이, 오늘은 속자리 ${withIga(`${sb}·${ob}`)} 결을 더합니다.`,
+      `둘을 잇는 ${pairLabel} 결, 오늘은 ${toneBreath} 호흡으로 이어가면 좋습니다.`,
+      `평소 ${elementEasy}이라도 오늘은 ${grade} 흐름에 맞춰 보면 좋습니다.`,
     ],
     `gunghap-summary-rel:${pairSeed}`,
     date,
@@ -535,8 +551,8 @@ function buildSummaryLine(
   pairSeed: string,
   date: Date,
 ): string {
-  const selfLabel = relationshipLabel('오늘', selfGod);
-  const otherLabel = relationshipLabel('오늘', otherGod);
+  const selfLabel = relationshipLabel('오늘', selfGod, pairSeed, date);
+  const otherLabel = relationshipLabel('오늘', otherGod, pairSeed, date);
   const meetTone = blendedTodayTone(selfGod, otherGod, selfBranch, otherBranch);
   const meetClause =
     meetTone === '주의'
@@ -584,8 +600,8 @@ function dualEasyLine(
   pairSeed: string,
   date: Date,
 ): string {
-  const selfLabel = relationshipLabel(scope, selfGod);
-  const otherLabel = relationshipLabel(scope, otherGod);
+  const selfLabel = relationshipLabel(scope, selfGod, pairSeed, date);
+  const otherLabel = relationshipLabel(scope, otherGod, pairSeed, date);
   const topic = withEun(scope);
   const salt = `gunghap-rel:${scope}:${pairSeed}`;
 
@@ -1023,11 +1039,16 @@ export function buildTodayCompatibility(
 
   // 띠 결·오행·관계 십신은 생년으로 정해져 값이 고정이다. 순서까지 고정이면
   // 늘 같은 단어로 시작해 매일 같은 카드처럼 보인다. 자리를 날마다 돌린다.
+  // 관계 십신 칩도 고정 두 개가 매일 서지 않게, 풀에서 날마다 두 개를 고른다.
+  const pairFocus = shuffleDaily(EASY_FOCUS[pairGod] ?? [], `gunghap-focus:${pairSeed}`, date).slice(
+    0,
+    2,
+  );
   const keywords = shuffleDaily(
     uniqueWords([
       animalEasy,
       toneKw,
-      ...((EASY_FOCUS[pairGod] ?? []).slice(0, 2)),
+      ...pairFocus,
       elementEasy.replace(/ 기운$/, ''),
       ...tarot.keywords,
     ]),
