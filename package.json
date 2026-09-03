@@ -74,6 +74,7 @@
     "verify:tarot-daily": "node scripts/verify-tarot-daily.mjs",
     "verify:daily-variety": "node scripts/verify-daily-variety.mjs",
     "verify:fortune-variety": "ts-node --project scripts/check/tsconfig.json -r tsconfig-paths/register scripts/check/fortune-variety.ts",
+    "check:gunghap-distribution": "ts-node --project scripts/check/tsconfig.json -r tsconfig-paths/register scripts/check/gunghap-distribution.ts",
     "verify:firebase": "node scripts/verify-firebase-config.mjs",
     "analytics:debug:on": "node scripts/firebase-debugview.mjs on",
     "analytics:debug:off": "node scripts/firebase-debugview.mjs off",
