@@ -1,0 +1,89 @@
+---
+description: 운세 문구를 만들거나 고칠 때 — 반복 방지 추출·한국어 조사·문장 접합
+globs: lib/**/*.ts,data/**/*.json
+alwaysApply: false
+---
+
+# 운세 문구 (반복 방지 · 조사 · 문장 접합)
+
+지도 · 성향 · 사주 · 타로 · 지인 · 관상 문구는 모두 같은 세 가지 규칙을 따른다.
+
+검증: `npm run verify:fortune-variety` (실제 빌더를 14일 돌려 검사) ·
+`npm run verify:daily-variety` (`pickDaily` 순열 자체 검사)
+
+## 1. 하루 하나 고르기 — `pickDailyFrom`
+
+후보에서 오늘 쓸 문장을 고를 때 **`seed % length` 를 쓰지 않는다.** 후보가 2~3개뿐인
+문장이 많아 사흘에 한 번씩 같은 말이 돌아오고 연속 중복도 잦다.
+
+```ts
+import { pickDailyFrom } from '@/lib/daily/pick';
+
+const line = pickDailyFrom(options, `도메인-용도:${안정시드}`, date) ?? options[0];
+```
+
+### salt에 날짜를 넣지 않는다 (제일 자주 하는 실수)
+
+`pickDailyFrom`은 **salt로 순열을 만들고 날짜로 그 순열을 훑는다.** salt가 날마다 바뀌면
+순열이 매일 다시 섞여 무작위 추출과 다를 바 없어진다.
+
+salt에 넣으면 안 되는 것:
+
+- `dateKey` · `localYmd(date)` — 날짜 그 자체
+- **오늘 십신** (`selfTodayTenGod` 등) · 오늘 등급 · 오늘 톤 — 날마다 바뀜
+
+salt에 넣어도 되는 것: 생년월일, 지인 쌍(`pairSeed`), 띠·오행 관계처럼 **생년 기준 고정값**.
+
+```ts
+// ✗ 매일 순열이 다시 섞인다
+pickDailyFrom(opts, `x:${dateKey}:${todayTenGod}`, date);
+
+// ✓
+pickDailyFrom(opts, `x:${profile.birthDate ?? 'anon'}`, date);
+```
+
+후보 풀 자체가 날마다 바뀌는 경우(십신으로 풀을 만드는 `buildCaution` 등)는 순열만으로
+연속 중복이 완전히 사라지지 않는다. 그래도 salt는 고정으로 두는 편이 낫다.
+
+### 후보는 6개 이상
+
+풀이 얇으면 코드를 고쳐도 며칠 주기로 반복된다. 시드·팩을 늘리는 쪽이 근본 해결이다.
+
+## 2. 조사는 반드시 헬퍼로
+
+`을(를)`, `과(와)` 같은 병기 표기가 **사용자 화면에 그대로 보인 적이 있다.** 값이 런타임에
+정해지는 자리에 조사를 직접 적지 않는다.
+
+```ts
+import { withEulReul, withIga, withEun, withGwa, withRo } from '@/lib/korean/particle';
+
+`${withEulReul(keyword)} 다시 맞출 날`   // 목을 / 화를
+`${withIga(label)} 어긋납니다`            // 정재가 / 편관이
+```
+
+- 시드·팩 데이터에도 `을(를)` 같은 표기를 새로 쓰지 않는다
+- `resolveParticles`는 데이터에서 새어 나온 표기를 앞 글자 받침에 맞춰 고치는 **마지막 안전망**이다.
+  한쪽 형태로 몰아 버리는 방식(`replace('을(를)', '를')`)으로 되돌리지 말 것
+- 템플릿에 `${x}과`, `${x}이`처럼 조사를 붙여 쓰면 받침에 따라 `아이디어과`·`정리이`가 된다
+
+## 3. 문장 접합 — `joinSentences`
+
+일일 팩(`data/daily/packs/*.json`)의 `focus` · `relationship` · `action` · `caution`은
+**마침표 없이 끝난다** (`headline`은 제목이라 의도된 것). 시드 문장은 마침표로 끝난다.
+그냥 `join(' ')` 하면 `막힌 일이 풀립니다 INTJ로는 …`처럼 두 문장이 붙어 읽힌다.
+
+```ts
+import { joinSentences, endSentence, stripSentenceEnd } from '@/lib/korean/sentence';
+
+joinSentences([seed.summary, theme.focus, theme.action]);  // 조각마다 마침표를 맞춰 이음
+endSentence(theme.action);                                  // 단독 노출
+`${watch} 신호를 느끼면 ${stripSentenceEnd(theme.caution)}` // 절로 끼워 넣기
+```
+
+## 하지 말 것
+
+- `seed % options.length` 로 오늘 문구 고르기
+- `pickDailyFrom` salt에 날짜·오늘 십신 넣기
+- 템플릿 문자열에 조사 직접 적기
+- 팩 문장을 마침표 없이 다른 문장과 이어 붙이기
+- 한 필드에 후보를 2~3개만 두고 "매일 바뀐다"고 보기

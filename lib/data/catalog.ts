@@ -8,6 +8,7 @@ import tarotMinor from '@/data/seed/tarot-minor.json';
 import westernZodiac from '@/data/seed/western-zodiac.json';
 import zodiacAnimals from '@/data/seed/zodiac-animals.json';
 
+import { pickDailyFrom } from '@/lib/daily/pick';
 import type { BloodType, MbtiType, ZodiacSign } from '@/lib/types';
 import type { SeedCollection, SeedRecord } from './types';
 
@@ -116,6 +117,17 @@ export function pickTarotBySeed(seed: string): SeedRecord {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
   return tarotCollection.items[h % tarotCollection.items.length];
+}
+
+/**
+ * 오늘의 메이저 아르카나 한 장.
+ *
+ * 해시 나머지로 뽑으면 같은 카드가 이틀 연속 나올 수 있고 카드별 빈도도
+ * 고르지 않다. 순열을 돌면 22일 안에 22장이 한 번씩 나온다.
+ * `salt`에는 날짜를 넣지 않는다 (`pickDailyFrom` 참고).
+ */
+export function pickDailyTarotCard(salt: string, date: Date): SeedRecord {
+  return pickDailyFrom(tarotCollection.items, `tarot-card:${salt}`, date) ?? tarotCollection.items[0];
 }
 
 /** 프로필 태그용 — seed keywords 일부 */

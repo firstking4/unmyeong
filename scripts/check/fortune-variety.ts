@@ -1,0 +1,199 @@
+import { buildIntegratedFortune } from '@/lib/fortune';
+import { buildSeonghyangReading } from '@/lib/seonghyang';
+import { buildTodayCompatibility } from '@/lib/gunghap';
+import { buildTarotReading } from '@/lib/tarot';
+import { buildSajuReading } from '@/lib/saju';
+import type { ContactProfile, Profile } from '@/lib/types';
+
+const profile = {
+  name: '박종윤',
+  birthDate: '1982-12-11',
+  birthTime: '09:50',
+  mbti: 'INTJ',
+  bloodType: 'A',
+  gender: 'male',
+} as Profile;
+
+const contact = {
+  id: 'c1',
+  name: '수민',
+  birthDate: '1990-05-02',
+  birthTime: '14:20',
+} as ContactProfile;
+
+const DAYS = 14;
+const days = Array.from({ length: DAYS }, (_, i) => new Date(2026, 8, 4 + i));
+
+function report(title: string, lines: (string | undefined)[]) {
+  const clean = lines.map((l) => (l ?? '').trim());
+  const distinct = new Set(clean).size;
+  let consecutive = 0;
+  for (let i = 1; i < clean.length; i++) if (clean[i] === clean[i - 1]) consecutive++;
+  const flag = consecutive > 0 ? ` ⚠ 연속중복 ${consecutive}회` : '';
+  console.log(`  ${title.padEnd(26)} 고유 ${String(distinct).padStart(2)}/${DAYS}${flag}`);
+  return { distinct, consecutive };
+}
+
+const problems: string[] = [];
+
+console.log('=== 지도 (오늘의 운세) ===');
+const fortunes = days.map((d) => buildIntegratedFortune(profile, d));
+for (const [name, get] of [
+  ['guidance', (f: any) => f.guidance],
+  ['closing', (f: any) => f.closing],
+  ['headline', (f: any) => f.headline],
+  ['score', (f: any) => String(f.score)],
+] as const) {
+  const r = report(name, fortunes.map(get));
+  // headline은 사용자 이름이라 고정, score는 정수라 인접 동일이 자연스럽다
+  if (r.consecutive > 0 && name !== 'headline' && name !== 'score') {
+    problems.push(`지도 ${name} 연속중복`);
+  }
+}
+
+console.log('\n=== 성향 (오늘의 성향) ===');
+const seong = days.map((d) => buildSeonghyangReading(profile, {}, d).today);
+for (const [name, get] of [
+  ['summary', (t: any) => t?.summary],
+  ['주의 힌트', (t: any) => t?.hints?.find((h: any) => h.label === '주의')?.text],
+  ['관계 힌트', (t: any) => t?.hints?.find((h: any) => h.label === '관계')?.text],
+  ['headline', (t: any) => t?.headline],
+] as const) {
+  const r = report(name, seong.map(get));
+  if (r.consecutive > 0) problems.push(`성향 ${name} 연속중복`);
+}
+
+console.log('\n=== 지인 (오늘 궁합) ===');
+const gung = days.map((d) => buildTodayCompatibility(profile, contact, d));
+for (const [name, get] of [
+  ['summary', (g: any) => g?.summary],
+  ['summaryLine', (g: any) => g?.summaryLine],
+  ['guidance', (g: any) => g?.guidance],
+  ['caution', (g: any) => g?.caution],
+  ['moodHeadline', (g: any) => g?.moodHeadline],
+  ['relationship', (g: any) => g?.relationship],
+] as const) {
+  const r = report(name, gung.map(get));
+  if (r.consecutive > 0) problems.push(`지인 ${name} 연속중복`);
+}
+
+console.log('\n=== 타로 (오늘의 카드) ===');
+const tarot = days.map((d) => buildTarotReading(profile, d));
+for (const [name, get] of [
+  ['headline', (t: any) => t.headline],
+  ['blurb', (t: any) => t.blurb],
+  ['title', (t: any) => t.title],
+] as const) {
+  report(name, tarot.map(get));
+}
+
+console.log('\n=== 사주 (오늘의 사주) ===');
+const saju = days.map((d) => buildSajuReading(profile.birthDate!, d, profile.birthTime)?.today);
+for (const [name, get] of [
+  ['summary', (t: any) => t?.summary],
+  ['headline', (t: any) => t?.headline],
+] as const) {
+  report(name, saju.map(get));
+}
+
+console.log('\n=== 홈·타로 탭 카드 일치 ===');
+let mismatch = 0;
+for (let i = 0; i < DAYS; i++) {
+  const home = (fortunes[i] as any).insights?.tarotTitle;
+  const tab = tarot[i].title;
+  if (home !== tab) {
+    mismatch++;
+    console.log(`  ⚠ ${days[i].toISOString().slice(0, 10)}: 홈 ${home} ≠ 타로탭 ${tab}`);
+  }
+}
+if (mismatch === 0) console.log('  14일 전부 일치');
+else problems.push(`홈·타로 카드 불일치 ${mismatch}일`);
+
+console.log('\n=== 문장 접합 검사 (마침표 없이 붙은 문장) ===');
+// `…풀립니다 INTJ로는` 처럼 종결어미 뒤에 마침표 없이 다음 문장이 붙는 경우
+const RUN_ON = /(습니다|합니다|입니다|보세요|하세요|이에요|예요|어요|네요)\s+[가-힣A-Za-z‘“「]/;
+const runOnSamples: string[] = [];
+for (const text of [
+  ...fortunes.map((f) => f.guidance),
+  ...fortunes.map((f) => f.summary),
+  ...seong.flatMap((t) => [t?.summary ?? '', ...(t?.hints ?? []).map((h: any) => h.text)]),
+  ...tarot.flatMap((t) => [t.blurb, ...t.hints.map((h) => h.text)]),
+  ...gung.flatMap((g: any) => [g?.summary ?? '', g?.guidance ?? '']),
+]) {
+  if (RUN_ON.test(text)) runOnSamples.push(text);
+}
+if (runOnSamples.length) {
+  console.log(`  ⚠ ${runOnSamples.length}건`);
+  runOnSamples.slice(0, 3).forEach((s) => console.log(`    · ${s.slice(0, 90)}…`));
+  problems.push(`문장 접합 누락 ${runOnSamples.length}건`);
+} else {
+  console.log('  없음');
+}
+
+console.log('\n=== 미처리 조사 노출 검사 ===');
+const allText = [
+  ...fortunes.flatMap((f) => [f.guidance, f.closing, f.headline, f.moodHeadline]),
+  ...seong.flatMap((t) => [t?.summary ?? '', ...(t?.hints ?? []).map((h: any) => h.text)]),
+  ...gung.flatMap((g) => [g?.summary ?? '', g?.summaryLine ?? '', g?.guidance ?? '', g?.caution ?? '', g?.moodHeadline ?? '']),
+  ...tarot.flatMap((t) => [t.headline, t.blurb, ...t.hints.map((h) => h.text)]),
+  ...saju.flatMap((t) => [t?.summary ?? '', t?.headline ?? '']),
+].join('\n');
+
+const leaked = ['을(를)', '과(와)', '이(가)', '은(는)', '를(을)', '와(과)'].filter((p) =>
+  allText.includes(p),
+);
+if (leaked.length) {
+  console.log(`  ⚠ 노출: ${leaked.join(', ')}`);
+  problems.push(`미처리 조사 노출: ${leaked.join(', ')}`);
+} else {
+  console.log('  없음');
+}
+
+console.log('\n=== 받침 안 맞는 조사 검사 ===');
+/** 받침 없는 글자 뒤 `이/은/과/을`, 받침 있는 글자 뒤 `가/는/와/를` */
+const WRONG_PARTICLE = /([가-힣])(이|은|과|을|가|는|와|를)(?=\s)/g;
+const OPEN_ONLY = new Set(['가', '는', '와', '를']);
+const CLOSED_ONLY = new Set(['이', '은', '과', '을']);
+/** `천사는`(명사 일부)·용언 활용 등 오탐이 많아, 확실한 조합만 본다 */
+const badParticles: string[] = [];
+for (const line of allText.split('\n')) {
+  for (const match of line.matchAll(WRONG_PARTICLE)) {
+    const [, prev, particle] = match;
+    const closed = (prev.charCodeAt(0) - 0xac00) % 28 !== 0;
+    if (closed && OPEN_ONLY.has(particle)) continue; // 받침+가/는 → 오탐 많음(명사 끝음절)
+    if (!closed && CLOSED_ONLY.has(particle)) {
+      badParticles.push(`${prev}${particle} … ${line.slice(0, 70)}`);
+    }
+  }
+}
+if (badParticles.length) {
+  console.log(`  ⚠ ${badParticles.length}건 (받침 없는 글자 + 이/은/과/을)`);
+  [...new Set(badParticles)].slice(0, 6).forEach((s) => console.log(`    · ${s}`));
+  problems.push(`받침 안 맞는 조사 ${badParticles.length}건`);
+} else {
+  console.log('  없음');
+}
+
+console.log('\n=== 지인 3일치 실제 문장 ===');
+for (let i = 0; i < 3; i++) {
+  const g = gung[i] as any;
+  console.log(`\n[${days[i].toISOString().slice(0, 10)}] ${g?.moodHeadline ?? '-'}`);
+  console.log(`  요약: ${g?.summary ?? '-'}`);
+  console.log(`  한 줄: ${g?.summaryLine ?? '-'}`);
+  console.log(`  해보기: ${g?.guidance ?? '-'}`);
+  console.log(`  조심: ${g?.caution ?? '-'}`);
+}
+
+console.log('\n=== 지도 2일치 ===');
+for (let i = 0; i < 2; i++) {
+  console.log(`\n[${days[i].toISOString().slice(0, 10)}] ${fortunes[i].headline} (${fortunes[i].score})`);
+  console.log(`  ${fortunes[i].guidance}`);
+  console.log(`  ${fortunes[i].closing}`);
+}
+
+if (problems.length) {
+  console.log(`\n❌ 문제 ${problems.length}건:`);
+  problems.forEach((p) => console.log(`  - ${p}`));
+  throw new Error('검증 실패');
+}
+console.log('\n✅ 연속 중복·조사 노출 없음');

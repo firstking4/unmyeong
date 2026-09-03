@@ -1,5 +1,6 @@
 import { getHeavenlyStemElement } from 'manseryeok';
 
+import { withEun, withIga } from '@/lib/korean/particle';
 import { branchAnimalRelation, elementRelationKind } from './compatibility';
 import { branchAnimal } from './period';
 import type {
@@ -102,12 +103,12 @@ function alignLine(
   const { verdict, animalLabel, elementLabel } = pillarAlignVerdict(natal, flowing);
   const detail = `${animalLabel} · ${elementLabel}`;
   if (verdict === '맞음') {
-    return { text: `${subject}이 맞습니다. ${detail}.` };
+    return { text: `${withIga(subject)} 맞습니다. ${detail}.` };
   }
   if (verdict === '어긋남') {
-    return { text: `${subject}이 어긋납니다. ${detail}.` };
+    return { text: `${withIga(subject)} 어긋납니다. ${detail}.` };
   }
-  return { text: `${subject}은 ${detail}.` };
+  return { text: `${withEun(subject)} ${detail}.` };
 }
 
 function currentLuckPillar(luck: LuckPillarsResult, age: number | null): LuckPillarsResult['pillars'][number] | null {

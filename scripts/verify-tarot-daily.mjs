@@ -7,28 +7,15 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { pickPackVariant } from './lib/daily-pick.mjs';
+
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const tarotMajor = JSON.parse(readFileSync(join(root, 'data/seed/tarot-major.json'), 'utf8'));
 const tarotPack = JSON.parse(readFileSync(join(root, 'data/daily/packs/tarot.json'), 'utf8'));
 
-function hashSeed(input) {
-  let h = 0;
-  for (let i = 0; i < input.length; i++) h = (h * 31 + input.charCodeAt(i)) >>> 0;
-  return h;
-}
-
-function dayNumber(date) {
-  return Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000);
-}
-
-function pickDaily(salt, date) {
-  const variants = tarotPack.variants;
-  return variants[(dayNumber(date) + hashSeed(`${tarotPack.version}:${salt}`)) % variants.length];
-}
-
 function pickTarotTheme(profile, date) {
   const salt = `tarot:${profile.birthDate ?? 'anon'}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}`;
-  return pickDaily(salt, date);
+  return pickPackVariant(tarotPack, salt, date);
 }
 
 function assert(condition, message) {

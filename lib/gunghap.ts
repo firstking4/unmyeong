@@ -10,7 +10,14 @@ import {
   rawTotalToTodayScore,
   type GunghapTarotReading,
 } from '@/lib/gunghapTarot';
-import { localYmd } from '@/lib/daily/pick';
+import { localYmd, pickDailyFrom } from '@/lib/daily/pick';
+import {
+  resolveParticles,
+  withEulReul,
+  withEun,
+  withGwa,
+  withIga,
+} from '@/lib/korean/particle';
 import { type Element, type ZodiacAnimal } from '@/lib/saju';
 import type { ContactProfile, Profile } from '@/lib/types';
 
@@ -254,20 +261,97 @@ const EASY_ELEMENT: Record<string, string> = {
 
 /** 상세 본문 첫 줄 — 띠·오행 다변화 */
 const ANIMAL_SUMMARY: Record<string, string[]> = {
-  같음: ['띠 궁합이 비슷하고', '같은 결의 띠이고', '띠 기운이 닮았고'],
-  육합: ['띠가 잘 맞고', '궁합 좋은 띠이고', '띠가 서로 돕는 쪽이고'],
-  삼합: ['띠가 한팀 같고', '따뜻하게 맞는 띠이고', '띠 궁합이 좋고'],
-  방합: ['띠가 가깝고', '친근한 띠 궁합이고', '띠가 편하게 맞고'],
-  육충: ['띠가 부딪치기 쉽고', '띠 궁합에 마찰이 있고', '띠가 엇갈리기 쉽고'],
-  흐름: ['띠 궁합은 무난하고', '띠는 평범한 편이고', '띠 기운은 특별하지 않고'],
+  같음: [
+    '띠 궁합이 비슷하고',
+    '같은 결의 띠이고',
+    '띠 기운이 닮았고',
+    '띠가 같은 자리에 있고',
+    '띠에서 같은 결이 보이고',
+    '띠 흐름이 겹치고',
+  ],
+  육합: [
+    '띠가 잘 맞고',
+    '궁합 좋은 띠이고',
+    '띠가 서로 돕는 쪽이고',
+    '띠끼리 손이 맞고',
+    '띠가 짝을 이루고',
+    '띠 궁합이 순하고',
+  ],
+  삼합: [
+    '띠가 한팀 같고',
+    '따뜻하게 맞는 띠이고',
+    '띠 궁합이 좋고',
+    '띠가 서로를 밀어 주고',
+    '띠가 한 방향을 보고',
+    '띠 기운이 모이는 쪽이고',
+  ],
+  방합: [
+    '띠가 가깝고',
+    '친근한 띠 궁합이고',
+    '띠가 편하게 맞고',
+    '띠끼리 결이 비슷하고',
+    '띠가 나란한 자리이고',
+    '띠 사이가 무리 없고',
+  ],
+  육충: [
+    '띠가 부딪치기 쉽고',
+    '띠 궁합에 마찰이 있고',
+    '띠가 엇갈리기 쉽고',
+    '띠끼리 결이 맞서고',
+    '띠가 서로를 밀어내기 쉽고',
+    '띠 사이에 긴장이 있고',
+  ],
+  흐름: [
+    '띠 궁합은 무난하고',
+    '띠는 평범한 편이고',
+    '띠 기운은 특별하지 않고',
+    '띠끼리 큰 영향은 없고',
+    '띠는 순한 쪽이고',
+    '띠 사이가 담담하고',
+  ],
 };
 
 const ELEMENT_SUMMARY: Record<string, string[]> = {
-  같음: ['오행도 비슷합니다.', '오행 기운도 가깝습니다.', '오행이 잘 맞습니다.'],
-  생함: ['오행은 서로 돕는 쪽입니다.', '오행이 내게 도움이 됩니다.', '오행이 나를 살립니다.'],
-  생받음: ['오행은 상대를 돕는 쪽입니다.', '오행이 상대를 살립니다.', '오행이 상대 편입니다.'],
-  극함: ['오행은 맞서기 쉬운 쪽입니다.', '오행은 힘이 부딪치기 쉽습니다.', '오행은 긴장이 생기기 쉽습니다.'],
-  극받음: ['오행은 밀릴 수 있는 쪽입니다.', '오행은 상대에게 힘이 실립니다.', '오행은 조율이 필요합니다.'],
+  같음: [
+    '오행도 비슷합니다.',
+    '오행 기운도 가깝습니다.',
+    '오행이 잘 맞습니다.',
+    '오행이 같은 결에 놓입니다.',
+    '오행에서도 닮은 면이 보입니다.',
+    '오행 흐름이 겹칩니다.',
+  ],
+  생함: [
+    '오행은 서로 돕는 쪽입니다.',
+    '오행이 내게 도움이 됩니다.',
+    '오행이 나를 살립니다.',
+    '오행이 내 편으로 흐릅니다.',
+    '오행에서 내가 기운을 받습니다.',
+    '오행이 나를 받쳐 줍니다.',
+  ],
+  생받음: [
+    '오행은 상대를 돕는 쪽입니다.',
+    '오행이 상대를 살립니다.',
+    '오행이 상대 편입니다.',
+    '오행이 상대에게 흐릅니다.',
+    '오행에서 내가 기운을 내주는 쪽입니다.',
+    '오행이 상대를 받쳐 줍니다.',
+  ],
+  극함: [
+    '오행은 맞서기 쉬운 쪽입니다.',
+    '오행은 힘이 부딪치기 쉽습니다.',
+    '오행은 긴장이 생기기 쉽습니다.',
+    '오행에서 내 힘이 상대를 누릅니다.',
+    '오행이 서로를 밀어냅니다.',
+    '오행은 조심스러운 쪽입니다.',
+  ],
+  극받음: [
+    '오행은 밀릴 수 있는 쪽입니다.',
+    '오행은 상대에게 힘이 실립니다.',
+    '오행은 조율이 필요합니다.',
+    '오행에서 상대 힘이 더 셉니다.',
+    '오행이 나를 눌러 오는 쪽입니다.',
+    '오행은 속도를 맞춰야 합니다.',
+  ],
 };
 
 /** 궁합 오늘·이달·올해 — 관계 맥락 짧은 말 (tenGodPlain 잘림 대신) */
@@ -324,25 +408,6 @@ const RELATIONSHIP_PAIR: Record<string, string> = {
   정인: '배움·돌봄',
 };
 
-function hasFinalConsonant(word: string): boolean {
-  const last = word.trim().slice(-1);
-  const code = last.charCodeAt(0);
-  if (Number.isNaN(code) || code < 0xac00 || code > 0xd7a3) return false;
-  return (code - 0xac00) % 28 !== 0;
-}
-
-function withGwa(word: string): string {
-  return `${word}${hasFinalConsonant(word) ? '과' : '와'}`;
-}
-
-function withEun(word: string): string {
-  return `${word}${hasFinalConsonant(word) ? '은' : '는'}`;
-}
-
-function withEulReul(word: string): string {
-  return `${word}${hasFinalConsonant(word) ? '을' : '를'}`;
-}
-
 function formatCompactDate(date: Date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -385,7 +450,6 @@ function relationshipPairLabel(god: string): string {
 
 function elementRelationshipLine(kind: string, pairSeed: string, date: Date): string {
   const easy = EASY_ELEMENT[kind] ?? '비슷한 기운';
-  const seed = hashCopySeed(`gunghap-element:${localYmd(date)}:${kind}:${pairSeed}`);
   const options =
     easy.endsWith(' 기운')
       ? [
@@ -394,11 +458,11 @@ function elementRelationshipLine(kind: string, pairSeed: string, date: Date): st
           `오행 기운은 ${easy.slice(0, -3)} 쪽에 가깝습니다.`,
         ]
       : [`오행은 ${easy}입니다.`, `둘의 오행은 ${easy} 쪽입니다.`];
-  return options[seed % options.length];
+  return pickLine(options, `gunghap-element:${kind}:${pairSeed}`, date);
 }
 
 function pairNames(selfName: string, otherName: string): string {
-  return `${selfName}과 ${otherName}`;
+  return `${withGwa(selfName)} ${otherName}`;
 }
 
 function buildSummaryIntro(
@@ -409,11 +473,15 @@ function buildSummaryIntro(
   pairSeed: string,
   date: Date,
 ): string {
-  const seed = hashCopySeed(`gunghap-intro:${localYmd(date)}:${animalKind}:${elementKind}:${pairSeed}`);
   const animalOptions = ANIMAL_SUMMARY[animalKind] ?? ['띠 궁합은 무난하고'];
   const elementOptions = ELEMENT_SUMMARY[elementKind] ?? ['오행은 비슷합니다.'];
-  const animalClause = animalOptions[seed % animalOptions.length];
-  const elementClause = elementOptions[Math.floor(seed / 3) % elementOptions.length];
+  // 두 절이 같은 주기로 함께 넘어가지 않게 salt를 나눈다
+  const animalClause = pickLine(animalOptions, `gunghap-intro-animal:${animalKind}:${pairSeed}`, date);
+  const elementClause = pickLine(
+    elementOptions,
+    `gunghap-intro-element:${elementKind}:${pairSeed}`,
+    date,
+  );
   return `${withGwa(selfName)} ${withEun(otherName)} ${animalClause} ${elementClause}`;
 }
 
@@ -431,28 +499,41 @@ function buildSummaryLine(
   const meetTone = meetingTone(selfGod, otherGod);
   const meetClause =
     meetTone === '주의'
-      ? '언사와 거리를 살필 할'
+      ? '말과 거리를 살필'
       : meetTone === '조율'
         ? '호흡을 맞출'
         : '기운이 호응하기 쉬운';
   const names = pairNames(selfName, otherName);
-  const seed = hashCopySeed(`gunghap-summary:${localYmd(date)}:${selfGod}:${otherGod}:${pairSeed}`);
+  // 십신·등급은 날마다 바뀌므로 salt에 넣지 않는다. 넣으면 순열이 매일 다시 섞인다.
+  const salt = `gunghap-summary:${pairSeed}`;
 
   if (selfGod === otherGod) {
-    const options = [
-      `${names}, 오늘 둘 다 ${selfLabel} 쪽이며 흐름은 ${grade}에 가깝습니다.`,
-      `${names} 오늘은 둘 다 ${selfLabel} 흐름이고, 기운은 ${grade} 쪽입니다.`,
-      `${names}, 오늘 만남은 ${selfLabel} 쪽으로 맞고 등급은 ${grade}입니다.`,
-    ];
-    return options[seed % options.length];
+    return pickLine(
+      [
+        `${names}, 오늘은 둘 다 ${selfLabel} 쪽이라 흐름이 ${grade}에 가깝습니다.`,
+        `${names} 오늘은 나란히 ${selfLabel} 흐름이고, 기운은 ${grade} 쪽입니다.`,
+        `${names}, 오늘 만남은 ${selfLabel} 결로 맞아 등급은 ${grade}입니다.`,
+        `${names}, 오늘은 서로 ${selfLabel} 리듬을 타고 있어 흐름은 ${grade}입니다.`,
+        `${names} 오늘은 같은 ${selfLabel} 기운에 놓여 있고, 등급은 ${grade}입니다.`,
+        `${names}, 오늘 두 사람 모두 ${selfLabel} 쪽으로 기울어 흐름이 ${grade}입니다.`,
+      ],
+      salt,
+      date,
+    );
   }
 
-  const options = [
-    `${names}, 오늘 나는 ${selfLabel}, 상대는 ${otherLabel}이라 ${meetClause} 하루이며 기운은 ${grade}입니다.`,
-    `${names} 오늘은 내 쪽 ${selfLabel}, 상대 쪽 ${otherLabel}이라 ${meetClause} 날이고 흐름은 ${grade}입니다.`,
-    `${names}, 오늘 만남은 ${selfLabel}·${otherLabel} 조합이라 ${meetClause} 하루이며 등급은 ${grade}입니다.`,
-  ];
-  return options[seed % options.length];
+  return pickLine(
+    [
+      `${names}, 오늘 나는 ${selfLabel}, 상대는 ${otherLabel} 쪽이라 ${meetClause} 하루이고 기운은 ${grade}입니다.`,
+      `${names} 오늘은 내 쪽이 ${selfLabel}, 상대 쪽이 ${otherLabel}이라 ${meetClause} 날이고 흐름은 ${grade}입니다.`,
+      `${names}, 오늘 만남은 ${selfLabel}·${otherLabel} 조합이라 ${meetClause} 하루이며 등급은 ${grade}입니다.`,
+      `${names}, 오늘은 ${selfLabel} 쪽인 나와 ${otherLabel} 쪽인 상대가 만나 ${meetClause} 흐름이고 기운은 ${grade}입니다.`,
+      `${names} 오늘은 ${withGwa(selfLabel)} ${withIga(otherLabel)} 마주 놓여 ${meetClause} 날이며 등급은 ${grade}입니다.`,
+      `${names}, 오늘 내 결은 ${selfLabel}, 상대 결은 ${otherLabel}이라 ${meetClause} 하루로 흐름은 ${grade}입니다.`,
+    ],
+    salt,
+    date,
+  );
 }
 
 function dualEasyLine(
@@ -465,7 +546,7 @@ function dualEasyLine(
   const selfLabel = relationshipLabel(scope, selfGod);
   const otherLabel = relationshipLabel(scope, otherGod);
   const topic = withEun(scope);
-  const seed = hashCopySeed(`gunghap-rel:${scope}:${localYmd(date)}:${selfGod}:${otherGod}:${pairSeed}`);
+  const salt = `gunghap-rel:${scope}:${pairSeed}`;
 
   if (selfGod === otherGod) {
     const options =
@@ -473,41 +554,68 @@ function dualEasyLine(
         ? [
             `${topic} 둘 다 ${selfLabel} 쪽이에요.`,
             `${topic} 둘 다 ${selfLabel} 흐름이에요.`,
+            `${topic} 나란히 ${selfLabel} 결이에요.`,
+            `${topic} 서로 ${selfLabel} 리듬을 타요.`,
+            `${topic} 두 사람 모두 ${selfLabel} 쪽으로 기울어요.`,
           ]
         : scope === '이달'
           ? [
               `${topic} 둘 다 ${selfLabel} 환경이에요.`,
               `${topic} 둘 다 ${selfLabel} 분위기예요.`,
+              `${topic} 나란히 ${selfLabel} 흐름에 놓여요.`,
+              `${topic} 서로 ${selfLabel} 리듬이에요.`,
+              `${topic} 두 사람 모두 ${selfLabel} 결로 흘러요.`,
             ]
           : [
               `${topic} 둘 다 ${selfLabel} 방향이에요.`,
               `${topic} 둘 다 ${selfLabel} 흐름이에요.`,
+              `${topic} 나란히 ${selfLabel} 쪽을 봐요.`,
+              `${topic} 서로 ${selfLabel} 결로 가요.`,
+              `${topic} 두 사람 모두 ${selfLabel} 방향에 서 있어요.`,
             ];
-    return options[seed % options.length];
+    return pickLine(options, salt, date);
   }
 
   if (scope === '오늘') {
-    const options = [
-      `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 쪽이에요.`,
-      `${topic} 내 쪽은 ${selfLabel}, 상대 쪽은 ${otherLabel}이에요.`,
-      `${topic} 나 ${selfLabel}, 상대 ${otherLabel} 흐름이에요.`,
-    ];
-    return options[seed % options.length];
+    return pickLine(
+      [
+        `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 쪽이에요.`,
+        `${topic} 내 쪽은 ${selfLabel}, 상대 쪽은 ${otherLabel}이에요.`,
+        `${topic} 나 ${selfLabel}, 상대 ${otherLabel} 흐름이에요.`,
+        `${topic} 내 결이 ${selfLabel}, 상대 결이 ${otherLabel}이에요.`,
+        `${topic} ${selfLabel} 쪽인 나와 ${otherLabel} 쪽인 상대가 만나요.`,
+        `${topic} 나에게 ${selfLabel}, 상대에게 ${withIga(otherLabel)} 실려요.`,
+      ],
+      salt,
+      date,
+    );
   }
   if (scope === '이달') {
-    const options = [
-      `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 흐름이에요.`,
-      `${topic} 내 쪽 ${selfLabel}, 상대 쪽 ${otherLabel} 환경이에요.`,
-      `${topic} 나 ${selfLabel}, 상대 ${otherLabel} 리듬이에요.`,
-    ];
-    return options[seed % options.length];
+    return pickLine(
+      [
+        `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 흐름이에요.`,
+        `${topic} 내 쪽 ${selfLabel}, 상대 쪽 ${otherLabel} 환경이에요.`,
+        `${topic} 나 ${selfLabel}, 상대 ${otherLabel} 리듬이에요.`,
+        `${topic} 내 결이 ${selfLabel}, 상대 결이 ${otherLabel}로 흘러요.`,
+        `${topic} ${selfLabel} 자리의 나와 ${otherLabel} 자리의 상대예요.`,
+        `${topic} 나에게 ${selfLabel}, 상대에게 ${otherLabel} 기운이 들어와요.`,
+      ],
+      salt,
+      date,
+    );
   }
-  const options = [
-    `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 방향이에요.`,
-    `${topic} 내 쪽 ${selfLabel}, 상대 쪽 ${otherLabel} 방향이에요.`,
-    `${topic} 나 ${selfLabel}, 상대 ${otherLabel} 큰 흐름이에요.`,
-  ];
-  return options[seed % options.length];
+  return pickLine(
+    [
+      `${topic} 나는 ${selfLabel}, 상대는 ${otherLabel} 방향이에요.`,
+      `${topic} 내 쪽 ${selfLabel}, 상대 쪽 ${otherLabel} 방향이에요.`,
+      `${topic} 나 ${selfLabel}, 상대 ${otherLabel} 큰 흐름이에요.`,
+      `${topic} 내 결이 ${selfLabel}, 상대 결이 ${otherLabel} 쪽을 봐요.`,
+      `${topic} ${selfLabel} 방향의 나와 ${otherLabel} 방향의 상대예요.`,
+      `${topic} 나에게 ${selfLabel}, 상대에게 ${withIga(otherLabel)} 한 해의 결이에요.`,
+    ],
+    salt,
+    date,
+  );
 }
 
 const MOOD_TONE_LABELS: Record<ReturnType<typeof meetingTone>, string[]> = {
@@ -539,16 +647,20 @@ function buildMoodHeadline(
   const tone = meetingTone(selfGod, otherGod);
   const toneLabels = MOOD_TONE_LABELS[tone];
   const gradeLabels = MOOD_GRADE_LABELS[grade];
-  const seed = hashCopySeed(`gunghap-mood:${localYmd(date)}:${selfGod}:${otherGod}:${pairSeed}`);
-  const tonePart = toneLabels[seed % toneLabels.length];
-  const gradePart = gradeLabels[Math.floor(seed / toneLabels.length) % gradeLabels.length];
+  const tonePart = pickLine(toneLabels, `gunghap-mood-tone:${pairSeed}`, date);
+  const gradePart = pickLine(gradeLabels, `gunghap-mood-grade:${pairSeed}`, date);
   return `${tonePart} · ${gradePart}`;
 }
 
-function hashCopySeed(input: string): number {
-  let h = 0;
-  for (let i = 0; i < input.length; i++) h = (h * 31 + input.charCodeAt(i)) >>> 0;
-  return h;
+/**
+ * 후보에서 오늘 쓸 문장 하나.
+ *
+ * 예전에는 날짜를 시드에 넣고 `seed % length`로 뽑았다. 후보가 2~3개뿐인
+ * 문장이 많아 사흘에 한 번씩 같은 말이 돌아오고, 연속 이틀 중복도 잦았다.
+ * `pickDailyFrom`은 순열을 돌기 때문에 한 바퀴 안에서 중복이 없다.
+ */
+function pickLine(options: string[], salt: string, date: Date): string {
+  return pickDailyFrom(options, salt, date) ?? options[0]!;
 }
 
 function cautionVariantsForGod(god: string): string[] {
@@ -586,7 +698,7 @@ function dynamicGuidanceLines(selfGod: string, otherGod: string): string[] {
   if (tone === '조율') {
     lines.push(`오늘은 ${triple || pair} 속도를 서로 맞추기.`);
     lines.push(`오늘은 ${pair} 균형을 먼저 맞추기.`);
-    if (focus[1]) lines.push(`오늘은 ${focus[0]}과 ${focus[1]} 사이를 조율하며 만나기.`);
+    if (focus[1]) lines.push(`오늘은 ${withGwa(focus[0])} ${focus[1]} 사이를 조율하며 만나기.`);
   }
   if (tone === '순조') {
     lines.push(`오늘은 ${triple || pair} 흐름으로 가볍게 이어가기.`);
@@ -632,8 +744,6 @@ function buildGuidance(
   date: Date,
   pairSeed: string,
 ): string {
-  const dateKey = localYmd(date);
-  const seed = hashCopySeed(`gunghap-guidance:${dateKey}:${selfGod}:${otherGod}:${pairSeed}`);
   const tone = meetingTone(selfGod, otherGod);
 
   const candidates: string[] = [];
@@ -645,7 +755,7 @@ function buildGuidance(
 
   const unique = candidates.filter((line, i, all) => Boolean(line) && all.indexOf(line) === i);
   if (unique.length === 0) return GENERIC_GUIDANCE[tone][0];
-  return unique[seed % unique.length];
+  return pickLine(unique, `gunghap-guidance:${pairSeed}`, date);
 }
 
 function prioritizedCautionGods(selfGod: string, otherGod: string): string[] {
@@ -675,11 +785,6 @@ function buildCaution(
   date: Date,
   pairSeed: string,
 ): string {
-  const dateKey = localYmd(date);
-  const seed = hashCopySeed(
-    `gunghap-caution:${dateKey}:${selfGod}:${otherGod}:${animalKind}:${elementKind}:${pairSeed}`,
-  );
-
   const candidates: string[] = [];
   for (const god of prioritizedCautionGods(selfGod, otherGod)) {
     candidates.push(...cautionVariantsForGod(god));
@@ -691,16 +796,10 @@ function buildCaution(
 
   const unique = candidates.filter((line, i, all) => Boolean(line) && all.indexOf(line) === i);
   if (unique.length === 0) return GENERIC_CAUTION[0];
-  return unique[seed % unique.length];
+  return pickLine(unique, `gunghap-caution:${animalKind}:${elementKind}:${pairSeed}`, date);
 }
 
-function withIga(word: string): string {
-  return `${word}${hasFinalConsonant(word) ? '이' : '가'}`;
-}
-
-function fixObjectParticle(text: string): string {
-  return text.replace(/을\(를\)/g, '를').replace(/이\(가\)/g, '가');
-}
+const fixObjectParticle = resolveParticles;
 
 function notReady(reason: string, date: Date): TodayCompatibility {
   return {
@@ -799,7 +898,19 @@ export function buildTodayCompatibility(
 
   const summary = [
     buildSummaryIntro(selfName, otherName, engine.animalKind, engine.elementKind, pairSeed, date),
-    `관계상 상대는 나에게 ${pairLabel} 쪽이에요.`,
+    // 관계 십신은 생년 기준이라 고정이다. 문장 형태만이라도 돌려 같은 말이 매일 반복되지 않게 한다.
+    pickLine(
+      [
+        `관계상 상대는 나에게 ${pairLabel} 쪽이에요.`,
+        `둘 사이에는 ${pairLabel} 결이 흐릅니다.`,
+        `상대는 내게 ${pairLabel} 자리에 놓입니다.`,
+        `관계의 바탕은 ${pairLabel} 쪽입니다.`,
+        `상대에게서 ${pairLabel} 기운을 받는 사이입니다.`,
+        `두 사람을 잇는 결은 ${pairLabel}입니다.`,
+      ],
+      `gunghap-pair-label:${pairSeed}`,
+      date,
+    ),
   ].join(' ');
 
   const summaryLine = buildSummaryLine(

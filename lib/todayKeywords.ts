@@ -1,6 +1,7 @@
 import { getBloodType } from '@/lib/data/catalog';
 import { buildIntegratedFortune, luckTagForTone } from '@/lib/fortune';
 import { keywordPolarity, type KeywordPolarity } from '@/lib/keywordPolarity';
+import { buildTodayPhysiognomy, countPhysiognomySelections } from '@/lib/physiognomy';
 import { buildSajuReading } from '@/lib/saju';
 import { buildSeonghyangReading } from '@/lib/seonghyang';
 import { buildTarotReading } from '@/lib/tarot';
@@ -164,7 +165,15 @@ const keywordsMemo: { key: string; value: TodayKeywordSet | undefined } = { key:
 
 export function buildTodayKeywords(profile: Profile, date = new Date()): TodayKeywordSet {
   const dateKey = ymd(date);
-  const key = `${dateKey}:${profile.birthDate ?? ''}:${profile.birthTime ?? ''}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}:${profile.name ?? ''}`;
+  // 관상 키워드도 들어가므로 얼굴 특징 선택까지 키에 넣는다
+  const physiognomyKey = profile.physiognomy
+    ? Object.entries(profile.physiognomy)
+        .filter(([, value]) => Boolean(value))
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([category, option]) => `${category}=${option}`)
+        .join(',')
+    : '';
+  const key = `${dateKey}:${profile.birthDate ?? ''}:${profile.birthTime ?? ''}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}:${profile.name ?? ''}:${profile.gender ?? ''}:${physiognomyKey}`;
   return memoLast(keywordsMemo, key, () => buildTodayKeywordsNow(profile, date, dateKey));
 }
 
@@ -210,6 +219,12 @@ function buildTodayKeywordsNow(
   addWords(bag, tarot.keywords, '타로');
   if (CAUTION_TAROT.has(tarot.title)) addWords(bag, [tarot.title], '타로', true);
   if (tarot.reversed) addWords(bag, ['지연'], '타로', true);
+
+  // 관상 — 얼굴 특징을 채운 경우에만. 관상 화면 오늘 카드와 동일 빌더
+  if (profile.physiognomy && countPhysiognomySelections(profile.physiognomy) > 0) {
+    const gwansang = buildTodayPhysiognomy(profile.physiognomy, date, profile.birthDate);
+    addWords(bag, gwansang.keywords, '관상');
+  }
 
   return { keywords: pickDisplayKeywords(bag), sources: usedSources(bag) };
 }

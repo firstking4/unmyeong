@@ -124,8 +124,8 @@ export default function GwansangScreen() {
   const dateKey = useLocalDateKey();
   const composite = useMemo(() => buildPhysiognomyComposite(selection), [selection]);
   const today = useMemo(
-    () => buildTodayPhysiognomy(selection, dateFromLocalYmd(dateKey)),
-    [selection, dateKey],
+    () => buildTodayPhysiognomy(selection, dateFromLocalYmd(dateKey), profile.birthDate),
+    [selection, dateKey, profile.birthDate],
   );
   const portraitW = Math.min(220, Math.round(windowW * 0.52));
 

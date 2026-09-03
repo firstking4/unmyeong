@@ -1,5 +1,7 @@
-import { pickTarotBySeed } from '@/lib/data/catalog';
+import { pickDailyTarotCard } from '@/lib/data/catalog';
 import { pickDaily } from '@/lib/daily/pick';
+import { hasFinalConsonant, withEulReul, withIga } from '@/lib/korean/particle';
+import { endSentence, joinSentences } from '@/lib/korean/sentence';
 import { tarotEnglishName } from '@/lib/tarotEnglishNames';
 import type { Profile } from '@/lib/types';
 
@@ -51,7 +53,8 @@ function unique(words: (string | null | undefined)[]): string[] {
 export function buildTarotReading(profile: Profile, date = new Date()): TarotReading {
   const dateKey = ymd(date);
   const seed = fortuneSeed(profile, dateKey);
-  const card = pickTarotBySeed(seed);
+  const profileSalt = `${profile.birthDate ?? 'anon'}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}`;
+  const card = pickDailyTarotCard(profileSalt, date);
   const reversed = hashSeed(`${seed}:rev`) % 2 === 1;
   const title = card.title ?? card.label;
   // 프로필 salt — dayNumber와 함께 날짜마다 변주가 바뀌게 한다 (카드 id salt는 연속일 동일 문구 가능).
@@ -71,7 +74,7 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
 
   const summary = card.summary;
   const headline = reversed
-    ? `${title} · ${theme.keyword}을(를) 다시 맞출 날`
+    ? `${title} · ${withEulReul(theme.keyword)} 다시 맞출 날`
     : `${title}, ${theme.headline}`;
 
   const keywords = unique([
@@ -85,45 +88,62 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
         {
           label: '관계',
           text: seedHints?.love
-            ? `역방향 · ${seedHints.love} ${theme.relationship}`
-            : `역방향에서는 거리와 속도가 핵심입니다. ${theme.relationship} 다만 오늘은 먼저 맞추기보다 서로의 페이스를 확인하는 편이 낫습니다.`,
+            ? joinSentences([`역방향 · ${seedHints.love}`, theme.relationship])
+            : joinSentences([
+                '역방향에서는 거리와 속도가 핵심입니다.',
+                theme.relationship,
+                '다만 오늘은 먼저 맞추기보다 서로의 페이스를 확인하는 편이 낫습니다.',
+              ]),
         },
         {
           label: '일·재능',
           text: seedHints?.work
-            ? `역방향 · ${seedHints.work} ${theme.caution}`
-            : `서두른 결정은 되감기 쉽습니다. ${theme.caution} 한 가지 업무만 우선순위로 남겨 보세요.`,
+            ? joinSentences([`역방향 · ${seedHints.work}`, theme.caution])
+            : joinSentences([
+                '서두른 결정은 되감기 쉽습니다.',
+                theme.caution,
+                '한 가지 업무만 우선순위로 남겨 보세요.',
+              ]),
         },
         {
           label: '성장',
           text: seedHints?.growth
-            ? `${seedHints.growth} ${theme.focus}`
-            : `${title}이(가) 가리키는 교훈을 안으로 가져가 보세요. ${theme.focus}`,
+            ? joinSentences([seedHints.growth, theme.focus])
+            : joinSentences([
+                `${withIga(title)} 가리키는 교훈을 안으로 가져가 보세요.`,
+                theme.focus,
+              ]),
         },
-        { label: '오늘의 한 가지', text: theme.action },
-        { label: '주의', text: theme.caution },
+        { label: '오늘의 한 가지', text: endSentence(theme.action) },
+        { label: '주의', text: endSentence(theme.caution) },
       ]
     : [
         {
           label: '관계',
           text: seedHints?.love
-            ? `${seedHints.love} ${theme.relationship}`
-            : `${theme.relationship} ${title}의 기운을 빌려 솔직한 한 마디를 건네 보세요.`,
+            ? joinSentences([seedHints.love, theme.relationship])
+            : joinSentences([
+                theme.relationship,
+                `${title}의 기운을 빌려 솔직한 한 마디를 건네 보세요.`,
+              ]),
         },
         {
           label: '일·재능',
           text: seedHints?.work
-            ? `${seedHints.work} ${theme.focus}`
-            : `${theme.focus} 키워드 ‘${theme.keyword}’을(를) 오늘의 업무 한 곳에 적용해 보세요.`,
+            ? joinSentences([seedHints.work, theme.focus])
+            : joinSentences([
+                theme.focus,
+                `키워드 ‘${theme.keyword}’${hasFinalConsonant(theme.keyword) ? '을' : '를'} 오늘의 업무 한 곳에 적용해 보세요.`,
+              ]),
         },
         {
           label: '성장',
           text: seedHints?.growth
-            ? `${seedHints.growth} ${theme.action}`
-            : `${uprightCore} ${theme.action}`,
+            ? joinSentences([seedHints.growth, theme.action])
+            : joinSentences([uprightCore, theme.action]),
         },
-        { label: '오늘의 한 가지', text: theme.action },
-        { label: '주의', text: theme.caution },
+        { label: '오늘의 한 가지', text: endSentence(theme.action) },
+        { label: '주의', text: endSentence(theme.caution) },
       ];
 
   return {

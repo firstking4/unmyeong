@@ -1,5 +1,6 @@
 import { listTarotDeck } from '@/lib/data/catalog';
 import { localYmd, pickDaily } from '@/lib/daily/pick';
+import { resolveParticles, withEulReul } from '@/lib/korean/particle';
 import { tarotEnglishName } from '@/lib/tarotEnglishNames';
 import type { SeedRecord } from '@/lib/data/types';
 
@@ -41,20 +42,7 @@ function isMajorArcana(card: SeedRecord): boolean {
   return typeof card.number === 'number' && !card.categoryId;
 }
 
-function hasFinalConsonant(word: string): boolean {
-  const last = word.trim().slice(-1);
-  const code = last.charCodeAt(0);
-  if (Number.isNaN(code) || code < 0xac00 || code > 0xd7a3) return false;
-  return (code - 0xac00) % 28 !== 0;
-}
-
-function withEulReul(word: string): string {
-  return `${word}${hasFinalConsonant(word) ? '을' : '를'}`;
-}
-
-function fixObjectParticle(text: string): string {
-  return text.replace(/을\(를\)/g, '를').replace(/이\(가\)/g, '가');
-}
+const fixObjectParticle = resolveParticles;
 
 function unique(words: (string | null | undefined)[]): string[] {
   const out: string[] = [];

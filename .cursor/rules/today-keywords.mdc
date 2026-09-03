@@ -23,6 +23,16 @@ alwaysApply: true
 | 성향 | 오늘의 성향 (`buildSeonghyangReading` → `today.keywords`) | 동일 `today.keywords` |
 | 사주 | 오늘의 사주 (`buildSajuReading` → `today`) | `today.keywords` + 톤 라벨 |
 | 타로 | 오늘의 카드 (`buildTarotReading`) | `tarot.keywords` (+ 역방향·주의 카드) |
+| 관상 | 오늘의 관상 (`buildTodayPhysiognomy`) | `keywords` — `profile.physiognomy`를 채운 경우만 |
+
+`지인`은 `KeywordSource`에 있지만 아직 연동되지 않았다. 지인 키워드는 지인 목록(`ContactsContext`)이 필요해
+`buildTodayKeywords(profile, date)` 시그니처만으로는 만들 수 없다. 연동할 때 함께 넘겨야 한다.
+
+## 메모 키
+
+`buildTodayKeywords`는 `memoLast`로 하루치를 캐시한다. **키워드 입력에 쓰는 프로필 필드를 추가하면
+메모 키에도 넣어야 한다.** 빠뜨리면 그 값만 바꿨을 때 화면이 갱신되지 않는다.
+(현재: 날짜·생년월일·출생시각·MBTI·혈액형·이름·성별·`physiognomy` 선택)
 
 ## 새 오늘 카드 / 키워드를 추가할 때
 

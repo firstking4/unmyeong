@@ -7,6 +7,8 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { hashSeed, pickPackVariant } from './lib/daily-pick.mjs';
+
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const tarotMajor = JSON.parse(readFileSync(join(root, 'data/seed/tarot-major.json'), 'utf8'));
 const tarotMinor = JSON.parse(readFileSync(join(root, 'data/seed/tarot-minor.json'), 'utf8'));
@@ -17,12 +19,6 @@ const MINOR_DELTA = 4;
 const SCORE_ORIGIN = 44;
 const SCORE_SCALE_MAX = 94;
 
-function hashSeed(input) {
-  let h = 0;
-  for (let i = 0; i < input.length; i++) h = (h * 31 + input.charCodeAt(i)) >>> 0;
-  return h;
-}
-
 function localYmd(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -30,13 +26,8 @@ function localYmd(date) {
   return `${y}-${m}-${d}`;
 }
 
-function dayNumber(date) {
-  return Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000);
-}
-
 function pickDaily(salt, date) {
-  const variants = tarotPack.variants;
-  return variants[(dayNumber(date) + hashSeed(`${tarotPack.version}:${salt}`)) % variants.length];
+  return pickPackVariant(tarotPack, salt, date);
 }
 
 function listTarotDeck() {

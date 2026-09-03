@@ -65,12 +65,66 @@ export function dateFromLocalYmd(ymd: string): Date {
   return new Date(y, (m ?? 1) - 1, d ?? 1, 12, 0, 0, 0);
 }
 
-/** 날짜가 하루 바뀌면 다음 변주로 순환. salt로 도메인·프로필별 오프셋. */
+/** salt·주기로 섞은 순열. 사용자마다 순서가 다르고 한 바퀴 안에서 중복이 없다. */
+function shuffledOrder(length: number, seed: number): number[] {
+  const order = Array.from({ length }, (_, i) => i);
+  let state = seed || 1;
+  for (let i = length - 1; i > 0; i--) {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    const j = state % (i + 1);
+    const tmp = order[i]!;
+    order[i] = order[j]!;
+    order[j] = tmp;
+  }
+  return order;
+}
+
+/**
+ * 한 바퀴에 쓸 순열. 바퀴 첫 항목이 직전 바퀴 마지막과 같으면 한 칸 밀어
+ * 경계에서 이틀 연속 같은 항목이 나오지 않게 한다.
+ *
+ * 보정은 순열을 만들 때 항상 적용해야 한다. 조회하는 날짜에 따라 조건부로
+ * 넣으면 같은 바퀴인데도 호출마다 순서가 달라져 오히려 중복이 생긴다.
+ * 길이가 3 이상이면 0↔1 교환이 마지막 항목을 건드리지 않아 직전 바퀴의
+ * 마지막 값을 그대로 기준으로 쓸 수 있다.
+ */
+function cycleOrder(length: number, salt: string, cycle: number): number[] {
+  const order = shuffledOrder(length, hash(`${salt}:${cycle}`));
+  const prevLast = shuffledOrder(length, hash(`${salt}:${cycle - 1}`))[length - 1];
+  if (order[0] === prevLast) {
+    const tmp = order[0]!;
+    order[0] = order[1]!;
+    order[1] = tmp;
+  }
+  return order;
+}
+
+/**
+ * salt로 만든 순열을 날짜로 훑어 하나를 고른다.
+ *
+ * 날짜에 배열 인덱스를 그대로 더하면 모든 사용자가 같은 순서로 돌기 때문에,
+ * 한 바퀴(`items.length`일)마다 순열을 다시 섞는다.
+ */
+export function pickDailyFrom<T>(items: T[], salt: string, date = new Date()): T | null {
+  const length = items.length;
+  if (length === 0) return null;
+  if (length === 1) return items[0]!;
+
+  const day = dayNumber(date);
+  // 두 개뿐이면 순열을 섞어도 교대 말고는 없다. salt로 시작 위치만 준다.
+  if (length === 2) return items[(day + hash(salt)) % 2]!;
+
+  const cycle = Math.floor(day / length);
+  const order = cycleOrder(length, salt, cycle);
+  return items[order[day - cycle * length]!]!;
+}
+
+/** 날짜가 하루 바뀌면 다음 변주로. salt로 도메인·프로필별 순서. */
 export function pickDaily(domain: DailyDomain, salt: string, date = new Date()): DailyVariant {
   const pack = PACKS[domain];
-  const variants = pack.variants;
-  if (variants.length === 0) {
+  const variant = pickDailyFrom(pack.variants, `${pack.version}:${salt}`, date);
+  if (!variant) {
     throw new Error(`Daily pack empty: ${domain}`);
   }
-  return variants[(dayNumber(date) + hash(`${pack.version}:${salt}`)) % variants.length]!;
+  return variant;
 }

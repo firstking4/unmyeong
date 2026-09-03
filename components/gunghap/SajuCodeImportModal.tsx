@@ -115,7 +115,7 @@ export function SajuCodeImportModal({ visible, onClose }: Props) {
                       const proceed = await new Promise<boolean>((resolve) => {
                         Alert.alert(
                           '이미 등록된 지인',
-                          `${dup.name} (${dup.birthDate})이(가) 이미 목록에 있습니다. 그래도 추가할까요?`,
+                          `${dup.name} (${dup.birthDate})가 이미 목록에 있습니다. 그래도 추가할까요?`,
                           [
                             { text: '취소', style: 'cancel', onPress: () => resolve(false) },
                             { text: '추가', onPress: () => resolve(true) },

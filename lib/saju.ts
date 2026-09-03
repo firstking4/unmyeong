@@ -1,6 +1,7 @@
 import { getFiveElement, getZodiacAnimalRecord } from '@/lib/data/catalog';
 import type { SeedRecord } from '@/lib/data/types';
 import { pickDaily } from '@/lib/daily/pick';
+import { withEulReul, withEun, withIga } from '@/lib/korean/particle';
 import {
   computeFourPillars,
   computeLuckPillars,
@@ -258,28 +259,6 @@ function formatWeekLabel(start: Date): string {
     ? `${end.getDate()}일`
     : `${sameYear ? '' : `${end.getFullYear()}년 `}${end.getMonth() + 1}월 ${end.getDate()}일`;
   return `${prefix}${startLabel} – ${endLabel}`;
-}
-
-function hasFinalConsonant(word: string): boolean {
-  const last = word.trim().slice(-1);
-  const code = last.charCodeAt(0);
-  if (Number.isNaN(code) || code < 0xac00 || code > 0xd7a3) return false;
-  return (code - 0xac00) % 28 !== 0;
-}
-
-/** 정재가 / 편관이 */
-function withIga(word: string): string {
-  return `${word}${hasFinalConsonant(word) ? '이' : '가'}`;
-}
-
-/** 임자는 / 갑진은 */
-function withEun(word: string): string {
-  return `${word}${hasFinalConsonant(word) ? '은' : '는'}`;
-}
-
-/** 목을 / 화를 */
-function withEulReul(word: string): string {
-  return `${word}${hasFinalConsonant(word) ? '을' : '를'}`;
 }
 
 /** 일일 팩 문장에서 카드마다 반복되는 상투 도입부를 걷어내고 마침표를 맞춘다. */
@@ -665,7 +644,7 @@ function buildSajuReadingNow(
   ].filter((kw, i, all) => Boolean(kw) && all.indexOf(kw) === i);
 
   const natalSummary = [
-    `일간 ${natalPillars.day.stem}(${natalPillars.dayMasterElement}) · 일주 ${natalPillars.day.korean}이 나의 중심입니다.`,
+    `일간 ${natalPillars.day.stem}(${natalPillars.dayMasterElement}) · 일주 ${withIga(natalPillars.day.korean)} 나의 중심입니다.`,
     dayEl?.summary,
     `${animal.label}띠는 배경 기운으로만 참고하세요. 네 기둥·십신 구조는 아래 사주팔자에서 봅니다.`,
   ]

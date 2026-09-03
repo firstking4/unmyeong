@@ -34,6 +34,7 @@ import { useRewardUnlock } from '@/context/RewardUnlockContext';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { dateFromLocalYmd } from '@/lib/daily/pick';
 import { buildTodayCompatibility, type TodayCompatibility } from '@/lib/gunghap';
+import { withEulReul } from '@/lib/korean/particle';
 import { recordCompatibilityView } from '@/lib/history';
 import { useLocalDateKey } from '@/lib/useLocalDateKey';
 import { formatDualBirthDateLabel } from '@/lib/lunar';
@@ -266,7 +267,7 @@ export default function ContactDetailScreen() {
   };
 
   const confirmDelete = () => {
-    Alert.alert('지인 삭제', `${contact.name}을(를) 목록에서 삭제할까요?`, [
+    Alert.alert('지인 삭제', `${withEulReul(contact.name)} 목록에서 삭제할까요?`, [
       { text: '취소', style: 'cancel' },
       {
         text: '삭제',

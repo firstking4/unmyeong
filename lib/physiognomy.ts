@@ -2,6 +2,7 @@ import physiognomySeed from '@/data/seed/physiognomy.json';
 
 import type { PhysiognomyCategory, SeedRecord } from './data/types';
 import { pickDaily } from './daily/pick';
+import { endSentence, joinSentences } from './korean/sentence';
 
 const collection = physiognomySeed as {
   categories: PhysiognomyCategory[];
@@ -86,11 +87,24 @@ export function buildPhysiognomyComposite(selection: PhysiognomySelection) {
   };
 }
 
-/** 선택한 특징을 바탕으로, 날짜마다 달라지는 참고용 관상 흐름 */
-export function buildTodayPhysiognomy(selection: PhysiognomySelection, date = new Date()) {
+/**
+ * 선택한 특징을 바탕으로, 날짜마다 달라지는 참고용 관상 흐름.
+ *
+ * `personSalt`에는 생년월일처럼 사람마다 다르고 **날짜에 따라 변하지 않는** 값을
+ * 넘긴다. 없으면 같은 특징을 고른 사용자끼리 같은 날 같은 흐름을 보게 된다.
+ */
+export function buildTodayPhysiognomy(
+  selection: PhysiognomySelection,
+  date = new Date(),
+  personSalt?: string | null,
+) {
   const composite = buildPhysiognomyComposite(selection);
   const selectedIds = Object.values(selection).filter(Boolean).sort().join(':');
-  const theme = pickDaily('physiognomy', `physiognomy:${selectedIds || 'empty'}`, date);
+  const theme = pickDaily(
+    'physiognomy',
+    `physiognomy:${selectedIds || 'empty'}:${personSalt ?? ''}`,
+    date,
+  );
 
   return {
     dateLabel: date.toLocaleDateString('ko-KR', {
@@ -103,11 +117,11 @@ export function buildTodayPhysiognomy(selection: PhysiognomySelection, date = ne
     keywords: [theme.keyword, ...composite.keywords].filter(
       (word, index, all) => Boolean(word) && all.indexOf(word) === index,
     ).slice(0, 4),
-    summary: `${composite.summary} ${theme.focus}`,
+    summary: joinSentences([composite.summary, theme.focus]),
     hints: [
-      { label: '관계', text: `${composite.hints.love} ${theme.relationship}` },
-      { label: '일·재능', text: `${composite.hints.work} ${theme.action}` },
-      { label: '오늘의 주의', text: theme.caution },
+      { label: '관계', text: joinSentences([composite.hints.love, theme.relationship]) },
+      { label: '일·재능', text: joinSentences([composite.hints.work, theme.action]) },
+      { label: '오늘의 주의', text: endSentence(theme.caution) },
     ],
   };
 }
