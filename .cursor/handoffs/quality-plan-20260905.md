@@ -412,6 +412,8 @@ npm run check:today-content          # 콘텐츠 단어 한 화면 3회 이상
 npm run verify:fortune-variety       # 실제 빌더 14일 반복
 npm run verify:daily-variety         # pickDaily 순열·팩 스키마
 npm run check:today-crosstab         # S1 완료 기준 — 팩 스키마·팩 간 문장·같은 날 교차 중복 (아래)
+npm run check:tarot-spread           # S4 — 78장×유형×정역×포지션 렌더
+npm run check:physiognomy-composite  # S3 — 7부위 언급 + 조합
 npm run check:gunghap-stigma         # 지인 고정 부정 표현 0
 npm run verify:tarot-daily && npm run verify:gunghap-tarot
 ```
@@ -459,7 +461,7 @@ npm run verify:tarot-daily && npm run verify:gunghap-tarot
 
 상태: `반영` = 코드에 들어감 · `커밋` = git에 있음 · `미커밋` = 워킹트리만 · `확정` = 이 표현으로 가기로 함 · `미확정` = 화면은 바꿨으나 사용자 최종 OK 전 · `보류` = 아직 안 함.
 
-범위: 브랜치 `feat/quality-s1-packs`. `main` 기준점 `a6548e4`(오늘 카드 칩 통일·허브 이동·라이트 테마). 이 브랜치에서 S1·S2.
+범위: 브랜치 `feat/quality-s1-packs`. `main` 기준점 `a6548e4`(오늘 카드 칩 통일·허브 이동·라이트 테마). 이 브랜치에서 **S1~S6**.
 
 ---
 
@@ -472,7 +474,7 @@ npm run verify:tarot-daily && npm run verify:gunghap-tarot
 | 안 한 일 | S3-c 옵션 세분화 · S3-d 워프 · `home` 팩 재작성 · S5·S4·S3 문장 한 줄씩 검수 |
 | 다음 | 문장이 어색하면 그때 고친다. 이중 턱 분리·워프는 S3-b 뒤 |
 
-**커밋 (이 브랜치, S1·S2)**
+**커밋 (이 브랜치, S1~S6)**
 
 | 커밋 | 무엇 |
 |---|---|
@@ -482,7 +484,11 @@ npm run verify:tarot-daily && npm run verify:gunghap-tarot
 | `8404c9c` | S1-b 관상·지인 팩 v2, `meta.json` v2, 관상 헤드라인 중복 수정 |
 | `a1e596a` | S1-c 칩 간격 (결정 G) |
 | `eab0538` | S2 취합 — 출처 줄, 헤드라인=칩·등급, scoreNote, 라벨 탭 이동 |
-| *(이 커밋)* | S2 1차 화면 검수 — 헤드라인 문장화 · 점수 근거 분리 · 관상 미선택 안내 · §12 |
+| `8b62f41` | S2 1차 화면 검수 — 헤드라인 문장화 · 점수 근거 분리 · 관상 미선택 안내 · §12 |
+| `089fcaa` | S5 별자리·띠·MBTI `dailyHints`, 지도 힌트 풀 |
+| `f5f6102` | S4 스프레드 `reversedHints` · 자리 frame · 종합 한 줄 |
+| `478ec9c` | S3 관상 축 조합 12문장 · 오늘 카드 고정 설명 제거 · 시드 두께 |
+| `1d9e265` | S6 배너 아래 · 잠금 CTA · 빈 프로필 · `__DEV__` 해금 초기화 |
 
 ---
 
@@ -569,6 +575,14 @@ S1 전에 지도·칩을 손본 것(`a6548e4`)과, S2 화면을 보고 다시 �
 - [ ] 성향·사주·타로 잠금 버튼이 「오늘의 ~ 풀이 보기」로 읽히는가.
 - [ ] 프로필 없이 성향·사주·타로를 열면 오늘 카드 자리에 「신분증 채우기」가 있는가.
 
-**아직 손대지 않음 (이번 개선 밖·잔여)**  
-`home` 팩 행동·주의 · 지인 「관심은」×4 · S3-c 이중 턱 · S3-d 워프 · S5·S4·S3 문장 한 줄씩 검수.
+**아직 손대지 않음 (이번 개선 밖·잔여)**
+
+| 항목 | 위치 | 왜 남았나 |
+|---|---|---|
+| `home` 팩 v1 | `data/daily/packs/home.json` | S2에서 행동·주의는 종합 팩으로 유지. closing은 4문장이 반복(S1-b 규칙 6은 안 함) |
+| 지인 「관심은」×4 | `lib/gunghap.ts` | S1 메모. 오늘/올해 내·상대 관심 템플릿이 한 화면에 겹침 |
+| S3-c 이중 턱 분리 | 관상 옵션 | S3-b 뒤에 하기로 함. 해설이 따라가게 한 뒤 |
+| S3-d 워프 잔상 | `gwansang:warps` | 위와 같음. 나이·헤어 축은 범위 밖 |
+| S5·S4·S3 문장 검수 | 시드 JSON | AI 초안 커밋됨. 화면에서 어색한 줄만 고치면 됨 |
+| S1-a 오프셋 | `pickDailySlots` | S1-b로 건너뜀. 다시 안 함 |
 
