@@ -132,7 +132,8 @@ export function buildTodayPhysiognomy(
       day: 'numeric',
       weekday: 'long',
     }),
-    headline: `${theme.keyword} · ${theme.headline}`,
+    // 팩 headline이 이미 「키워드 · 문장」이라 키워드를 다시 붙이지 않는다
+    headline: theme.headline,
     keywords: withSparseCaution(
       themes.map((item) => item.keyword),
       `physiognomy-caution:${selectedIds}:${personSalt ?? ''}`,
