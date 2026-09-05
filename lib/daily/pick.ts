@@ -145,8 +145,13 @@ export function pickDaily(domain: DailyDomain, salt: string, date = new Date()):
 }
 
 /**
- * 같은 순열에서 오늘 칸부터 `count`개를 이어 받는다.
+ * 같은 순열에서 오늘 칸부터 `count`개를 받는다.
  * 첫 칸은 `pickDaily`와 같고, 칩처럼 하루에 팩 키워드를 여러 개 쓸 때 쓴다.
+ *
+ * 둘째 칸부터는 이웃 칸이 아니라 `length / count` 간격으로 띄운다.
+ * 이웃(p, p+1, p+2)이면 오늘 칩 3개 중 2개가 내일 다시 나오지만,
+ * 간격(p, p+8, p+16)이면 날마다 전부 바뀌고 여덟 날 안에 24개를 다 본다.
+ * 같은 묶음은 여덟 날 뒤 순서만 돌아 다시 오고, 바퀴(24일)가 바뀌면 새로 섞인다.
  */
 export function pickDailyMany(
   domain: DailyDomain,
@@ -169,15 +174,17 @@ export function pickDailyMany(
   const cycle = Math.floor(day / variants.length);
   const order = cycleOrder(variants.length, fullSalt, cycle);
   const position = day - cycle * variants.length;
+  const stride = Math.max(1, Math.floor(variants.length / n));
   return Array.from(
     { length: n },
-    (_, i) => variants[order[(position + i) % variants.length]!]!,
+    (_, i) => variants[order[(position + i * stride) % variants.length]!]!,
   );
 }
 
 /**
- * 하루에 서로 다른 두 변주가 필요할 때 — 같은 순열에서 이웃한 두 칸.
- * 한 화면에서 팩 문장을 두 군데 쓸 때 같은 변주가 겹치지 않음을 보장한다.
+ * 하루에 서로 다른 두 변주가 필요할 때 — 같은 순열에서 반 바퀴(12칸) 떨어진 두 칸.
+ * 한 화면에서 팩 문장을 두 군데 쓸 때 같은 변주가 겹치지 않고,
+ * 오늘 둘째 변주가 내일 첫 변주로 되돌아오지도 않는다.
  */
 export function pickDailyPair(
   domain: DailyDomain,
