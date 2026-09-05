@@ -1,4 +1,10 @@
-import { getBloodType, getMbti, getWesternZodiac, pickDailyTarotCard } from '@/lib/data/catalog';
+import {
+  getBloodType,
+  getMbti,
+  getWesternZodiac,
+  getZodiacAnimalRecord,
+  pickDailyTarotCard,
+} from '@/lib/data/catalog';
 import { pickDaily, pickDailyFrom } from '@/lib/daily/pick';
 import { withEulReul, withGwa, withIga, withRo } from '@/lib/korean/particle';
 import { joinSentences } from '@/lib/korean/sentence';
@@ -400,12 +406,17 @@ function buildIntegratedFortuneNow(
   const primaryTone = tones[0] ?? '성장';
   const secondaryTone = tones[1];
 
+  const west = resolveWesternZodiac(profile);
   const blood = getBloodType(profile.bloodType);
   const mbtiRec = getMbti(profile.mbti);
+  const animalRec = getZodiacAnimalRecord(getZodiacAnimal(profile.birthDate));
   // 고정 문장(hints.growth)만 쓰면 프로필이 같은 동안 힌트가 늘 같다. 후보로 묶어 돌린다.
   const hintPool = unique(
     [
       ...(blood?.dailyHints ?? []),
+      ...(west?.dailyHints ?? []),
+      ...(animalRec?.dailyHints ?? []),
+      ...(mbtiRec?.dailyHints ?? []),
       blood?.hints?.growth,
       mbtiRec?.hints?.growth,
       '흐름을 가볍게 믿어 보세요.',
