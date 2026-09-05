@@ -707,7 +707,7 @@ function buildSummaryLine(
   return pickLine(
     [
       `오늘은 나는 ${selfTalk} 쪽, 상대는 ${otherTalk} 쪽이에요.`,
-      `오늘은 내 관심은 ${selfTalk}, 상대 관심은 ${otherTalk}에 가깝습니다.`,
+      `오늘은 나는 ${selfTalk}에 마음이 가고, 상대는 ${otherTalk}에 마음이 가요.`,
       `오늘은 나는 ${withEulReul(selfTalk)} 살리고, 상대는 ${withEulReul(otherTalk)} 보는 날이에요.`,
       `오늘은 나는 ${selfTalk}에 가깝고, 상대는 ${otherTalk}에 가까워요.`,
       `오늘 나는 ${selfTalk}, 상대는 ${withEulReul(otherTalk)} 보면 됩니다.`,
@@ -777,7 +777,7 @@ function dualEasyLine(
     [
       `나는 ${selfTalk}, 상대는 ${otherTalk}에 힘이 실리는 해예요.`,
       `내 방향은 ${selfTalk}, 상대 방향은 ${withIyeyo(otherTalk)}.`,
-      `올해 내 관심은 ${selfTalk}, 상대 관심은 ${otherTalk}에 기울어요.`,
+      `올해 나는 ${selfTalk}에, 상대는 ${otherTalk}에 기울어요.`,
       `나는 ${selfTalk}에, 상대는 ${otherTalk}에 가까운 한 해예요.`,
       `올해는 나는 ${selfTalk}, 상대는 ${otherTalk}에 무게를 둬요.`,
       `나는 ${selfTalk} 쪽이고, 상대는 ${otherTalk} 쪽인 해예요.`,

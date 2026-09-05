@@ -9,6 +9,7 @@ import type { SeedRecord } from '@/lib/data/types';
 import { pickDaily, pickDailyFrom, pickDailyMany, withSparseCaution } from '@/lib/daily/pick';
 import { hasFinalConsonant, withEulReul } from '@/lib/korean/particle';
 import { endSentence, joinSentences, splitSentences, stripSentenceEnd } from '@/lib/korean/sentence';
+import { mbtiTodayGrainLine } from '@/lib/seonghyangGrain';
 import {
   BIG_FIVE_LABELS,
   type BigFiveKey,
@@ -148,12 +149,8 @@ function buildTodaySeonghyang(
   const themes = pickDailyMany('seonghyang', west.id, 3, date);
   const theme = themes[0]!;
   const mbti = buildTodayMbti(profile, assessments, date);
-  const mbtiReady = mbti.status === 'ready' ? mbti.reading : null;
-  const mbtiSeed = mbtiReady ? getMbti(profile.mbti) : null;
-  // 시드에 날짜가 없으면 MBTI 타입당 문장이 영구 고정된다 — 요약·주의가 매일 같아짐
-  const strength = mbtiSeed
-    ? pickDailyFrom(mbtiSeed.strengths ?? mbtiSeed.keywords ?? [], `${mbtiSeed.id}:str`, date)
-    : null;
+  const mbtiSeed = getMbti(profile.mbti);
+  const grain = mbtiSeed ? mbtiTodayGrainLine(mbtiSeed, theme.keyword, date) : null;
   const watch = mbtiSeed
     ? pickDailyFrom(mbtiSeed.watchouts ?? [], `${mbtiSeed.id}:watch`, date)
     : null;
@@ -186,11 +183,7 @@ function buildTodaySeonghyang(
     : null;
 
   const summaryParts = [theme.focus, signClause];
-  if (mbtiSeed && strength) {
-    summaryParts.push(`${mbtiSeed.label}의 ${withEulReul(strength)} 오늘의 ‘${theme.keyword}’에 얹어 보세요.`);
-  } else if (mbtiReady) {
-    summaryParts.push(mbtiReady.summary);
-  }
+  if (grain) summaryParts.push(grain.line);
 
   // MBTI 관계 힌트는 타입 고정 문장이라 매일 통째로 붙이면 어제 문장이 된다.
   // 문장 하나만 날마다 돌리고, 어떤 날은 오늘 테마만 둔다.
@@ -243,8 +236,8 @@ export function buildTodayMbti(
   }
 
   const theme = pickDaily('seonghyang', mbti.id, date);
-  const strength =
-    pickDailyFrom(mbti.strengths ?? mbti.keywords ?? [], `${mbti.id}:str`, date) ?? theme.keyword;
+  const grain = mbtiTodayGrainLine(mbti, theme.keyword, date);
+  const strength = grain?.strength ?? theme.keyword;
   const watch = pickDailyFrom(mbti.watchouts ?? [], `${mbti.id}:watch`, date);
   const dateLabel = date.toLocaleDateString('ko-KR', {
     year: 'numeric',
@@ -262,10 +255,7 @@ export function buildTodayMbti(
       keywords: unique([theme.keyword, strength]).slice(0, 3),
       // 타입 전체 소개(mbti.summary)는 MBTI 섹션의 고정 설명이다.
       // 오늘 풀이에는 싣지 않고 오늘 테마와 오늘의 강점만 엮는다.
-      summary: joinSentences([
-        theme.focus,
-        `오늘의 ‘${theme.keyword}’에 ${withEulReul(strength)} 얹어 보세요.`,
-      ]),
+      summary: joinSentences([theme.focus, grain?.line]),
       hints: [
         {
           label: '관계',

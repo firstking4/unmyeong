@@ -283,7 +283,7 @@ function buildScoreNote(period: PersonalFortuneScore, profileSalt: string, date:
   const seasonClause =
     pickDailyFrom(seasonPool, `fortune-score-season:${profileSalt}`, date) ?? seasonPool[0]!;
 
-  return joinSentences([todayClause, seasonClause, `점수는 ${period.score}입니다`]);
+  return joinSentences([todayClause, seasonClause, `오늘의 점수는 ${period.score}입니다`]);
 }
 
 function buildInsightChips(profile: Profile, tarotTitle: string, tones: PillarTone[]): string[] {
@@ -432,7 +432,7 @@ function buildIntegratedFortuneNow(
       : null,
     seedHint,
   ]);
-  // home 팩의 closing은 24변주에 고유값이 4개뿐이다. 팩 값을 우선하면 4종만 돌기에 풀에 합친다.
+  // home 팩 closing은 변주마다 고유하다. 지도 풀에 공통 마무리도 섞어 하루 반복을 더 줄인다.
   const closingPool = unique([theme.closing, ...CLOSING_LINES].filter(Boolean) as string[]);
   const closing =
     pickDailyFrom(closingPool, `fortune-closing:${profileSalt}`, date) ?? closingPool[0];
