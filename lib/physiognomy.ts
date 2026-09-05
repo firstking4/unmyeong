@@ -1,16 +1,96 @@
 import physiognomySeed from '@/data/seed/physiognomy.json';
+import pairSeed from '@/data/seed/physiognomy-pairs.json';
 
 import type { PhysiognomyCategory, SeedRecord } from './data/types';
 import { pickDailyFrom, pickDailyMany, withSparseCaution } from './daily/pick';
-import { withIga } from './korean/particle';
-import { endSentence, joinSentences } from './korean/sentence';
+import { withEun, withIga } from './korean/particle';
+import { endSentence, joinSentences, stripSentenceEnd } from './korean/sentence';
 
 const collection = physiognomySeed as {
   categories: PhysiognomyCategory[];
   items: SeedRecord[];
 };
 
+type PairAxis = { categoryId: string; axis: string };
+type PairRule = {
+  id: string;
+  a: PairAxis;
+  b: PairAxis;
+  lines: Record<string, string>;
+};
+
+const pairCollection = pairSeed as {
+  frames: string[];
+  rules: PairRule[];
+};
+
+/** 상설 해설 묶음 — 고른 부위가 여기에 들어가 언급된다. */
+export const PHYSIOGNOMY_BANDS = [
+  { id: 'upper', label: '얼굴형·이마', categoryIds: ['face_shape', 'forehead'] },
+  { id: 'gaze', label: '눈·눈썹', categoryIds: ['eyes', 'eyebrows'] },
+  { id: 'lower', label: '코·입·턱', categoryIds: ['nose', 'mouth', 'chin'] },
+] as const;
+
+const FEATURED_LINE_TEMPLATES = [
+  (label: string) => `오늘은 ${withIga(label)} 중심입니다.`,
+  (label: string) => `${withEun(label)} 결이 오늘 앞에 나옵니다.`,
+  (label: string) => `오늘 읽히는 결은 ${withIga(label)} 먼저입니다.`,
+  (label: string) => `${withEun(label)} 오늘 흐름의 첫 칸입니다.`,
+  (label: string) => `고른 특징 가운데 ${withIga(label)} 앞에 있습니다.`,
+  (label: string) => `${withEun(label)} 오늘의 중심 결입니다.`,
+];
+
+function axisValue(categoryId: string, axis: string, optionId: string): string | null {
+  const key = `${categoryId}:${axis}`;
+  if (key === 'eyes:size') {
+    if (optionId.includes('_large_')) return 'large';
+    if (optionId.includes('_small_')) return 'small';
+    return null;
+  }
+  if (key === 'eyes:tail') {
+    if (optionId.endsWith('_upturned')) return 'upturned';
+    if (optionId.endsWith('_downturned')) return 'downturned';
+    return null;
+  }
+  if (key === 'mouth:size') {
+    if (optionId.includes('_large_')) return 'large';
+    if (optionId.includes('_small_')) return 'small';
+    return null;
+  }
+  if (key === 'forehead:width') {
+    if (optionId.includes('_wide_')) return 'wide';
+    if (optionId.includes('_narrow_')) return 'narrow';
+    return null;
+  }
+  if (key === 'chin:shape') {
+    if (optionId === 'chin_square') return 'square';
+    if (optionId === 'chin_round' || optionId === 'chin_double') return 'round';
+    return null;
+  }
+  if (key === 'eyebrows:shape') {
+    if (optionId.startsWith('brow_straight')) return 'straight';
+    if (optionId.startsWith('brow_arched')) return 'arched';
+    return null;
+  }
+  return null;
+}
+
 export type PhysiognomySelection = Partial<Record<string, string>>;
+
+export function matchPhysiognomyPairLines(selection: PhysiognomySelection): string[] {
+  const lines: string[] = [];
+  for (const rule of pairCollection.rules) {
+    const aId = selection[rule.a.categoryId];
+    const bId = selection[rule.b.categoryId];
+    if (!aId || !bId) continue;
+    const aVal = axisValue(rule.a.categoryId, rule.a.axis, aId);
+    const bVal = axisValue(rule.b.categoryId, rule.b.axis, bId);
+    if (!aVal || !bVal) continue;
+    const line = rule.lines[`${aVal}|${bVal}`];
+    if (line) lines.push(line);
+  }
+  return lines;
+}
 
 export function listPhysiognomyCategories(): PhysiognomyCategory[] {
   return collection.categories;
@@ -62,14 +142,31 @@ export function buildPhysiognomyComposite(selection: PhysiognomySelection) {
       category: cat,
       option: getPhysiognomyOption(selection[cat.id]),
     }))
-    .filter((row) => row.option);
+    .filter((row): row is { category: PhysiognomyCategory; option: SeedRecord } =>
+      Boolean(row.option),
+    );
 
-  const keywords = picks.flatMap((row) => row.option?.keywords ?? []).slice(0, 6);
-  const summaries = picks.map((row) => row.option?.summary).filter(Boolean) as string[];
+  const keywords = picks.flatMap((row) => row.option.keywords ?? []).slice(0, 6);
+  const loveHints = picks.map((row) => row.option.hints?.love).filter(Boolean) as string[];
+  const workHints = picks.map((row) => row.option.hints?.work).filter(Boolean) as string[];
+  const growthHints = picks.map((row) => row.option.hints?.growth).filter(Boolean) as string[];
 
-  const loveHints = picks.map((row) => row.option?.hints?.love).filter(Boolean) as string[];
-  const workHints = picks.map((row) => row.option?.hints?.work).filter(Boolean) as string[];
-  const growthHints = picks.map((row) => row.option?.hints?.growth).filter(Boolean) as string[];
+  const bands = PHYSIOGNOMY_BANDS.flatMap((band) => {
+    const parts = picks.filter((row) =>
+      (band.categoryIds as readonly string[]).includes(row.category.id),
+    );
+    if (parts.length === 0) return [];
+    const labels = parts.map((row) => row.option.label).join(' · ');
+    return [
+      {
+        id: band.id,
+        label: band.label,
+        text: `${withEun(band.label)} ${labels} 결입니다.`,
+      },
+    ];
+  });
+
+  const pairLines = matchPhysiognomyPairLines(selection).slice(0, 2);
 
   const headline =
     picks.length >= 3
@@ -79,24 +176,28 @@ export function buildPhysiognomyComposite(selection: PhysiognomySelection) {
         : '얼굴 특징을 골라 보세요';
 
   const summary =
-    summaries.length > 0
-      ? summaries.slice(0, 3).join(' ')
+    bands.length > 0
+      ? joinSentences(bands.map((band) => band.text))
       : '사진 분석이 아니라, 본인이 고른 특징을 바탕으로 참고용 해설을 보여 줍니다.';
 
   return {
     picks,
+    bands,
+    pairLines,
     headline,
     summary,
     keywords,
     hints: {
       love: loveHints[0] ?? '관계에서는 진심을 표현하는 방식이 중요합니다.',
-      work: workHints[0] ?? '강점을 살릴 수 있는 역할을 찾아 보세요.',
-      growth: growthHints[0] ?? '약점만 보지 않고 강점 루틴을 하나씩 쌓아 보세요.',
+      work: workHints[Math.min(1, Math.max(0, workHints.length - 1))] ?? '강점을 살릴 수 있는 역할을 찾아 보세요.',
+      growth:
+        growthHints[Math.min(2, Math.max(0, growthHints.length - 1))] ??
+        '약점만 보지 않고 강점 루틴을 하나씩 쌓아 보세요.',
     },
     detailLines: picks.map((row) => ({
       category: row.category.label,
-      label: row.option?.label ?? '',
-      blurb: row.option?.summary ?? '',
+      label: row.option.label,
+      blurb: row.option.summary ?? '',
     })),
   };
 }
@@ -131,12 +232,39 @@ export function buildTodayPhysiognomy(
     date,
   );
 
-  const summary = featured?.option
-    ? joinSentences([
-        theme.focus,
-        `오늘은 ${withIga(featured.category.label)} 중심입니다. ${featured.option.summary}`,
-      ])
-    : joinSentences([composite.summary, theme.focus]);
+  const featuredLines = featured
+    ? FEATURED_LINE_TEMPLATES.map((build) => build(featured.category.label))
+    : [];
+  const featuredLine =
+    featuredLines.length > 0
+      ? (pickDailyFrom(
+          featuredLines,
+          `physiognomy:featured-line:${selectedIds}:${personSalt ?? ''}`,
+          date,
+        ) ?? featuredLines[0]!)
+      : null;
+
+  const pairPool = matchPhysiognomyPairLines(selection);
+  const pairCore =
+    pairPool.length > 0
+      ? (pickDailyFrom(
+          pairPool,
+          `physiognomy:pair:${selectedIds}:${personSalt ?? ''}`,
+          date,
+        ) ?? pairPool[0]!)
+      : null;
+  const pairFrame =
+    pairCore && pairCollection.frames.length > 0
+      ? (pickDailyFrom(
+          pairCollection.frames,
+          `physiognomy:pair-frame:${selectedIds}:${personSalt ?? ''}`,
+          date,
+        ) ?? pairCollection.frames[0]!)
+      : null;
+  const pairLine =
+    pairCore && pairFrame ? `${pairFrame} ${stripSentenceEnd(pairCore)}` : null;
+
+  const summary = joinSentences([theme.focus, featuredLine, pairLine].filter(Boolean));
 
   return {
     dateLabel: date.toLocaleDateString('ko-KR', {

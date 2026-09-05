@@ -1,0 +1,45 @@
+{
+  "frames": [
+    "오늘의 조합으로는",
+    "겹친 결은",
+    "두 부위를 같이 보면",
+    "마주 보는 결은",
+    "오늘 읽히는 겹침은",
+    "함께 두면"
+  ],
+  "rules": [
+    {
+      "id": "expression",
+      "a": { "categoryId": "eyes", "axis": "size" },
+      "b": { "categoryId": "mouth", "axis": "size" },
+      "lines": {
+        "large|large": "눈과 입이 모두 열려 감정과 말이 밖으로 잘 나가니 속도를 한 박자 조절하면 오해가 줄어듭니다.",
+        "large|small": "눈은 크게 반응하고 입은 아끼니 표정과 말의 온도 차를 한 줄로 맞춰 보세요.",
+        "small|large": "시선은 조용한데 말이 앞서니 듣기 한 박자를 두면 설득이 남습니다.",
+        "small|small": "눈과 입이 모두 아껴 두면 속마음이 늦게 읽히니 짧은 한 마디가 오해를 풉니다."
+      }
+    },
+    {
+      "id": "think_act",
+      "a": { "categoryId": "forehead", "axis": "width" },
+      "b": { "categoryId": "chin", "axis": "shape" },
+      "lines": {
+        "wide|round": "생각이 넓고 실행은 부드럽게 도니 마침표를 정해 두면 구상이 일로 내려옵니다.",
+        "wide|square": "시야는 넓고 마무리는 단호하니 결정 전에만 여백을 남기면 균형이 납니다.",
+        "narrow|round": "초점이 좁고 실행은 유연하니 한 가지를 오래 붙잡되 방법은 바꿔 보세요.",
+        "narrow|square": "생각과 턱이 모두 선명하니 밀고 나가기 전에 한 줄만 다시 보면 빈틈이 줄어듭니다."
+      }
+    },
+    {
+      "id": "temperature",
+      "a": { "categoryId": "eyes", "axis": "tail" },
+      "b": { "categoryId": "eyebrows", "axis": "shape" },
+      "lines": {
+        "upturned|straight": "눈꼬리는 밝고 눈썹은 단정하니 가벼운 인상 뒤에 기준이 있습니다.",
+        "upturned|arched": "눈과 눈썹이 모두 올라가 표정이 먼저 도착하니 인상이 말보다 앞서지 않게 보세요.",
+        "downturned|straight": "눈꼬리는 낮고 눈썹은 곧으니 차분함이 거리로 읽히지 않게 온기를 한 줄 남기세요.",
+        "downturned|arched": "눈은 내려오고 눈썹은 굽으니 예민함과 배려가 겹친 신호를 부드럽게 전하세요."
+      }
+    }
+  ]
+}

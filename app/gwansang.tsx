@@ -268,6 +268,16 @@ export default function GwansangScreen() {
             <View style={[styles.result, { borderTopColor: c.card }]}>
               <Text style={[styles.resultEyebrow, { color: c.tint }]}>해설</Text>
               <Text style={[styles.resultSummary, { color: c.muted }]}>{composite.summary}</Text>
+              {composite.pairLines.length > 0 ? (
+                <View style={styles.hintBlock}>
+                  <Text style={[styles.hintLabel, { color: c.text }]}>조합</Text>
+                  {composite.pairLines.map((line) => (
+                    <Text key={line} style={[styles.hintText, { color: c.muted }]}>
+                      {line}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
 
               <View style={styles.hintBlock}>
                 <Text style={[styles.hintLabel, { color: c.text }]}>관계</Text>
