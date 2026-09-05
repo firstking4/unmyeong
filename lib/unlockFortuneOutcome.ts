@@ -2,7 +2,7 @@ import { appStorage } from '@/lib/storage';
 import type { UnlockActionId } from '@/lib/unlockActions';
 import { rewardUnlockKey, type RewardScreenId } from '@/lib/rewardUnlock';
 
-const STORAGE_KEY = '@unmyeong/unlock-fortune-outcomes';
+export const UNLOCK_FORTUNE_OUTCOME_STORAGE_KEY = '@unmyeong/unlock-fortune-outcomes';
 
 export type UnlockFortuneOutcomeState = {
   date: string;
@@ -48,11 +48,15 @@ export function normalizeUnlockFortuneOutcomeState(
 }
 
 export async function loadUnlockFortuneOutcomeState(): Promise<UnlockFortuneOutcomeState> {
-  return normalizeUnlockFortuneOutcomeState(await appStorage.getItem(STORAGE_KEY));
+  return normalizeUnlockFortuneOutcomeState(await appStorage.getItem(UNLOCK_FORTUNE_OUTCOME_STORAGE_KEY));
 }
 
 export async function saveUnlockFortuneOutcomeState(state: UnlockFortuneOutcomeState) {
-  await appStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  await appStorage.setItem(UNLOCK_FORTUNE_OUTCOME_STORAGE_KEY, JSON.stringify(state));
+}
+
+export async function clearUnlockFortuneOutcomeState() {
+  await appStorage.removeItem(UNLOCK_FORTUNE_OUTCOME_STORAGE_KEY);
 }
 
 /** 당일 고정 결과가 있으면 반환, 없으면 null. */

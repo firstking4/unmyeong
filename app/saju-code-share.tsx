@@ -5,6 +5,7 @@ import { Alert, Pressable, ScrollView, Share, StyleSheet, View } from 'react-nat
 import { Text } from '@/components/Themed';
 import { CopyIcon } from '@/components/ui/CopyIcon';
 import { PaperGrain } from '@/components/ui/PaperGrain';
+import { ProfileNeededCta } from '@/components/tabs/ProfileNeededCard';
 import { ShareIcon } from '@/components/ui/ShareIcon';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
@@ -60,10 +61,11 @@ export default function SajuCodeShareScreen() {
 
         {!ready || !code ? (
           <View style={[styles.banner, paperShadow, { backgroundColor: c.surface }]}>
-            <Text style={[styles.bannerTitle, { color: c.text }]}>프로필이 필요합니다</Text>
+            <Text style={[styles.bannerTitle, { color: c.text }]}>내 프로필이 필요해요</Text>
             <Text style={[styles.bannerBody, { color: c.muted }]}>
-              지도 탭 신분증에 이름과 생년월일을 입력한 뒤 다시 열어 주세요.
+              지도 탭 신분증에 이름과 생년월일을 입력하면 사주 코드를 만들 수 있습니다.
             </Text>
+            <ProfileNeededCta />
           </View>
         ) : (
           <>

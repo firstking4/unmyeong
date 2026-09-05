@@ -12,7 +12,7 @@ export const UNLOCK_FORTUNE_COPY = {
   /** 타이틀 아래 고정 설명 (로딩·결과 공통). */
   subtitle: '자세한 풀이를 열기 전, 오늘의 광고운을 먼저 살펴봅니다.',
   loadingBody: '광고운을 살피는 중…',
-  loadingHint: '잠시만 기다려 주세요.\n오늘의 운을 확인하는 중입니다.',
+  loadingHint: '광고운은 오늘의 운세 점수와 연동됩니다.\n잠시만 기다려 주세요.',
   open_detail: {
     result: '오늘은 운이 좋네요',
     hint: '광고 없이 바로 자세한 풀이를 볼 수 있어요.\n오늘 자정까지 열려 있습니다.',

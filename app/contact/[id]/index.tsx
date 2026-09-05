@@ -43,10 +43,10 @@ import { formatSajuHourLabel } from '@/lib/saju';
 type Reading = TodayCompatibility;
 
 const DETAIL_LOCK = {
-  title: '자세한 풀이',
+  title: '오늘 궁합 풀이',
   description:
     '자세한 풀이와 오늘 해보기를 열 수 있어요. 한 번 열면 오늘 자정까지 유지됩니다.',
-  ctaLabel: '내용 보기',
+  ctaLabel: '오늘 궁합 풀이 보기',
 } as const;
 
 function PeriodNote({

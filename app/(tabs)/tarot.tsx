@@ -7,6 +7,7 @@ import { ChevronRightIcon } from '@/components/icons/AppIcon';
 import { KeywordBadge } from '@/components/ui/KeywordBadge';
 import { LockedContentCard } from '@/components/ui/LockedContentCard';
 import { PaperGrain } from '@/components/ui/PaperGrain';
+import { ProfileNeededCard } from '@/components/tabs/ProfileNeededCard';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
 import { paperShadow, radius, tabSection } from '@/constants/Theme';
@@ -22,10 +23,10 @@ import { useLocalDateKey } from '@/lib/useLocalDateKey';
 import { useTabScrollReset } from '@/lib/useTabScrollReset';
 
 const DETAIL_LOCK = {
-  title: '상세 풀이',
+  title: '오늘의 카드 풀이',
   description:
     '자세한 풀이를 열 수 있어요. 한 번 열면 오늘 자정까지 유지됩니다.',
-  ctaLabel: '내용 보기',
+  ctaLabel: '오늘의 카드 풀이 보기',
 } as const;
 
 // 잘라 둔 그림 비율(279×400)과 같게 맞춰 좌우가 잘리지 않게 한다.
@@ -60,10 +61,12 @@ export default function TarotScreen() {
         <Text style={[styles.eyebrow, { color: c.tint, fontFamily: display }]}>TAROT</Text>
         <Text style={[styles.title, { color: c.text, fontFamily: display }]}>타로</Text>
         <Text style={[styles.lead, { color: c.muted }]}>
-          {ready
-            ? '메이저 아르카나 22장 가운데 오늘 한 장을 뽑아 참고용 풀이를 보여 줍니다.'
-            : '내 프로필이 필요해요. 지도 탭 신분증에 이름과 생년월일을 입력하면 오늘의 타로 카드를 뽑습니다.'}
+          메이저 아르카나 22장 가운데 오늘 한 장을 뽑아 참고용 풀이를 보여 줍니다.
         </Text>
+
+        {!ready ? (
+          <ProfileNeededCard title="오늘의 카드" thenWhat="오늘의 타로 카드를 뽑습니다." />
+        ) : null}
 
         {reading ? (
           <TodayTarotCard

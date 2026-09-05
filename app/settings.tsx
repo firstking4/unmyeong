@@ -12,6 +12,7 @@ import { pagePad, radius, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useContacts } from '@/context/ContactsContext';
 import { useProfile } from '@/context/ProfileContext';
+import { useRewardUnlock } from '@/context/RewardUnlockContext';
 import { useAppTheme, type ThemePreference } from '@/context/ThemeContext';
 import type { EncryptedBackupEnvelope } from '@/lib/backupCrypto';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
@@ -54,6 +55,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { profile, replaceProfile } = useProfile();
   const { contacts, replaceContacts } = useContacts();
+  const { resetTodayUnlocks } = useRewardUnlock();
   const [busy, setBusy] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState<FortuneNotificationSettings>({
     enabled: false,
@@ -440,6 +442,26 @@ export default function SettingsScreen() {
       <Text style={[styles.version, { color: c.muted }]} accessibilityLabel={`앱 버전 ${getAppVersionLabel()}`}>
         {getAppVersionLabel()}
       </Text>
+      {__DEV__ ? (
+        <Pressable
+          onPress={() => {
+            void (async () => {
+              await resetTodayUnlocks();
+              Alert.alert(
+                '해금 초기화',
+                '오늘 상세 자물쇠만 다시 잠갔습니다. 프로필·지인은 그대로입니다.',
+              );
+            })();
+          }}
+          style={({ pressed }) => [styles.devReset, { opacity: pressed ? 0.55 : 1 }]}
+          accessibilityRole="button"
+          accessibilityLabel="테스트용 오늘 해금 초기화">
+          <Text style={[styles.devResetTitle, { color: c.muted }]}>테스트 · 오늘 해금 초기화</Text>
+          <Text style={[styles.devResetBlurb, { color: c.muted }]}>
+            개발 빌드에서만 보입니다. 자물쇠만 다시 잠급니다.
+          </Text>
+        </Pressable>
+      ) : null}
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
 
       <BackupPasswordModal
@@ -530,5 +552,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
     opacity: 0.55,
+  },
+  devReset: {
+    marginTop: 16,
+    paddingVertical: 10,
+    alignItems: 'center',
+    gap: 2,
+  },
+  devResetTitle: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  devResetBlurb: {
+    fontSize: 11,
+    lineHeight: 16,
+    opacity: 0.8,
+    textAlign: 'center',
   },
 });

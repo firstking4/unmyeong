@@ -7,6 +7,7 @@ import { SajuCodeImportModal } from '@/components/gunghap/SajuCodeImportModal';
 import { Text } from '@/components/Themed';
 import { ChevronRightIcon } from '@/components/icons/AppIcon';
 import { PaperGrain } from '@/components/ui/PaperGrain';
+import { ProfileNeededCta, profileNeededBody } from '@/components/tabs/ProfileNeededCard';
 import { StarIcon } from '@/components/ui/StarIcon';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
@@ -131,8 +132,9 @@ export default function GunghapScreen() {
         <Text style={[styles.lead, { color: c.muted }]}>
           {ready
             ? '지인 목록에서 오늘의 궁합 점수를 보고, 누르면 상세 풀이를 엽니다. 점수는 일간·일지와 오늘의 일진을 기준으로 합니다.'
-            : '내 프로필이 필요해요. 지도 탭 신분증에 이름과 생년월일을 입력하면 지인과의 궁합을 계산합니다.'}
+            : profileNeededBody('지인과의 궁합을 계산합니다.')}
         </Text>
+        {!ready ? <ProfileNeededCta /> : null}
 
         <View style={styles.addRow}>
           <Pressable

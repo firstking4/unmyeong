@@ -9,7 +9,7 @@ alwaysApply: true
 
 ## 목표 형태
 
-1. **배너 (Banner)** — 지도(홈) 신분증 아래·메뉴 하단 `AdBannerSlot`
+1. **배너 (Banner)** — 지도(홈) 오늘의 운세 카드 아래·메뉴 하단 `AdBannerSlot`
 2. **보상형 동영상 (Rewarded)** — “광고 보기” → `reward earned` 시에만 해금
 
 네트워크: **Google AdMob** · 패키지 `react-native-google-mobile-ads`

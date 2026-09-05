@@ -5,6 +5,7 @@ import { Text } from '@/components/Themed';
 import { KeywordBadge } from '@/components/ui/KeywordBadge';
 import { LockedContentCard } from '@/components/ui/LockedContentCard';
 import { PaperGrain } from '@/components/ui/PaperGrain';
+import { ProfileNeededCard } from '@/components/tabs/ProfileNeededCard';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
 import { paperShadow, tabSection } from '@/constants/Theme';
@@ -48,10 +49,10 @@ const PILLAR_SLOTS = [
 const LUCK_PILLAR_LIMIT = 8;
 
 const DETAIL_LOCK = {
-  title: '상세 풀이',
+  title: '오늘의 사주 풀이',
   description:
     '자세한 풀이를 열 수 있어요. 한 번 열면 오늘 자정까지 유지됩니다.',
-  ctaLabel: '내용 보기',
+  ctaLabel: '오늘의 사주 풀이 보기',
 } as const;
 
 export default function SajuScreen() {
@@ -112,10 +113,15 @@ export default function SajuScreen() {
         <Text style={[styles.eyebrow, { color: c.tint, fontFamily: display }]}>SAJU</Text>
         <Text style={[styles.title, { color: c.text, fontFamily: display }]}>사주</Text>
         <Text style={[styles.lead, { color: c.muted }]}>
-          {ready
-            ? '생년월일로 네 기둥을 세우고, 띠·오행 위에 오늘·이번 주·이달·올해의 참고용 풀이를 겹칩니다.'
-            : '내 프로필이 필요해요. 지도 탭 신분증에 이름과 생년월일을 입력하면 사주팔자와 오늘·이번 주·이달·올해 풀이가 열립니다.'}
+          생년월일로 네 기둥을 세우고, 띠·오행 위에 오늘·이번 주·이달·올해의 참고용 풀이를 겹칩니다.
         </Text>
+
+        {!ready ? (
+          <ProfileNeededCard
+            title="오늘의 사주"
+            thenWhat="사주팔자와 오늘·이번 주·이달·올해 풀이가 열립니다."
+          />
+        ) : null}
 
         {reading ? (
           <>

@@ -29,7 +29,7 @@ export function LockedFortune() {
             {placeholder.moodHeadline}
           </Text>
           <Text style={[styles.blurb, { color: c.muted }]}>
-            이름과 생년월일을 채우면 오늘의 점수가 열립니다.
+            내 프로필이 필요해요. 이름과 생년월일을 채우면 오늘의 점수가 열립니다.
           </Text>
           <View style={styles.lockRow}>
             <LockIcon color={c.tint} size={14} />

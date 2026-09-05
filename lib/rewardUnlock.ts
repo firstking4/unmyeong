@@ -1,6 +1,6 @@
 import { appStorage } from '@/lib/storage';
 
-const STORAGE_KEY = '@unmyeong/reward-unlocks';
+export const REWARD_UNLOCK_STORAGE_KEY = '@unmyeong/reward-unlocks';
 
 export type RewardScreenId = 'seonghyang_today' | 'saju_today' | 'tarot_today' | 'contact_today';
 
@@ -40,11 +40,15 @@ export function normalizeRewardUnlockState(raw: string | null): RewardUnlockStat
 }
 
 export async function loadRewardUnlockState(): Promise<RewardUnlockState> {
-  return normalizeRewardUnlockState(await appStorage.getItem(STORAGE_KEY));
+  return normalizeRewardUnlockState(await appStorage.getItem(REWARD_UNLOCK_STORAGE_KEY));
 }
 
 export async function saveRewardUnlockState(state: RewardUnlockState) {
-  await appStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  await appStorage.setItem(REWARD_UNLOCK_STORAGE_KEY, JSON.stringify(state));
+}
+
+export async function clearRewardUnlockState() {
+  await appStorage.removeItem(REWARD_UNLOCK_STORAGE_KEY);
 }
 
 export function isRewardUnlocked(

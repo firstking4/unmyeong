@@ -34,7 +34,7 @@ type Props = {
   lockId: string;
   title: string;
   description?: string;
-  /** 접근성 라벨. 기본값: 내용 보기 */
+  /** 잠금 버튼 문구·접근성 라벨. 기본값: 내용 보기 */
   ctaLabel?: string;
   onPress?: () => void | Promise<void>;
   /** 해금 후 본문. 있으면 같은 박스 안에 타이틀+본문만 보여 준다. */
@@ -187,7 +187,10 @@ export function LockedContentCard({
               styles.cta,
               { backgroundColor: c.tint, opacity: modalOpen ? 0.55 : pressed ? 0.82 : 1 },
             ]}>
-            <LockIcon color="#F3EEE6" size={22} />
+            <View style={styles.ctaRow}>
+              <LockIcon color="#F3EEE6" size={18} />
+              <Text style={styles.ctaLabel}>{a11y}</Text>
+            </View>
           </Pressable>
         ) : null}
       </View>
@@ -226,5 +229,16 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     paddingVertical: 12,
     minHeight: 46,
+  },
+  ctaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  ctaLabel: {
+    color: '#F3EEE6',
+    fontSize: 14,
+    fontWeight: '700',
+    lineHeight: 20,
   },
 });

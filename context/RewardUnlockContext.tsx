@@ -9,9 +9,11 @@ import {
   isRewardUnlocked,
   loadRewardUnlockState,
   saveRewardUnlockState,
+  clearRewardUnlockState,
   type RewardScreenId,
   type RewardUnlockState,
 } from '@/lib/rewardUnlock';
+import { clearUnlockFortuneOutcomeState } from '@/lib/unlockFortuneOutcome';
 import { logTodayCardOpen, logUnlockCta } from '@/lib/firebase/analytics';
 import type { TodayCardKind } from '@/lib/firebase/config';
 
@@ -20,6 +22,8 @@ type RewardUnlockContextValue = {
   isUnlocked: (screen: RewardScreenId, scopeId?: string) => boolean;
   /** 실제 보상형 광고의 reward earned 콜백(또는 스탠드인 CTA)에서만 호출한다. */
   grantUnlock: (screen: RewardScreenId, scopeId?: string) => Promise<void>;
+  /** 오늘 상세 해금·광고운만 지운다. 프로필·지인은 유지. */
+  resetTodayUnlocks: () => Promise<void>;
 };
 
 const TODAY_CARD_BY_SCREEN: Partial<Record<RewardScreenId, TodayCardKind>> = {
@@ -77,14 +81,21 @@ export function RewardUnlockProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const resetTodayUnlocks = useCallback(async () => {
+    await clearRewardUnlockState();
+    await clearUnlockFortuneOutcomeState();
+    setState(emptyRewardUnlockState());
+  }, []);
+
   const value = useMemo(
     () => ({
       loaded,
       isUnlocked: (screen: RewardScreenId, scopeId?: string) =>
         isRewardUnlocked(state, screen, scopeId),
       grantUnlock,
+      resetTodayUnlocks,
     }),
-    [grantUnlock, loaded, state],
+    [grantUnlock, loaded, resetTodayUnlocks, state],
   );
 
   return <RewardUnlockContext.Provider value={value}>{children}</RewardUnlockContext.Provider>;
