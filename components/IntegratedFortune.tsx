@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { TodayKeywordCaption, TodayKeywords } from '@/components/home/TodayKeywords';
 import { BrushScoreRing } from '@/components/ink/BrushScoreRing';
-import { KeywordBadge } from '@/components/ui/KeywordBadge';
 import { Text } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
@@ -20,7 +20,6 @@ export function IntegratedFortune() {
   const dateKey = useLocalDateKey();
 
   const fortune = useMemo(() => buildIntegratedFortune(profile), [profile, dateKey]);
-  const tags = fortune.insights?.luckTags ?? [];
 
   useEffect(() => {
     void recordFortuneView(fortune);
@@ -42,12 +41,12 @@ export function IntegratedFortune() {
           <Text style={[styles.mood, { color: c.text, fontFamily: display }]}>
             {fortune.moodHeadline}
           </Text>
-          <View style={styles.chips}>
-            {tags.map((tag, i) => (
-              <KeywordBadge key={`luck-${i}-${tag}`} label={tag} />
-            ))}
-          </View>
+          <TodayKeywordCaption />
         </View>
+      </View>
+
+      <View style={styles.keywords}>
+        <TodayKeywords />
       </View>
 
       <View style={[styles.detail, { borderTopColor: c.card }]}>
@@ -107,7 +106,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     paddingHorizontal: 12,
-    paddingBottom: 12,
+    paddingBottom: 8,
     gap: 8,
   },
   copy: {
@@ -119,10 +118,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 26,
   },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
+  keywords: {
+    paddingHorizontal: space.md,
+    paddingBottom: 12,
   },
   detail: {
     marginHorizontal: space.md,

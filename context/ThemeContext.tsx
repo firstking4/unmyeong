@@ -57,6 +57,7 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    applyNativeScheme('light');
     let alive = true;
     (async () => {
       try {

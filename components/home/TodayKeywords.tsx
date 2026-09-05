@@ -5,11 +5,8 @@ import { type Href, useRouter } from 'expo-router';
 import { KeywordBadge } from '@/components/ui/KeywordBadge';
 import { Text } from '@/components/Themed';
 import Colors from '@/constants/Colors';
-import { display } from '@/constants/Fonts';
-import { paperShadow, radius, space } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
-import { useContacts } from '@/context/ContactsContext';
-import { isFortuneReady, useProfile } from '@/context/ProfileContext';
+import { useProfile } from '@/context/ProfileContext';
 import {
   buildTodayKeywords,
   KEYWORD_NAV_SOURCE_ORDER,
@@ -29,30 +26,37 @@ const SOURCE_ROUTES: Record<KeywordSource, Href> = {
 };
 
 function primarySource(keyword: TodayKeyword): KeywordSource {
-  return KEYWORD_NAV_SOURCE_ORDER.find((item) => keyword.sources.includes(item)) ?? '지도';
+  return KEYWORD_NAV_SOURCE_ORDER.find((item) => keyword.sources.includes(item)) ?? '성향';
 }
 
-export function TodayKeywords({ onPressMapKeyword }: { onPressMapKeyword?: () => void }) {
-  const c = Colors[useColorScheme() ?? 'light'];
+function useTodayKeywordList() {
   const { profile } = useProfile();
-  const { contacts, loaded: contactsLoaded } = useContacts();
-  const router = useRouter();
-  const ready = isFortuneReady(profile);
   const dateKey = useLocalDateKey();
-  const { keywords, sources } = useMemo(
-    () =>
-      ready && contactsLoaded
-        ? buildTodayKeywords(profile, new Date(), contacts)
-        : { keywords: [], sources: [] as KeywordSource[] },
-    [profile, ready, contacts, contactsLoaded, dateKey],
+  return useMemo(() => buildTodayKeywords(profile, new Date()).keywords, [profile, dateKey]);
+}
+
+/** 점수 링 옆 안내. 칩이 있을 때만. */
+export function TodayKeywordCaption() {
+  const c = Colors[useColorScheme() ?? 'light'];
+  const keywords = useTodayKeywordList();
+  if (keywords.length === 0) return null;
+
+  return (
+    <Text style={[styles.caption, { color: c.muted }]}>
+      키워드를 누르면 관련 위치로 이동합니다.
+    </Text>
   );
+}
+
+/** 점수 아래 칩 줄. */
+export function TodayKeywords() {
+  const router = useRouter();
+  const keywords = useTodayKeywordList();
+  if (keywords.length === 0) return null;
 
   const handlePress = (keyword: TodayKeyword) => {
     const source = primarySource(keyword);
-    if (source === '지도') {
-      onPressMapKeyword?.();
-      return;
-    }
+    if (source === '지도') return;
     if (source !== '관상') {
       requestTabScrollReset();
     }
@@ -60,59 +64,21 @@ export function TodayKeywords({ onPressMapKeyword }: { onPressMapKeyword?: () =>
   };
 
   return (
-    <View style={[styles.card, paperShadow, { backgroundColor: c.surface }]}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: c.text, fontFamily: display }]}>오늘의 키워드</Text>
-        {ready && keywords.length > 0 ? (
-          <Text style={[styles.caption, { color: c.muted }]}>
-            키워드를 누르면 관련 위치로 이동합니다.
-          </Text>
-        ) : null}
-      </View>
-      {ready && keywords.length > 0 ? (
-        <>
-          <View style={styles.chips}>
-            {keywords.map((kw) => (
-              <KeywordBadge
-                key={kw.label}
-                label={kw.label}
-                hits={kw.hits}
-                size="lg"
-                onPress={() => handlePress(kw)}
-              />
-            ))}
-          </View>
-          {sources.length > 0 ? (
-            <Text style={[styles.footer, { color: c.muted, borderTopColor: c.hairline }]}>
-              {sources.join(' · ')}
-            </Text>
-          ) : null}
-        </>
-      ) : (
-        <Text style={[styles.hint, { color: c.muted }]}>
-          내 프로필이 필요해요. 지도 탭 신분증에 이름과 생년월일을 입력하면 오늘의 키워드가
-          모입니다.
-        </Text>
-      )}
+    <View style={styles.chips}>
+      {keywords.map((kw) => (
+        <KeywordBadge
+          key={kw.label}
+          label={kw.label}
+          hits={kw.hits}
+          size="lg"
+          onPress={() => handlePress(kw)}
+        />
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: radius.lg,
-    paddingHorizontal: space.md,
-    paddingTop: 16,
-    paddingBottom: 14,
-    gap: 14,
-  },
-  header: {
-    gap: 6,
-  },
-  title: {
-    fontSize: 22,
-    lineHeight: 30,
-  },
   caption: {
     fontSize: 13,
     lineHeight: 19,
@@ -121,16 +87,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-  },
-  hint: {
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  footer: {
-    marginTop: 2,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    fontSize: 12,
-    lineHeight: 18,
   },
 });

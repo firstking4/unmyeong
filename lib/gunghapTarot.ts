@@ -1,6 +1,6 @@
 import { listTarotDeck } from '@/lib/data/catalog';
 import { localYmd, pickDaily } from '@/lib/daily/pick';
-import { resolveParticles, withEulReul } from '@/lib/korean/particle';
+import { hasFinalConsonant, resolveParticles, withEulReul } from '@/lib/korean/particle';
 import { tarotEnglishName } from '@/lib/tarotEnglishNames';
 import type { SeedRecord } from '@/lib/data/types';
 
@@ -120,15 +120,13 @@ export function buildGunghapTarotReading(
 
   const detailLine = fixObjectParticle(
     reversed
-      ? `${title} 역방향 — ${withEulReul(theme.keyword)} 다시 맞추는 날이에요.`
+      ? `${title} 역방향 — 「${theme.keyword}」${hasFinalConsonant(theme.keyword) ? '을' : '를'} 한 번 더 돌아보는 날이에요.`
       : theme.relationship,
   );
 
-  const keywords = unique([
-    `타로·${theme.keyword}`,
-    reversed ? reverseWord : null,
-    ...(card.keywords ?? []).slice(0, 1),
-  ]);
+  // 카드 원문 키워드(비참·황폐·악소식 …)는 지인 카드 칩으로 너무 세다.
+  // 칩은 테마 키워드와 역방향 완충어만 쓰고, 카드 뜻은 summary 문장에서 본다.
+  const keywords = unique([`타로·${theme.keyword}`, reversed ? reverseWord : null]);
 
   return {
     cardTitle: title,

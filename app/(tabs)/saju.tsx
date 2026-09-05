@@ -255,9 +255,6 @@ function TodaySajuCard({
           {(period.keywords ?? []).map((kw, i) => (
             <KeywordBadge key={`today-kw-${i}-${kw}`} label={kw} />
           ))}
-          {(period.tones ?? []).map((tone, i) => (
-            <KeywordBadge key={`today-tone-${i}-${tone}`} label={tone} />
-          ))}
         </View>
       </View>
       <View style={[styles.cardSplit, { borderTopColor: hairline }]}>

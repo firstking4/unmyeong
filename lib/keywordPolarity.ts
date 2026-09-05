@@ -1,7 +1,6 @@
 export type KeywordPolarity = 'positive' | 'negative';
 
 const NEGATIVE_LABELS = new Set([
-  '재물운 보통',
   '과몰입',
   '자기비판',
   '산만함',
@@ -13,6 +12,10 @@ const NEGATIVE_LABELS = new Set([
   '매달린 사람',
   '지연',
   '점검',
+  '재조정',
+  '숨고르기',
+  '되감기',
+  '정비',
   '집착',
   '해체',
   '마찰',
@@ -24,7 +27,7 @@ const NEGATIVE_LABELS = new Set([
 export function isNegativeKeyword(label: string): boolean {
   if (!label) return false;
   if (NEGATIVE_LABELS.has(label)) return true;
-  return label.includes('보통') || label.includes('주의') || label.includes('지연');
+  return label.includes('주의') || label.includes('지연');
 }
 
 export function keywordPolarity(label: string): KeywordPolarity {

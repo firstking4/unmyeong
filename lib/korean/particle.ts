@@ -49,6 +49,11 @@ export function withRo(word: string): string {
   return `${word}${jongseong === 0 || jongseong === 8 ? '로' : '으로'}`;
 }
 
+/** 마음이에요 / 사이예요 */
+export function withIyeyo(word: string): string {
+  return `${word}${hasFinalConsonant(word) ? '이에요' : '예요'}`;
+}
+
 /** `을(를)` 같은 병기 표기 → [받침 있을 때, 받침 없을 때] */
 const PARTICLE_FORMS: Record<string, [string, string]> = {
   '을(를)': ['을', '를'],

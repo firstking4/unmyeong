@@ -7,7 +7,7 @@ import {
   pickDailyTarotCard,
 } from '@/lib/data/catalog';
 import { pickDaily, pickDailyFrom } from '@/lib/daily/pick';
-import { withIga } from '@/lib/korean/particle';
+import { withEulReul, withGwa, withIga, withRo } from '@/lib/korean/particle';
 import { joinSentences } from '@/lib/korean/sentence';
 import {
   computeFourPillars,
@@ -24,16 +24,16 @@ import type { FortuneInsights, IntegratedFortune, PillarTone, Profile } from './
 const TONE_GUIDANCE: Record<PillarTone, string[]> = {
   관계: [
     '대화 한마디가 흐름을 바꿉니다. 먼저 손 내미는 쪽이 유리합니다.',
-    '오늘은 말보다 듣는 쪽에 힘이 실립니다. 상대의 속도를 한 번 확인해 보세요.',
+    '오늘은 말보다 듣는 쪽이 맞습니다. 상대의 속도를 한 번 확인해 보세요.',
     '미뤄 둔 안부 하나가 관계의 매듭을 풉니다. 짧게라도 먼저 건네 보세요.',
-    '가까운 사이일수록 예의가 힘이 됩니다. 익숙함에 기대 넘기지 마세요.',
+    '가까운 사이일수록 예의가 남습니다. 익숙함에 기대 넘기지 마세요.',
     '오해는 길게 설명할수록 커집니다. 오늘은 짧고 분명하게 전하세요.',
-    '함께 있는 시간의 길이보다 결이 중요한 날입니다.',
+    '함께 있는 시간의 길이보다 호흡이 중요한 날입니다.',
   ],
   일: [
     '집중력이 살아납니다. 미뤄 둔 일 하나를 끝내 보세요.',
     '여러 갈래로 벌리기보다 하나를 마무리하는 편이 남습니다.',
-    '오늘은 시작보다 정리에 힘이 붙습니다. 쌓아 둔 것부터 걷어 보세요.',
+    '오늘은 시작보다 정리에 손이 갑니다. 쌓아 둔 것부터 걷어 보세요.',
     '중간 점검 한 번이 하루를 아낍니다. 방향을 짧게 확인해 보세요.',
     '맡은 자리가 분명할 때 성과가 납니다. 역할을 먼저 정리하세요.',
     '급한 일과 중요한 일을 나눠 두면 흐름이 잡힙니다.',
@@ -125,7 +125,7 @@ function formatCompactDate(date: Date) {
 const LUCK_TAG: Record<PillarTone, string> = {
   관계: '인연운',
   일: '결단',
-  재물: '재물운 보통',
+  재물: '재물운',
   성장: '성장운',
 };
 
@@ -140,12 +140,7 @@ function buildLuckTags(tones: PillarTone[]): string[] {
     const tag = luckTagForTone(tone);
     if (tag && !tags.includes(tag)) tags.push(tag);
   }
-  const fallback = ['결단', '인연운', '재물운 보통'];
-  for (const t of fallback) {
-    if (tags.length >= 3) break;
-    if (!tags.includes(t)) tags.push(t);
-  }
-  return tags.slice(0, 3);
+  return tags;
 }
 
 /** 지인 궁합과 동일 5등급 컷 */
@@ -171,10 +166,39 @@ function resolveWesternZodiac(profile: Profile) {
 /**
  * 오늘의 기운 한 줄 — 십신은 쉬운 말로만 (상관 같은 명칭은 사주 탭에 둔다).
  */
-function buildTodayLead(tone: PillarTone, dailyMood: string, tenGod?: string): string {
+function buildTodayLead(
+  tone: PillarTone,
+  dailyMood: string,
+  profileSalt: string,
+  date: Date,
+  tenGod?: string,
+): string {
   const godPlain = tenGod ? tenGodPlain(tenGod) : null;
-  if (godPlain) return `${withIga(godPlain)} 도드라지는 날입니다. ${tone} 쪽에 힘이 실립니다.`;
-  return `오늘은 ${withIga(dailyMood)} ${tone} 쪽에 힘이 실립니다.`;
+  if (godPlain) {
+    return (
+      pickDailyFrom(
+        [
+          `${withIga(godPlain)} 도드라집니다. ${tone} 쪽에 무게가 실립니다.`,
+          `${withIga(godPlain)} 앞에 나옵니다. ${withRo(tone)} 흐릅니다.`,
+          `오늘은 ${godPlain} 흐름입니다. ${withEulReul(tone)} 살리면 됩니다.`,
+          `${withIga(godPlain)} 선명합니다. ${tone} 감각을 믿어 보세요.`,
+        ],
+        `fortune-lead:${profileSalt}`,
+        date,
+      ) ?? `${withIga(godPlain)} 도드라집니다. ${tone} 쪽에 무게가 실립니다.`
+    );
+  }
+  return (
+    pickDailyFrom(
+      [
+        `오늘은 ${withIga(dailyMood)} ${tone} 쪽에 무게가 실립니다.`,
+        `오늘은 ${dailyMood} 흐름입니다. ${withRo(tone)} 갑니다.`,
+        `${withIga(dailyMood)} 오늘 ${withGwa(tone)} 맞물립니다.`,
+      ],
+      `fortune-lead:${profileSalt}`,
+      date,
+    ) ?? `오늘은 ${withIga(dailyMood)} ${tone} 쪽에 무게가 실립니다.`
+  );
 }
 
 /**
@@ -191,7 +215,7 @@ function buildBaseMeetLine(profile: Profile, profileSalt: string, date: Date): s
   const options = [
     animal && mood ? `${animal.label}띠의 ${withIga(mood)} 오늘 흐름과 잘 맞물립니다.` : null,
     west ? `${west.label} 기질이 오늘 흐름을 타기 쉽습니다.` : null,
-    mbtiRec?.keywords[0] ? `평소의 ${mbtiRec.keywords[0]} 결이 오늘은 힘이 됩니다.` : null,
+    mbtiRec?.keywords[0] ? `평소의 ${withIga(mbtiRec.keywords[0])} 오늘 살아납니다.` : null,
     blood?.keywords[0]
       ? `${blood.label}형 특유의 ${withIga(blood.keywords[0])} 오늘은 빛을 냅니다.`
       : null,
@@ -240,8 +264,33 @@ function buildHourPillarContext(profile: Profile, date: Date): string | null {
   if (!natal?.hour || !todayPeriod) return null;
 
   const verdict = getPillarAlignVerdict(natal.hour, todayPeriod.pillar);
-  if (verdict === '맞음') return '태어난 시와 오늘이 맞물리는 날입니다.';
-  if (verdict === '어긋남') return '태어난 시와 오늘이 엇갈립니다. 오늘은 서두르지 않는 편이 낫습니다.';
+  const salt = `${profile.birthDate ?? 'anon'}:${profile.birthTime ?? ''}`;
+  if (verdict === '맞음') {
+    return (
+      pickDailyFrom(
+        [
+          '태어난 시와 오늘이 맞물립니다.',
+          '태어난 시와 오늘이 같은 방향을 봅니다.',
+          '태어난 시가 오늘과 잘 맞습니다.',
+        ],
+        `fortune-hour-ok:${salt}`,
+        date,
+      ) ?? '태어난 시와 오늘이 맞물립니다.'
+    );
+  }
+  if (verdict === '어긋남') {
+    return (
+      pickDailyFrom(
+        [
+          '태어난 시와 오늘이 엇갈립니다. 오늘은 서두르지 않는 편이 낫습니다.',
+          '태어난 시와 오늘이 어긋납니다. 속도를 낮춰 보세요.',
+          '태어난 시와 오늘이 다른 방향을 봅니다. 무리하지 마세요.',
+        ],
+        `fortune-hour-off:${salt}`,
+        date,
+      ) ?? '태어난 시와 오늘이 엇갈립니다. 오늘은 서두르지 않는 편이 낫습니다.'
+    );
+  }
   return null;
 }
 
@@ -327,7 +376,7 @@ function buildIntegratedFortuneNow(
 
   // 지도 카드는 한 문장에 하나씩, 쉬운 말로 — 전문 코드는 사주 탭에 둔다
   const summary = joinSentences([
-    buildTodayLead(primaryTone, dailyMood, periodScore?.selfTodayTenGod),
+    buildTodayLead(primaryTone, dailyMood, profileSalt, date, periodScore?.selfTodayTenGod),
     buildHourPillarContext(profile, date),
     buildBaseMeetLine(profile, profileSalt, date),
     theme.focus,

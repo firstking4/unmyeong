@@ -64,6 +64,7 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
     `tarot:${profile.birthDate ?? 'anon'}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}`,
     date,
   );
+  // 정방향에도 주의 칩을 둔다. 역방향 전용으로 두면 주의 칩이 거의 안 나온다.
   const reverseWord = theme.reverseKeyword ?? '점검';
   const seedHints = card.hints;
 
@@ -82,11 +83,7 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
     ? `${title} · ${withEulReul(theme.keyword)} 다시 맞출 날`
     : `${title}, ${theme.headline}`;
 
-  const keywords = unique([
-    theme.keyword,
-    reversed ? reverseWord : null,
-    ...(card.keywords ?? []),
-  ]);
+  const keywords = unique([theme.keyword, theme2.keyword, reverseWord]);
 
   const hints: { label: string; text: string }[] = reversed
     ? [

@@ -101,6 +101,9 @@ for (const hintLabel of tarotHintKeys) {
 const gungs = days.map((d) => buildTodayCompatibility(profile, contact, d) as any);
 section('지인 · summary', gungs.map((g) => g?.summary ?? ''));
 section('지인 · summaryLine', gungs.map((g) => g?.summaryLine ?? ''));
+section('지인 · todayGunghap', gungs.map((g) => g?.todayGunghap ?? ''));
+section('지인 · monthGunghap', gungs.map((g) => g?.monthGunghap ?? ''));
+section('지인 · yearGunghap', gungs.map((g) => g?.yearGunghap ?? ''));
 section('지인 · relationship', gungs.map((g) => g?.relationship ?? ''));
 section('지인 · guidance', gungs.map((g) => g?.guidance ?? ''));
 section('지인 · caution', gungs.map((g) => g?.caution ?? ''));

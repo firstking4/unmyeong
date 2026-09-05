@@ -1,7 +1,7 @@
 import physiognomySeed from '@/data/seed/physiognomy.json';
 
 import type { PhysiognomyCategory, SeedRecord } from './data/types';
-import { pickDaily, pickDailyFrom } from './daily/pick';
+import { pickDailyFrom, pickDailyMany, withSparseCaution } from './daily/pick';
 import { withIga } from './korean/particle';
 import { endSentence, joinSentences } from './korean/sentence';
 
@@ -101,11 +101,13 @@ export function buildTodayPhysiognomy(
 ) {
   const composite = buildPhysiognomyComposite(selection);
   const selectedIds = Object.values(selection).filter(Boolean).sort().join(':');
-  const theme = pickDaily(
+  const themes = pickDailyMany(
     'physiognomy',
     `physiognomy:${selectedIds || 'empty'}:${personSalt ?? ''}`,
+    3,
     date,
   );
+  const theme = themes[0]!;
 
   // 선택 특징의 고정 설명을 매일 통째로 실으면 어제 문장이 된다.
   // 오늘의 중심 특징 하나를 날마다 돌려 오늘 흐름 옆에 둔다.
@@ -131,9 +133,11 @@ export function buildTodayPhysiognomy(
       weekday: 'long',
     }),
     headline: `${theme.keyword} · ${theme.headline}`,
-    keywords: [theme.keyword, ...composite.keywords].filter(
-      (word, index, all) => Boolean(word) && all.indexOf(word) === index,
-    ).slice(0, 4),
+    keywords: withSparseCaution(
+      themes.map((item) => item.keyword),
+      `physiognomy-caution:${selectedIds}:${personSalt ?? ''}`,
+      date,
+    ),
     summary,
     hints: [
       {

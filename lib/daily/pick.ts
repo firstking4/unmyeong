@@ -143,6 +143,37 @@ export function pickDaily(domain: DailyDomain, salt: string, date = new Date()):
 }
 
 /**
+ * 같은 순열에서 오늘 칸부터 `count`개를 이어 받는다.
+ * 첫 칸은 `pickDaily`와 같고, 칩처럼 하루에 팩 키워드를 여러 개 쓸 때 쓴다.
+ */
+export function pickDailyMany(
+  domain: DailyDomain,
+  salt: string,
+  count: number,
+  date = new Date(),
+): DailyVariant[] {
+  const pack = PACKS[domain];
+  const variants = pack.variants;
+  const n = Math.max(1, count);
+  if (variants.length === 0) throw new Error(`Daily pack empty: ${domain}`);
+  if (variants.length === 1) return Array.from({ length: n }, () => variants[0]!);
+
+  const fullSalt = `${pack.version}:${salt}`;
+  const day = dayNumber(date);
+  if (variants.length === 2) {
+    const start = (day + hash(fullSalt)) % 2;
+    return Array.from({ length: n }, (_, i) => variants[(start + i) % 2]!);
+  }
+  const cycle = Math.floor(day / variants.length);
+  const order = cycleOrder(variants.length, fullSalt, cycle);
+  const position = day - cycle * variants.length;
+  return Array.from(
+    { length: n },
+    (_, i) => variants[order[(position + i) % variants.length]!]!,
+  );
+}
+
+/**
  * 하루에 서로 다른 두 변주가 필요할 때 — 같은 순열에서 이웃한 두 칸.
  * 한 화면에서 팩 문장을 두 군데 쓸 때 같은 변주가 겹치지 않음을 보장한다.
  */
@@ -151,22 +182,34 @@ export function pickDailyPair(
   salt: string,
   date = new Date(),
 ): [DailyVariant, DailyVariant] {
-  const pack = PACKS[domain];
-  const variants = pack.variants;
-  const fullSalt = `${pack.version}:${salt}`;
-  if (variants.length === 0) throw new Error(`Daily pack empty: ${domain}`);
-  if (variants.length === 1) return [variants[0]!, variants[0]!];
+  const [first, second] = pickDailyMany(domain, salt, 2, date);
+  return [first!, second!];
+}
 
+const SPARSE_CAUTION_WORDS = ['점검', '지연', '재조정', '숨고르기', '되감기', '정비'] as const;
+
+/**
+ * 약 닷새에 하루만 주의 칩. salt에 날짜·오늘 십신을 넣지 않는다.
+ * 단어는 6개 풀을 순열로 돈다.
+ */
+export function pickSparseCautionKeyword(salt: string, date = new Date()): string | null {
   const day = dayNumber(date);
-  if (variants.length === 2) {
-    const first = variants[(day + hash(fullSalt)) % 2]!;
-    return [first, variants[(day + hash(fullSalt) + 1) % 2]!];
-  }
-  const cycle = Math.floor(day / variants.length);
-  const order = cycleOrder(variants.length, fullSalt, cycle);
-  const position = day - cycle * variants.length;
-  return [
-    variants[order[position]!]!,
-    variants[order[(position + 1) % variants.length]!]!,
-  ];
+  if ((day + hash(`${salt}:slot`)) % 5 !== 0) return null;
+  return pickDailyFrom([...SPARSE_CAUTION_WORDS], `${salt}:word`, date) ?? SPARSE_CAUTION_WORDS[0];
+}
+
+/** 주의 칩이 있는 날은 팩 2 + 주의 1, 없는 날은 팩 3. */
+export function withSparseCaution(
+  packKeywords: string[],
+  salt: string,
+  date = new Date(),
+  size = 3,
+): string[] {
+  const pack = packKeywords.filter(
+    (word, index, all) => Boolean(word) && all.indexOf(word) === index,
+  );
+  const caution = pickSparseCautionKeyword(salt, date);
+  if (!caution) return pack.slice(0, size);
+  const rest = pack.filter((word) => word !== caution).slice(0, Math.max(0, size - 1));
+  return [...rest, caution];
 }

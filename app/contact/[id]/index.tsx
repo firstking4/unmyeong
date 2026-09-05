@@ -49,6 +49,29 @@ const DETAIL_LOCK = {
   ctaLabel: '내용 보기',
 } as const;
 
+function PeriodNote({
+  label,
+  body,
+  extra,
+  muted,
+  tint,
+}: {
+  label: string;
+  body: string;
+  extra?: string;
+  muted: string;
+  tint: string;
+}) {
+  if (!body && !extra) return null;
+  return (
+    <View>
+      <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>{label}</Text>
+      {body ? <Text style={[styles.body, { color: muted }]}>{body}</Text> : null}
+      {extra ? <Text style={[styles.hintText, { color: muted }]}>{extra}</Text> : null}
+    </View>
+  );
+}
+
 function ContactDetailBody({
   lockId,
   reading,
@@ -73,9 +96,27 @@ function ContactDetailBody({
       onPress={unlocked ? undefined : onUnlock}>
       {unlocked ? (
         <>
-          <Text style={[styles.body, { color: muted }]}>{reading.summary}</Text>
-          <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>오늘·이달·올해</Text>
-          <Text style={[styles.hintText, { color: muted }]}>{reading.relationship}</Text>
+          <View style={styles.periodStack}>
+            <PeriodNote
+              label="오늘 궁합"
+              body={reading.summary}
+              extra={reading.todayGunghap}
+              muted={muted}
+              tint={tint}
+            />
+            <PeriodNote
+              label="이달 궁합"
+              body={reading.monthGunghap}
+              muted={muted}
+              tint={tint}
+            />
+            <PeriodNote
+              label="올해 궁합"
+              body={reading.yearGunghap}
+              muted={muted}
+              tint={tint}
+            />
+          </View>
           {reading.tarot ? (
             <>
               <Text style={[styles.sectionLabel, { color: tint, fontFamily: display }]}>
@@ -153,9 +194,6 @@ function CompatibilityCardBody({
           <View style={styles.cardSummary}>
             <Text style={[styles.sectionLabel, { color: text }]}>오늘의 궁합</Text>
             <Text style={[styles.body, { color: muted }]}>{reading.summaryLine}</Text>
-            {reading.tarot ? (
-              <Text style={[styles.body, { color: muted }]}>{reading.tarot.summaryLine}</Text>
-            ) : null}
             {reading.keywords.length > 0 ? (
               <View style={styles.chips}>
                 {reading.keywords.map((kw, i) => (
@@ -409,6 +447,10 @@ const styles = StyleSheet.create({
   },
   cardSplit: {
     ...tabSection.cardSplit,
+  },
+  periodStack: {
+    ...tabSection.stack,
+    gap: space.sm,
   },
   shareBtn: {
     position: 'absolute',

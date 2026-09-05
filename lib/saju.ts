@@ -1,7 +1,8 @@
 import { getFiveElement, getZodiacAnimalRecord } from '@/lib/data/catalog';
 import type { SeedRecord } from '@/lib/data/types';
-import { pickDaily } from '@/lib/daily/pick';
+import { pickDaily, pickDailyFrom, pickDailyMany, withSparseCaution } from '@/lib/daily/pick';
 import { withEulReul, withEun, withIga } from '@/lib/korean/particle';
+import { joinSentences } from '@/lib/korean/sentence';
 import {
   computeFourPillars,
   computeLuckPillars,
@@ -356,32 +357,39 @@ function buildPeriod(input: {
 
   const relation = relateElements(input.selfElement, input.periodElement, input.when);
   const tones = input.tones ?? pickTones(input.seed);
-  const theme = pickDaily('saju', input.seed, themeDateForPeriod(input.when, input.date));
+  const themeDate = themeDateForPeriod(input.when, input.date);
+  const themes = pickDailyMany('saju', input.seed, 3, themeDate);
+  const theme = themes[0]!;
   const god = input.tenGod;
   const scoped = god && input.scope ? scopeCopy(input.scope, god) : null;
+  const godKw = pickDailyFrom(tenGodKeywords(god), `saju-godkw:${input.seed}:${god ?? ''}`, themeDate);
+  // 오늘 칩은 팩 이웃 변주. 닷새에 하루는 주의 칩을 넣어 3개를 맞춘다.
+  const keywordParts =
+    input.scope === 'day'
+      ? withSparseCaution(
+          themes.map((item) => item.keyword),
+          `saju-caution:${input.natalAnimal.id}:${input.natalElement.id}`,
+          themeDate,
+        )
+      : [theme.keyword, godKw];
+  const keywords = keywordParts.filter(
+    (kw, i, all): kw is string => Boolean(kw) && all.indexOf(kw) === i,
+  );
 
-  // 키워드: 십신·기간 역할 우선. 띠/오행 시드 키워드는 넣지 않아 체감 중복을 줄인다.
-  const keywords = [
-    god,
-    ...tenGodKeywords(god),
-    theme.keyword,
-    relation.kind === '극함' ? '마찰' : null,
-    relation.kind === '극받음' ? '시험' : null,
-  ].filter((kw, i, all): kw is string => Boolean(kw) && all.indexOf(kw) === i);
-
-  const summary = [input.summaryLead, scoped?.focus, cleanThemeLine(theme.focus)]
-    .filter(Boolean)
-    .join(' ');
+  // 도입(scopeLead)과 기간 카피·구조 해설이 같은 형용사를 세 번 쓰지 않게
+  // 요약은 도입+테마만, 십신 힌트는 기간 카피(없으면 구조 해설)만 둔다.
+  const summary = joinSentences([input.summaryLead, cleanThemeLine(theme.focus)]);
 
   const practiceLabel =
     input.when === '오늘' ? '오늘의 한 가지' : input.when === '이번 달' ? '이달의 배치' : '올해의 방향';
 
+  const tenGodHint = scoped?.focus ?? (god ? natalTenGodText(god) : '');
   const hints = [
     god
       ? {
           label:
             input.scope === 'day' ? '오늘의 십신' : input.scope === 'month' ? '이달의 십신' : '올해의 십신',
-          text: `${god} · ${natalTenGodText(god)}`,
+          text: `${god} · ${tenGodHint}`,
         }
       : null,
     { label: '기운 관계', text: `${relation.title} · ${relation.blurb}` },

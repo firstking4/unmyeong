@@ -11,6 +11,8 @@
 
 실행: `npm start` (Expo 57)
 
+**품질 개선 시나리오:** `.cursor/handoffs/quality-plan-20260905.md` (S1 팩 분리 → S2 지도 취합 → S3 관상 → S4 타로 → S5 시드 → S6 UI). 관련 작업 전에 읽고, 포인터 규칙은 `.cursor/rules/quality-plan.mdc`.
+
 ---
 
 # Expo HAS CHANGED

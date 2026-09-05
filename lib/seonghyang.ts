@@ -6,7 +6,7 @@ import {
   mbtiAxisHint,
 } from '@/lib/data/catalog';
 import type { SeedRecord } from '@/lib/data/types';
-import { pickDaily, pickDailyFrom } from '@/lib/daily/pick';
+import { pickDaily, pickDailyFrom, pickDailyMany, withSparseCaution } from '@/lib/daily/pick';
 import { hasFinalConsonant, withEulReul } from '@/lib/korean/particle';
 import { endSentence, joinSentences, splitSentences, stripSentenceEnd } from '@/lib/korean/sentence';
 import {
@@ -133,7 +133,8 @@ function buildTodaySeonghyang(
   const west = getWesternZodiac(profile.birthDate);
   if (!west) return null;
 
-  const theme = pickDaily('seonghyang', west.id, date);
+  const themes = pickDailyMany('seonghyang', west.id, 3, date);
+  const theme = themes[0]!;
   const mbti = buildTodayMbti(profile, assessments, date);
   const mbtiReady = mbti.status === 'ready' ? mbti.reading : null;
   const mbtiSeed = mbtiReady ? getMbti(profile.mbti) : null;
@@ -145,13 +146,13 @@ function buildTodaySeonghyang(
     ? pickDailyFrom(mbtiSeed.watchouts ?? [], `${mbtiSeed.id}:watch`, date)
     : null;
 
-  const keywords = unique([
-    theme.keyword,
-    ...(west.keywords ?? []),
-    west.element,
-    ...(mbtiReady?.keywords ?? []),
-    ...(mbtiSeed?.watchouts ?? []).slice(0, 1),
-  ]).slice(0, 6);
+  // 칩은 오늘 팩 이웃 변주. 별자리·MBTI 강점은 사람 풀이라 넣지 않는다.
+  const signKw = pickDailyFrom(west.keywords ?? [], `${west.id}:sign-kw`, date);
+  const keywords = withSparseCaution(
+    themes.map((item) => item.keyword),
+    `seonghyang-caution:${west.id}`,
+    date,
+  );
 
   const labels = [west.label];
   if (mbtiSeed) labels.push(mbtiSeed.label);
@@ -159,7 +160,6 @@ function buildTodaySeonghyang(
   // 별자리 전체 소개(west.summary)는 별자리 섹션의 고정 설명이다.
   // 오늘 카드에 통째로 실으면 매일 같은 문장이 앞에 서므로,
   // 키워드 하나만 골라 오늘 흐름과 엮어 날마다 다른 문장이 되게 한다.
-  const signKw = pickDailyFrom(west.keywords ?? [], `${west.id}:sign-kw`, date);
   const signClause = signKw
     ? pickDailyFrom(
         [
@@ -250,7 +250,7 @@ export function buildTodayMbti(
       dateLabel,
       headline: `${mbti.label}, ${theme.headline}`,
       meta: mbtiMeta(mbti) ? `MBTI · ${mbtiMeta(mbti)}` : `MBTI · ${mbti.label}`,
-      keywords: unique([theme.keyword, strength, ...(mbti.keywords ?? [])]).slice(0, 4),
+      keywords: unique([theme.keyword, strength]).slice(0, 3),
       // 타입 전체 소개(mbti.summary)는 MBTI 섹션의 고정 설명이다.
       // 오늘 풀이에는 싣지 않고 오늘 테마와 오늘의 강점만 엮는다.
       summary: joinSentences([
