@@ -1,5 +1,5 @@
 import { pickDailyTarotCard } from '@/lib/data/catalog';
-import { pickDailyPair } from '@/lib/daily/pick';
+import { pickDailyFrom, pickDailyPair } from '@/lib/daily/pick';
 import { hasFinalConsonant, withIga } from '@/lib/korean/particle';
 import { endSentence, joinSentences } from '@/lib/korean/sentence';
 import { tarotEnglishName } from '@/lib/tarotEnglishNames';
@@ -69,12 +69,19 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
   const seedHints = card.hints;
 
   const uprightCore = card.upright ?? card.summary;
+  const reversedCoreFallbacks = [
+    '기운이 안쪽으로 가라앉아 있습니다. 속도를 낮추고 빈칸을 먼저 보세요.',
+    '겉보다 안쪽의 빈자리가 먼저입니다. 오늘은 밀어붙이지 마세요.',
+    '흐름이 잠시 멈춘 자리입니다. 점검을 결론보다 앞에 두세요.',
+    '힘이 흩어져 보일 수 있습니다. 한 가지만 붙잡고 정리해 보세요.',
+    '서두른 판단이 되감기 쉬운 날입니다. 확인을 한 번 더 남기세요.',
+    '겉은 가벼워도 안쪽이 무거운 자리입니다. 숨을 고른 뒤 움직여 보세요.',
+  ];
   const reversedCore =
     card.reversed && !card.reversed.includes('에너지가 막히거나 지연')
       ? card.reversed
-      : `${title}의 기운이 안쪽으로 가라앉아 있습니다. 속도를 낮추고 오늘의 상징 ‘${theme.keyword}’${
-          hasFinalConsonant(theme.keyword) ? '을' : '를'
-        } 떠올려 보세요.`;
+      : (pickDailyFrom(reversedCoreFallbacks, `tarot-rev-core:${profileSalt}`, date) ??
+        reversedCoreFallbacks[0]!);
 
   const blurb = reversed
     ? joinSentences([reversedCore, theme.focus])
@@ -92,32 +99,38 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
     ? [
         {
           label: '관계',
-          text: seedHints?.love
-            ? joinSentences([`역방향 · ${seedHints.love}`, theme.relationship])
-            : joinSentences([
-                '역방향에서는 거리와 속도가 핵심입니다.',
-                theme.relationship,
-                '다만 오늘은 먼저 맞추기보다 서로의 페이스를 확인하는 편이 낫습니다.',
-              ]),
+          text: card.reversedHints?.love
+            ? joinSentences([card.reversedHints.love, theme.relationship])
+            : seedHints?.love
+              ? joinSentences([`역방향 · ${seedHints.love}`, theme.relationship])
+              : joinSentences([
+                  '역방향에서는 거리와 속도가 핵심입니다.',
+                  theme.relationship,
+                  '다만 오늘은 먼저 맞추기보다 서로의 페이스를 확인하는 편이 낫습니다.',
+                ]),
         },
         {
           label: '일·재능',
-          text: seedHints?.work
-            ? joinSentences([`역방향 · ${seedHints.work}`, theme2.caution])
-            : joinSentences([
-                '서두른 결정은 되감기 쉽습니다.',
-                theme2.caution,
-                '한 가지 업무만 우선순위로 남겨 보세요.',
-              ]),
+          text: card.reversedHints?.work
+            ? joinSentences([card.reversedHints.work, theme2.caution])
+            : seedHints?.work
+              ? joinSentences([`역방향 · ${seedHints.work}`, theme2.caution])
+              : joinSentences([
+                  '서두른 결정은 되감기 쉽습니다.',
+                  theme2.caution,
+                  '한 가지 업무만 우선순위로 남겨 보세요.',
+                ]),
         },
         {
           label: '성장',
-          text: seedHints?.growth
-            ? joinSentences([seedHints.growth, theme2.focus])
-            : joinSentences([
-                `${withIga(title)} 가리키는 교훈을 안으로 가져가 보세요.`,
-                theme2.focus,
-              ]),
+          text: card.reversedHints?.growth
+            ? joinSentences([card.reversedHints.growth, theme2.focus])
+            : seedHints?.growth
+              ? joinSentences([seedHints.growth, theme2.focus])
+              : joinSentences([
+                  `${withIga(title)} 가리키는 교훈을 안으로 가져가 보세요.`,
+                  theme2.focus,
+                ]),
         },
         { label: '오늘의 한 가지', text: endSentence(theme.action) },
         { label: '주의', text: endSentence(theme.caution) },

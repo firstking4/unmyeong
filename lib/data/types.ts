@@ -12,6 +12,8 @@ export type SeedRecord = {
   keywords: string[];
   summary: string;
   hints?: SeedHints;
+  /** 스프레드·오늘 카드 역방향용. `reversed` 한 문장은 유지. */
+  reversedHints?: SeedHints;
   dailyHints?: string[];
   mood?: string;
   nickname?: string;

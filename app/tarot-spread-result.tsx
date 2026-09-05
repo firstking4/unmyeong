@@ -129,6 +129,8 @@ export default function TarotSpreadResultScreen() {
           })}
         </View>
 
+        <Text style={[styles.synthesis, { color: c.text }]}>{reading.synthesis}</Text>
+
         <DetailCard
           reading={selected}
           tint={c.tint}
@@ -266,6 +268,10 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     textAlign: 'center',
     letterSpacing: 0.2,
+  },
+  synthesis: {
+    ...tabSection.detailBody,
+    marginTop: space.sm,
   },
   detail: {
     ...tabSection.card,

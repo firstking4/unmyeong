@@ -87,13 +87,15 @@ export function buildGunghapTarotReading(
 
   // 팩 문장은 마침표 없이 끝나므로 joinSentences로 잇는다 (fortune-copy §3)
   const relationship = reversed
-    ? seedHints?.love
-      ? joinSentences([`역방향 · ${seedHints.love}`, theme.relationship])
-      : joinSentences([
-          '역방향에서는 거리와 속도가 핵심입니다.',
-          theme.relationship,
-          '오늘은 먼저 맞추기보다 서로의 페이스를 확인하는 편이 낫습니다.',
-        ])
+    ? card.reversedHints?.love
+      ? joinSentences([card.reversedHints.love, theme.relationship])
+      : seedHints?.love
+        ? joinSentences([`역방향 · ${seedHints.love}`, theme.relationship])
+        : joinSentences([
+            '역방향에서는 거리와 속도가 핵심입니다.',
+            theme.relationship,
+            '오늘은 먼저 맞추기보다 서로의 페이스를 확인하는 편이 낫습니다.',
+          ])
     : seedHints?.love
       ? joinSentences([seedHints.love, theme.relationship])
       : joinSentences([theme.relationship, `${title}의 기운을 빌려 솔직한 한 마디를 건네 보세요.`]);

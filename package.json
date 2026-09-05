@@ -74,6 +74,7 @@
     "verify:tarot-daily": "node scripts/verify-tarot-daily.mjs",
     "verify:daily-variety": "node scripts/verify-daily-variety.mjs",
     "verify:fortune-variety": "ts-node --project scripts/check/tsconfig.json -r tsconfig-paths/register scripts/check/fortune-variety.ts",
+    "check:tarot-spread": "ts-node --project scripts/check/tsconfig.json -r tsconfig-paths/register scripts/check/tarot-spread-render.ts",
     "check:gunghap-distribution": "ts-node --project scripts/check/tsconfig.json -r tsconfig-paths/register scripts/check/gunghap-distribution.ts",
     "check:gunghap-weight": "ts-node --project scripts/check/tsconfig.json -r tsconfig-paths/register scripts/check/gunghap-weight-sim.ts",
     "check:gunghap-stigma": "ts-node --project scripts/check/tsconfig.json -r tsconfig-paths/register scripts/check/gunghap-fixed-negative.ts",

@@ -11,7 +11,7 @@ import { paperShadow, tabSection } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { logTarotSpreadOpen } from '@/lib/firebase/analytics';
-import { TAROT_SPREADS, type TarotSpreadKind } from '@/lib/tarotSpread';
+import { TAROT_SPREADS, spreadPositionLabels, type TarotSpreadKind } from '@/lib/tarotSpread';
 import { clearTarotSpreadTickets, issueTarotSpreadTicket } from '@/lib/tarotSpreadUnlock';
 
 export default function TarotSpreadScreen() {
@@ -80,7 +80,7 @@ export default function TarotSpreadScreen() {
               </View>
               <Text style={[styles.typeDescription, { color: c.muted }]}>{spread.description}</Text>
               <Text style={[styles.typePositions, { color: c.muted }]}>
-                {spread.positions.join(' · ')}
+                {spreadPositionLabels(spread).join(' · ')}
               </Text>
               <Text style={[styles.lockHint, { color: c.tint }]}>1번 열람</Text>
             </Pressable>
