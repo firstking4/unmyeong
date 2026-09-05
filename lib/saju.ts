@@ -1,6 +1,6 @@
 import { getFiveElement, getZodiacAnimalRecord } from '@/lib/data/catalog';
 import type { SeedRecord } from '@/lib/data/types';
-import { pickDaily, pickDailyFrom, pickDailyMany, withSparseCaution } from '@/lib/daily/pick';
+import { pickDailyFrom, pickDailyMany, withSparseCaution } from '@/lib/daily/pick';
 import { withEulReul, withEun, withIga } from '@/lib/korean/particle';
 import { joinSentences } from '@/lib/korean/sentence';
 import {
@@ -218,6 +218,8 @@ export type PeriodReading = {
   hints: { label: string; text: string }[];
   /** 오늘 카드 — 절기·대운 배경, 시주·월·세운 맞음/어긋남 (점수 없음) */
   contextLines?: { text: string }[];
+  /** 이 블록이 쓴 팩 변주 — 같은 화면의 다른 블록이 같은 문장을 피하는 데 쓴다 */
+  themeId?: string;
 };
 
 export type SajuReading = {
@@ -260,13 +262,6 @@ function formatWeekLabel(start: Date): string {
     ? `${end.getDate()}일`
     : `${sameYear ? '' : `${end.getFullYear()}년 `}${end.getMonth() + 1}월 ${end.getDate()}일`;
   return `${prefix}${startLabel} – ${endLabel}`;
-}
-
-/** 일일 팩 문장에서 카드마다 반복되는 상투 도입부를 걷어내고 마침표를 맞춘다. */
-function cleanThemeLine(text: string): string {
-  const trimmed = text.replace(/^들어오는 오행과 맞물려\s*/, '').trim();
-  if (!trimmed) return '';
-  return /[.!?…]$/.test(trimmed) ? trimmed : `${trimmed}.`;
 }
 
 /**
@@ -340,7 +335,12 @@ function buildPeriod(input: {
   periodElement: Element;
   natalAnimal: SeedRecord;
   natalElement: SeedRecord;
+  /** 날짜가 든 시드 — 힌트 회전용. 팩 순열에는 쓰지 않는다 */
   seed: string;
+  /** 날짜 없는 salt — 팩·십신 키워드 순열용 (`fortune-copy.mdc` §1) */
+  themeSalt: string;
+  /** 같은 화면의 다른 블록이 이미 쓴 팩 변주 id */
+  avoidThemeIds?: string[];
   date: Date;
   pillarKorean?: string;
   tenGod?: string;
@@ -358,11 +358,15 @@ function buildPeriod(input: {
   const relation = relateElements(input.selfElement, input.periodElement, input.when);
   const tones = input.tones ?? pickTones(input.seed);
   const themeDate = themeDateForPeriod(input.when, input.date);
-  const themes = pickDailyMany('saju', input.seed, 3, themeDate);
+  const themes = pickPeriodThemes(input.themeSalt, themeDate, input.avoidThemeIds);
   const theme = themes[0]!;
   const god = input.tenGod;
   const scoped = god && input.scope ? scopeCopy(input.scope, god) : null;
-  const godKw = pickDailyFrom(tenGodKeywords(god), `saju-godkw:${input.seed}:${god ?? ''}`, themeDate);
+  const godKw = pickDailyFrom(
+    tenGodKeywords(god),
+    `saju-godkw:${input.themeSalt}:${god ?? ''}`,
+    themeDate,
+  );
   // 오늘 칩은 팩 이웃 변주. 닷새에 하루는 주의 칩을 넣어 3개를 맞춘다.
   const keywordParts =
     input.scope === 'day'
@@ -378,7 +382,7 @@ function buildPeriod(input: {
 
   // 도입(scopeLead)과 기간 카피·구조 해설이 같은 형용사를 세 번 쓰지 않게
   // 요약은 도입+테마만, 십신 힌트는 기간 카피(없으면 구조 해설)만 둔다.
-  const summary = joinSentences([input.summaryLead, cleanThemeLine(theme.focus)]);
+  const summary = joinSentences([input.summaryLead, theme.focus]);
 
   const practiceLabel =
     input.when === '오늘' ? '오늘의 한 가지' : input.when === '이번 달' ? '이달의 배치' : '올해의 방향';
@@ -420,7 +424,19 @@ function buildPeriod(input: {
     tones,
     keywords: keywords.slice(0, 5),
     hints,
+    themeId: theme.id,
   };
+}
+
+/**
+ * 기간 블록의 팩 변주 — 오늘 칸부터 이웃 3개.
+ * 오늘·주·월·년이 한 화면에 있으므로 다른 블록이 쓴 변주는 건너뛴다.
+ */
+function pickPeriodThemes(themeSalt: string, themeDate: Date, avoidIds?: string[]) {
+  const avoid = new Set(avoidIds ?? []);
+  return pickDailyMany('saju', themeSalt, 3 + avoid.size, themeDate)
+    .filter((item) => !avoid.has(item.id))
+    .slice(0, 3);
 }
 
 /**
@@ -435,6 +451,7 @@ function buildWeekPeriod(input: {
   birthTime?: string;
   date: Date;
   usedHints?: Set<string>;
+  avoidThemeIds?: string[];
 }): PeriodReading | null {
   const weekStart = startOfWeek(input.date);
   const days = Array.from({ length: 7 }, (_, index) => {
@@ -454,25 +471,19 @@ function buildWeekPeriod(input: {
       period,
       relation: relateElements(input.selfElement, period.element as Element, '이번 주'),
       tones: tonesForTenGods(period.stemTenGod, period.branchTenGod),
-      theme: pickDaily('saju', `${ymd(day)}:${input.birthDate}:day`, day),
     };
   }).filter(Boolean) as {
     day: Date;
     period: NonNullable<ReturnType<typeof getManseryeokPeriod>>;
     relation: ElementRelation;
     tones: PillarTone[];
-    theme: ReturnType<typeof pickDaily>;
   }[];
   const dominant = mostFrequent(dayFlows, (flow) => flow.relation.kind);
   if (!dominant) return null;
   const dominantGod =
     mostFrequent(dayFlows, (flow) => flow.period.stemTenGod)?.period.stemTenGod ??
     dominant.period.stemTenGod;
-  const weeklyTheme = pickDaily(
-    'saju',
-    `${ymd(weekStart)}:${input.birthDate}:week`,
-    weekStart,
-  );
+  const weeklyTheme = pickPeriodThemes(`${input.birthDate}:week`, weekStart, input.avoidThemeIds)[0]!;
   const scoped = scopeCopy('week', dominantGod);
   const tones = [...TONES]
     .sort(
@@ -498,13 +509,7 @@ function buildWeekPeriod(input: {
     headline: `${dominantGod} 주간 · ${dominant.period.pillar.korean}`,
     flowLabel: `7일 일진 집계 · ${dominantGod}`,
     relation: dominant.relation,
-    summary: [
-      scopeLead('week', dominantGod),
-      scoped.focus,
-      cleanThemeLine(weeklyTheme.focus),
-    ]
-      .filter(Boolean)
-      .join(' '),
+    summary: joinSentences([scopeLead('week', dominantGod), scoped.focus, weeklyTheme.focus]),
     tones,
     keywords: keywords.slice(0, 5),
     hints: [
@@ -521,6 +526,7 @@ function buildWeekPeriod(input: {
       { label: '이번 주의 한 가지', text: scoped.action },
       { label: '주의', text: scoped.caution },
     ],
+    themeId: weeklyTheme.id,
   };
 }
 
@@ -579,6 +585,7 @@ function buildSajuReadingNow(
     periodAnimal: todayPeriod.animal as ZodiacAnimal,
     periodElement: todayPeriod.element as Element,
     seed: `${ymd(date)}:${birthDate}:day`,
+    themeSalt: `${birthDate}:day`,
     date,
     pillarKorean: todayPeriod.pillar.korean,
     tenGod: todayPeriod.stemTenGod,
@@ -586,6 +593,13 @@ function buildSajuReadingNow(
     scope: 'day',
     summaryLead: scopeLead('day', todayPeriod.stemTenGod),
   });
+  // 오늘 → 주 → 월 → 년 순으로 앞 블록이 쓴 팩 변주를 피한다 (한 화면에 같은 문장 방지)
+  const usedThemeIds: string[] = [];
+  const noteTheme = (block: PeriodReading | null) => {
+    if (block?.themeId) usedThemeIds.push(block.themeId);
+    return block;
+  };
+  noteTheme(today);
   const luck =
     gender === 'male' || gender === 'female'
       ? computeLuckPillars({ birthDate, birthTime, gender })
@@ -603,28 +617,35 @@ function buildSajuReadingNow(
       at: date,
     });
   }
-  const week = buildWeekPeriod({
-    ...base,
-    birthDate,
-    birthTime,
-    date,
-  });
-  const monthReading = buildPeriod({
-    ...base,
-    eyebrow: '이달의 사주',
-    when: '이번 달',
-    dateLabel: `${year}년 ${month}월`,
-    flowKind: `절입 월주 · ${monthPeriod.pillar.korean} · ${monthPeriod.stemTenGod}`,
-    periodAnimal: monthPeriod.animal as ZodiacAnimal,
-    periodElement: monthPeriod.element as Element,
-    seed: `${year}-${pad2(month)}:${birthDate}:month`,
-    date,
-    pillarKorean: monthPeriod.pillar.korean,
-    tenGod: monthPeriod.stemTenGod,
-    tones: tonesForTenGods(monthPeriod.stemTenGod, monthPeriod.branchTenGod),
-    scope: 'month',
-    summaryLead: scopeLead('month', monthPeriod.stemTenGod),
-  });
+  const week = noteTheme(
+    buildWeekPeriod({
+      ...base,
+      birthDate,
+      birthTime,
+      date,
+      avoidThemeIds: [...usedThemeIds],
+    }),
+  );
+  const monthReading = noteTheme(
+    buildPeriod({
+      ...base,
+      eyebrow: '이달의 사주',
+      when: '이번 달',
+      dateLabel: `${year}년 ${month}월`,
+      flowKind: `절입 월주 · ${monthPeriod.pillar.korean} · ${monthPeriod.stemTenGod}`,
+      periodAnimal: monthPeriod.animal as ZodiacAnimal,
+      periodElement: monthPeriod.element as Element,
+      seed: `${year}-${pad2(month)}:${birthDate}:month`,
+      themeSalt: `${birthDate}:month`,
+      avoidThemeIds: [...usedThemeIds],
+      date,
+      pillarKorean: monthPeriod.pillar.korean,
+      tenGod: monthPeriod.stemTenGod,
+      tones: tonesForTenGods(monthPeriod.stemTenGod, monthPeriod.branchTenGod),
+      scope: 'month',
+      summaryLead: scopeLead('month', monthPeriod.stemTenGod),
+    }),
+  );
   const yearReading = buildPeriod({
     ...base,
     eyebrow: '올해의 사주',
@@ -634,6 +655,8 @@ function buildSajuReadingNow(
     periodAnimal: yearPeriod.animal as ZodiacAnimal,
     periodElement: yearPeriod.element as Element,
     seed: `${year}:${birthDate}:year`,
+    themeSalt: `${birthDate}:year`,
+    avoidThemeIds: [...usedThemeIds],
     date,
     pillarKorean: yearPeriod.pillar.korean,
     tenGod: yearPeriod.stemTenGod,

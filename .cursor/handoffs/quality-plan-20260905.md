@@ -6,7 +6,7 @@
 
 사람과 AI 모두 이 파일만 읽고 맥락을 잡을 수 있어야 하므로, 용어 → 코드 위치 매핑과 측정 근거를 함께 둔다.
 
-**진행 (2026-09-05):** S1~S6 미착수. 결정 A~F 미확정. 시나리오를 끝내면 이 절과 규칙 포인터를 같이 고친다.
+**진행 (2026-09-05):** S1-b 진행 중 — 키워드 표 확정(E·F 승인), **saju 팩 v2 완료**, seonghyang·tarot·physiognomy·gunghap 남음. 결정 A~D 미확정. 시나리오를 끝내면 이 절과 규칙 포인터를 같이 고친다.
 
 ---
 
@@ -45,8 +45,8 @@
 
 ### 현재 작업 트리 상태
 
-이 문서를 쓴 세션에서 아래를 바꿨고 **아직 커밋 전**이다 (사용자 요청 시 커밋).
-오늘 카드 칩을 팩 이웃 변주 3개(+닷새에 하루 주의 칩)로 통일, 고정 칩 제거, 「오늘의 키워드」 카드를 점수 카드 안으로 이동, 기본 테마 라이트, 검사 스크립트 `check:today-keywords-fixed` · `check:today-content` 추가.
+브랜치 `feat/quality-s1-packs`에서 S1-b 진행 중. `main`에는 오늘 카드 칩 통일·허브 이동·라이트 테마·검사 스크립트가 커밋돼 있다(`a6548e4`).
+S1-b 진행: **saju 팩 v2 완료** → seonghyang → tarot → physiognomy → gunghap 순 (§3 「작업 순서 · 진행」).
 
 ---
 
@@ -66,7 +66,7 @@
 | `caution` | 24 |
 | `focus` · `relationship` | 0 — 그러나 본문은 같고 **앞에 접두어만** 다르다 |
 
-접두어 예 (변주 `정리`): home 「성향·사주·타로가 겹친 오늘에는 …」 · seonghyang 「별자리 기운 위에서는 …」 · saju 「들어오는 오행과 맞물려 …」 (코드 `cleanThemeLine`이 다시 떼어냄) · gunghap 「오늘의 궁합에서는 …」 · physiognomy 「고른 특징의 결 위에서는 …」 · tarot 접두어 없음. 뒤 문장 「흩어진 정보와 감정을 정리하면 선택이 선명해집니다」는 전부 동일.
+접두어 예 (변주 `정리`): home 「성향·사주·타로가 겹친 오늘에는 …」 · seonghyang 「별자리 기운 위에서는 …」 · saju 「들어오는 오행과 맞물려 …」 (당시 코드 `cleanThemeLine`이 다시 떼어냄 — saju v2에서 접두어·함수 모두 삭제) · gunghap 「오늘의 궁합에서는 …」 · physiognomy 「고른 특징의 결 위에서는 …」 · tarot 접두어 없음. 뒤 문장 「흩어진 정보와 감정을 정리하면 선택이 선명해집니다」는 전부 동일.
 
 결과 (현재 프로필, 60일 시뮬레이션): **21/60일(35%)은 같은 날 2개 이상 화면에 같은 문장이 그대로 뜬다.** 총 38문장. 조합: 타로+관상 16 · 지도+관상 10 · 지도+타로 5 · 성향+타로 3 · 사주+타로 2 · 성향+관상 1 · 지도+성향+관상 1.
 예: 9/18 지도·관상 둘 다 「평소 안 고르던 메뉴나 경로를 시도해 보세요」.
@@ -166,20 +166,22 @@ const interpretation =
 
 `home`은 「종합」 팩으로 두고, 나머지 5개 팩을 **도메인 어휘로** 새로 쓴다. 필드 구조·개수(24)는 유지한다.
 
-**도메인별 어휘 방향 (예시 — 확정은 사용자 승인 후)**
+**도메인별 키워드 24개 — 확정 (2026-09-05 사용자 승인, 결정 E)**
 
-| 팩 | 키워드 어휘 | 문장 재료 |
+| 팩 | 키워드 24 | 문장 재료 |
 |---|---|---|
-| `seonghyang` | 기질·리듬: 호기심 · 몰입 · 거리감 · 즉흥 · 꼼꼼함 · 말수 · 온도 · 속도 · 관찰 · 직진 … | 「평소의 나」와 오늘의 어긋남/맞물림 — MBTI·별자리 언급 없이 기질 동사 |
-| `saju` | 오행·기운의 일상어: 다듬기 · 뿌리 · 물꼬 · 불씨 · 쇠 다지기 · 결실 · 씨앗 · 그늘 · 흐름 타기 · 자리잡기 … | 들어오는 기운 vs 내 기운, 「채우기/비우기」 구조. 전문 코드(십신 명칭) 금지 |
-| `tarot` | 카드 상징: 여정 · 직감 · 저울 · 전환 · 등불 · 문턱 · 수확 · 침묵 · 손잡기 · 뒤집기 … | 이미지·장면 문장. `reverseKeyword` 6종 유지(점검·지연·재조정·숨고르기·되감기·정비) |
-| `physiognomy` | 인상·표정·태도: 눈맞춤 · 첫인상 · 표정 · 자세 · 미소 · 시선 · 목소리 · 여백 · 단정함 · 품 … | 「오늘 남에게 어떻게 보이는가」 — 부위 이름 없이 인상 행동 |
-| `gunghap` | 관계 행위: 안부 · 경청 · 양보 · 약속 · 맞장구 · 거리 · 사과 · 초대 · 기다림 · 공유 … | 두 사람의 오늘 행동. 사람 판정(낙인) 금지 — `fortune-copy.mdc` §4 |
+| `saju` ✅ v2 | 오행 일상어 — 목 5 · 화 4 · 토 5 · 금 5 · 수 5: 뿌리 · 새순 · 틔우기 · 씨앗 · 자리잡기 / 불씨 · 온기 · 밝히기 · 데우기 / 밑거름 · 다지기 · 갈무리 · 채우기 · 비우기 / 벼리기 · 거두기 · 매듭 · 결실 · 식히기 / 물꼬 · 물길 · 스미기 · 머무름 · 고요 | 들어오는 기운 vs 내 기운, 채우기/비우기 구조. 십신 명칭 금지. **`focus`·`action`·`caution`에 「오늘」을 쓰지 않는다** — 같은 팩이 주·월·년 블록 요약에도 붙는다 |
+| `seonghyang` | 기질·리듬: 몰입 · 거리감 · 즉흥 · 꼼꼼함 · 말수 · 온도 · 속도 · 관찰 · 직진 · 리듬 · 취향 · 눈치 · 유머 · 솔직함 · 느긋함 · 기민함 · 진지함 · 장난기 · 뚝심 · 융통성 · 감수성 · 실행력 · 상상력 · 소신 | 「평소의 나」와 오늘의 어긋남/맞물림 — MBTI·별자리 언급 없이 기질 동사 |
+| `tarot` | 카드 상징: 여정 · 직감 · 저울 · 전환 · 등불 · 문턱 · 수확 · 침묵 · 손잡기 · 뒤집기 · 별빛 · 바퀴 · 열쇠 · 새벽 · 우물 · 나침반 · 실타래 · 거울 · 다리 · 지팡이 · 항해 · 날개 · 정원 · 왕관 | 이미지·장면 문장. `reverseKeyword` 6종 유지(점검·지연·재조정·숨고르기·되감기·정비). **템플릿 손질 필요** — `lib/tarot.ts`의 「{키워드} 쪽에서 점검해 보세요」·「{키워드}를 다시 맞출 날」은 추상어용이라 상징어(저울·우물)에 어색하다. 타로 팩 차례에 템플릿을 장면형으로 바꾼다 |
+| `physiognomy` | 인상·표정·태도: 눈맞춤 · 첫인상 · 표정 · 자세 · 미소 · 시선 · 목소리 · 여백 · 단정함 · 너그러움 · 끄덕임 · 말투 · 걸음 · 손짓 · 온화함 · 눈빛 · 옷차림 · 인사 · 웃음 · 침착함 · 다정함 · 기품 · 얼굴빛 · 어깨 펴기 | 「오늘 남에게 어떻게 보이는가」 — 부위 이름 없이 인상 행동. **헤드라인 중복 버그** — `app/gwansang.tsx`가 `theme.keyword`와 `theme.headline`(키워드 포함)을 함께 그려 「정리 · 정리 · 정리한 만큼…」이 된다. 관상 팩 차례에 화면 쪽을 함께 고친다 |
+| `gunghap` | 관계 행위 (칩만 쓰임): 안부 · 경청 · 양보 · 약속 · 맞장구 · 간격 · 사과 · 초대 · 기다림 · 공유 · 칭찬 · 부탁 · 응원 · 배려 · 속마음 · 농담 · 답장 · 마중 · 축하 · 나눔 · 인정 · 존중 · 챙기기 · 물어보기 | 두 사람의 오늘 행동. 사람 판정(낙인) 금지 — `fortune-copy.mdc` §4 |
+
+`home` 키워드(집중·정리·대화·회복·신뢰 …)·주의 단어(점검·지연·마찰 …)와 겹치는 낱말은 없다. 네 팩 사이 교집합도 0.
 
 **작성 규칙 (한 문장도 예외 없음)**
 
 1. `focus` `relationship` `action` `caution`은 **마침표 없이** 끝낸다 (`joinSentences`가 붙임). `headline`은 `키워드 · 문장` 형식, `closing`은 마침표 있음.
-2. 접두어(「별자리 기운 위에서는」·「오늘의 궁합에서는」) **금지** — 라벨과 리드가 이미 그 역할 (`fortune-copy.mdc` §8). saju의 `cleanThemeLine` 접두어 제거 코드는 팩 정리 후 삭제.
+2. 접두어(「별자리 기운 위에서는」·「오늘의 궁합에서는」) **금지** — 라벨과 리드가 이미 그 역할 (`fortune-copy.mdc` §8). saju의 `cleanThemeLine`은 삭제했다(`joinSentences`가 마침표를 맞춘다).
 3. 조사 병기(`을(를)`) 금지, `·`로 이은 낱말 묶음을 문장 안에 넣지 않기, 「쪽」 남발 금지 (`fortune-copy.mdc` §2·§9).
 4. 부정·낙인 표현 금지 — 조심할 점은 「오늘 할 행동」으로만.
 5. `keyword`는 **팩 안에서 24개 모두 고유**, 그리고 **성향·사주·타로·관상 네 팩 사이에서도 고유** (허브가 단어 기준으로 중복 제거하므로 겹치면 한 탭 칩이 사라진다). `home`·`gunghap`은 허브에 안 들어가 겹쳐도 되지만 피하는 편이 낫다.
@@ -193,7 +195,7 @@ const interpretation =
 |---|---|---|---|---|---|---|
 | home | 지도 헤드라인·luckTags | 미사용 | 지도 본문 | 지도 주의 | 지도 행동 | 지도 주의 |
 | seonghyang | 칩·요약 「‘키워드’ 흐름」 | 카드 헤드라인 | 요약 | 힌트 관계 | 힌트 오늘의 한 가지 | 힌트 주의 |
-| saju | 칩 | 카드 헤드라인 「금의 기운, {headline}」 | 요약 (접두어 제거) | — | 기간 카피 없을 때 폴백 | 기간 카피 없을 때 폴백 |
+| saju | 칩 (오늘 3 · 주/월/년 1) | 만세력 없을 때 폴백 「금의 기운, {headline}」 | 오늘·주·월·년 요약 둘째 문장 | — | 기간 카피 없을 때 폴백 | 기간 카피 없을 때 폴백 |
 | tarot | 칩·헤드라인 | 정방향 헤드라인 | blurb | 힌트 관계 | 힌트 오늘의 한 가지 | 힌트 주의 (+theme2 caution) |
 | physiognomy | 칩·헤드라인 | 헤드라인 | 요약 | 힌트 관계 | 힌트 일·재능 | 힌트 오늘의 주의 |
 | gunghap | 칩 | 미사용 | 미사용 | 미사용 | 미사용 | 미사용 |
@@ -201,18 +203,25 @@ const interpretation =
 - **`gunghap` 팩은 현재 `keyword`만 쓴다** (`lib/gunghap.ts` 1156행). 문장 필드는 죽은 데이터라 §1-1 측정에서 지인 충돌이 0이었다. S1-b에서 지인은 키워드 24개만 새로 쓰고, 문장은 지인 풀이에 팩을 쓸 계획이 생길 때 채운다.
 - 정확한 사용 위치는 각 빌더에서 `theme.` 검색으로 재확인 (`rg "theme2?\.(headline|focus|relationship|action|caution)" lib`).
 
-**작업 순서**
+**작업 순서 · 진행**
 
-1. 사용자와 도메인별 키워드 24개 표 확정 (위 표 확장).
-2. 팩 1개(`saju`)를 먼저 써서 화면·검사 통과 → 나머지 4개.
-3. `cleanThemeLine` 접두어 제거 삭제. 팩은 런타임 스키마 검사가 없다(`as DailyPack` 캐스트만) — 새 `check:today-crosstab` 스크립트 앞부분에 「24개 · 필드 누락 0 · 문장 끝 마침표 0 · `을(를)` 0 · keyword 팩 내 고유 · 네 탭 간 고유」 검사를 함께 넣는다.
-4. §9 검사 전부 통과 후 커밋.
+1. ✅ 키워드 24개 표 확정 (위 표).
+2. ✅ `saju` 팩 v2 (2026-09-05). 이어서 `seonghyang` → `tarot`(템플릿 손질 포함) → `physiognomy`(헤드라인 중복 수정 포함) → `gunghap`(키워드만). 각 팩마다 화면 렌더 확인 → §9 검사 → 사용자 검수 → 커밋.
+3. ✅ `cleanThemeLine` 삭제. ✅ `check:today-crosstab` 등록 — 스키마(24개 · 필드 누락 0 · 문장 끝 마침표 0 · 조사 병기 0 · keyword 팩 안 고유 · 네 탭 간 고유) + 팩 간 동일 문장 + 같은 날 교차 중복. **남은 팩 4개가 끝날 때까지는 실패가 정상**이다.
+4. 팩 5개 끝난 뒤 `data/daily/meta.json` version 올리고 §9 전부 통과 → S1 완료.
+
+**사주 단계에서 함께 고친 코드 (`lib/saju.ts`)**
+
+- 팩 순열 salt에서 날짜를 뺐다. 이전에는 `seed: \`${ymd(date)}:${birthDate}:day\``가 `pickDailyMany`에 그대로 들어가 순열이 **매일 다시 섞여** 사실상 무작위였다 (`fortune-copy.mdc` §1 위반). 이제 `themeSalt: \`${birthDate}:day|week|month|year\``. 날짜 든 `seed`는 힌트 회전(`hintLines`)에만 남는다.
+- 오늘 → 주 → 월 → 년 블록이 앞 블록의 팩 변주(`PeriodReading.themeId`)를 피한다 (`pickPeriodThemes`). 한 화면에 같은 focus 문장이 두 번 보이던 날 9/60 → 0/60.
+- 다른 팩을 쓸 때 **같은 점검**을 한다: 그 도메인 빌더의 salt에 날짜·오늘 카드·오늘 십신이 들어가는지, 같은 화면의 두 블록이 한 팩을 쓰는지.
 
 ### 완료 기준
 
-- 팩 간 `action`·`caution`·`headline` 동일 문장 **0/24**, 네 탭 키워드 교집합 **0**.
-- 같은 날 교차 동일 문장 **0/60일** (§9 스크립트).
+- `npm run check:today-crosstab` 통과 — 팩 간 `action`·`caution`·`headline` 동일 문장 **0**, 네 탭 키워드 교집합 **0**, 같은 날 교차 동일 문장 **0/60일**.
 - `check:today-fixed` · `check:today-repetition` · `check:today-content` · `check:today-keywords-fixed` · `verify:fortune-variety` 통과.
+
+진행 기록: 사주 팩 v2 뒤 교차 중복 21/60 → 20/60일, 사주가 낀 조합 0. 허브 고유 칩 30 → 54.
 
 ### 하지 말 것
 
@@ -372,63 +381,15 @@ npm run check:today-repetition       # 탭별 화면 내 반복·문장 길이
 npm run check:today-content          # 콘텐츠 단어 한 화면 3회 이상
 npm run verify:fortune-variety       # 실제 빌더 14일 반복
 npm run verify:daily-variety         # pickDaily 순열·팩 스키마
+npm run check:today-crosstab         # S1 완료 기준 — 팩 스키마·팩 간 문장·같은 날 교차 중복 (아래)
 npm run check:gunghap-stigma         # 지인 고정 부정 표현 0
 npm run verify:tarot-daily && npm run verify:gunghap-tarot
 ```
 
-**교차 중복(같은 날 여러 화면 같은 문장)** — §1-1 측정에 쓴 스크립트. `scripts/check/today-crosstab-repeat.ts`로 승격하고 `package.json`에 `check:today-crosstab`로 등록할 것 (S1 첫 단계).
-
-```ts
-import { buildIntegratedFortune } from '@/lib/fortune';
-import { buildTodayCompatibility } from '@/lib/gunghap';
-import { buildTodayPhysiognomy } from '@/lib/physiognomy';
-import { buildSajuReading } from '@/lib/saju';
-import { buildSeonghyangReading } from '@/lib/seonghyang';
-import { buildTarotReading } from '@/lib/tarot';
-import type { ContactProfile, Profile } from '@/lib/types';
-
-const DAYS = 60;
-const days = Array.from({ length: DAYS }, (_, i) => new Date(2026, 8, 4 + i));
-const profile = {
-  name: '박종윤', birthDate: '1982-12-11', birthTime: '09:50', gender: 'male', mbti: 'INTJ', bloodType: 'A',
-  physiognomy: { eyes: 'eyes_large_double_upturned', nose: 'nose_high_wide', mouth: 'mouth_large_full', chin: 'chin_round' },
-} as unknown as Profile;
-const contact = { id: 'x', name: '수민', birthDate: '1990-05-02' } as ContactProfile;
-
-const sentences = (text: string) =>
-  text.split(/(?<=[.?!다요음함됨])\s+/).map((s) => s.trim()).filter((s) => s.length >= 10);
-
-let daysWithCollision = 0;
-const pairs: Record<string, number> = {};
-for (const d of days) {
-  const texts: Record<string, string[]> = {};
-  const f = buildIntegratedFortune(profile, d);
-  texts['지도'] = sentences([f.summary, f.guidance, f.caution ?? ''].join(' '));
-  const s = buildSeonghyangReading(profile, {}, d).today;
-  texts['성향'] = sentences([s?.summary ?? '', ...(s?.hints ?? []).map((h) => h.text)].join(' '));
-  const sj = buildSajuReading(profile.birthDate!, d, profile.birthTime)?.today;
-  texts['사주'] = sentences([sj?.summary ?? '', ...(sj?.hints ?? []).map((h) => h.text)].join(' '));
-  const t = buildTarotReading(profile, d);
-  texts['타로'] = sentences([t.blurb, ...t.hints.map((h) => h.text)].join(' '));
-  const g = buildTodayPhysiognomy(profile.physiognomy!, d, profile.birthDate);
-  texts['관상'] = sentences([g.summary, ...g.hints.map((h) => h.text)].join(' '));
-  const c = buildTodayCompatibility(profile, contact, d);
-  texts['지인'] = sentences([c.summary, c.guidance, c.caution].join(' '));
-
-  const owners = new Map<string, string[]>();
-  for (const [tab, list] of Object.entries(texts))
-    for (const sen of new Set(list)) owners.set(sen, [...(owners.get(sen) ?? []), tab]);
-  let hit = 0;
-  for (const [, tabs] of owners)
-    if (tabs.length >= 2) { hit += 1; pairs[tabs.join('+')] = (pairs[tabs.join('+')] ?? 0) + 1; }
-  if (hit) daysWithCollision += 1;
-}
-console.log(`같은 날 2개 이상 화면에 같은 문장: ${daysWithCollision}/${DAYS}일`, pairs);
-if (daysWithCollision > 0) process.exit(1);
-```
-
-실행: `npx ts-node --project scripts/check/tsconfig.json -r tsconfig-paths/register scripts/check/today-crosstab-repeat.ts`
-(2026-09-05 기준 결과 21/60일 — S1 완료 시 0이어야 한다.)
+**교차 중복 + 팩 스키마** — `npm run check:today-crosstab` (`scripts/check/today-crosstab-repeat.ts`, S1 완료 기준 그 자체).
+팩 스키마(24개 · 필드 누락 · 마침표 · 조사 병기 · keyword 고유) → 팩 간 동일 `headline`·`action`·`caution` → 같은 날 2개 이상 화면 같은 문장(60일) 순으로 찍고, 하나라도 있으면 exit 1.
+팩을 하나 바꿀 때마다 돌려서 그 도메인이 실패 목록에서 사라졌는지 본다.
+(2026-09-05 saju v2 뒤: 교차 중복 20/60일, 남은 조합 타로+관상 16 · 지도+관상 10 · 지도+타로 5 · 성향+타로 3 · 성향+관상 1.)
 
 ---
 
@@ -440,8 +401,8 @@ if (daysWithCollision > 0) process.exit(1);
 | **B** | 지도 본문에 출처 라벨(성향·사주·타로·관상)을 붙일지 | 붙인다 — muted 13pt, 탭 이동 |
 | **C** | 관상 조합 문장을 pairs 데이터로 / 축 규칙 템플릿으로 | 축 규칙 12문장부터, 부족하면 pairs |
 | **D** | 광고 배너를 운세 카드 아래로 옮길지 | 옮긴다 (핵심 콘텐츠 우선) |
-| **E** | S1-b 도메인별 키워드 24개 표 (§3 예시) 승인 | 예시 방향 유지, 표 확정 후 착수 |
-| **F** | 콘텐츠 작성(S1-b 600문장 · S4-a 234문장 · S5)을 AI 초안 → 사용자 검수로 진행할지 | AI 초안, 팩 1개씩 검수 |
+| **E** ✅ | S1-b 도메인별 키워드 24개 표 (§3) | **승인됨 (2026-09-05)** — §3 표가 확정본 |
+| **F** ✅ | 콘텐츠 작성(S1-b 600문장 · S4-a 234문장 · S5)을 AI 초안 → 사용자 검수로 진행할지 | **AI 초안, 팩 1개씩 검수로 진행 중** (saju 완료) |
 
 ---
 
