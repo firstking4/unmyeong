@@ -9,7 +9,7 @@ alwaysApply: true
 
 ## 목표 형태
 
-1. **배너 (Banner)** — 지도(홈) 오늘의 운세 카드 아래·메뉴 하단 `AdBannerSlot`
+1. **배너 (Banner)** — 지도(홈) **페이지 최하단**·메뉴 하단 `AdBannerSlot`
 2. **보상형 동영상 (Rewarded)** — “광고 보기” → `reward earned` 시에만 해금
 
 네트워크: **Google AdMob** · 패키지 `react-native-google-mobile-ads`
@@ -20,7 +20,7 @@ alwaysApply: true
 
 - 성향: 성향 지도 카드의 부가 해설 — **그날 자정까지** (`seonghyang_today`, `RewardUnlock`)
 - 사주: 오늘 기운 카드의 `summary`·`hints` — **그날 자정까지** (`saju_today`)
-- 타로: 오늘의 카드 본문·힌트 — **그날 자정까지** (`tarot_today`) · **질문 스프레드** — 광고 1회당 결과 1회 (`tarotSpreadUnlock`)
+- 타로: 오늘의 카드 본문·힌트 — **그날 자정까지** (`tarot_today`) · **한 점 타로** — 광고운 모달(즉시확인/광고) 후 해당 유형 결과 1회. 결과를 보면 `tarot_spread:<kind>` 광고운 고정만 초기화. `RewardUnlock` 아님.
 - 지인: 오늘 풀이·행동 가이드 — **지인별** 상세 해금, **그날 자정까지** (`contact_today:<id>`)
 
 흐름: 버튼 → 광고 로드·표시 → `reward earned` → 그때만 해금. SDK 없거나 실패 시 `unavailable` → 기존처럼 「상세 열기」만.

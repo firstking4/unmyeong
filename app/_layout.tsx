@@ -235,7 +235,7 @@ function RootLayoutNav() {
                 name="tarot-spread"
                 options={{
                   presentation: 'modal',
-                  title: '질문 스프레드',
+                  title: '한 점 타로',
                   headerBackVisible: true,
                   headerShadowVisible: false,
                   headerTransparent: false,
@@ -246,7 +246,7 @@ function RootLayoutNav() {
                 name="tarot-spread-result"
                 options={{
                   presentation: 'modal',
-                  title: '질문 스프레드',
+                  title: '한 점 타로',
                   headerBackVisible: true,
                   headerShadowVisible: false,
                   headerTransparent: false,

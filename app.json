@@ -2,7 +2,7 @@
   "expo": {
     "name": "운명人지도",
     "slug": "unmyeong-injido",
-    "version": "0.1.22",
+    "version": "0.1.23",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "unmyeonginjido",
@@ -13,7 +13,7 @@
     },
     "android": {
       "package": "com.yun.unmyeonginjido",
-      "versionCode": 18,
+      "versionCode": 19,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#F3EEE6",

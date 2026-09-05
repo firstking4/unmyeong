@@ -32,8 +32,8 @@ export default function HomeScreen() {
         <IdentityCard />
         <ShareBannerSlot />
         {fortuneReady ? <IntegratedFortune /> : <LockedFortune />}
-        <AdBannerSlot />
         <DestinyQuote />
+        <AdBannerSlot />
       </ScrollView>
     </View>
   );

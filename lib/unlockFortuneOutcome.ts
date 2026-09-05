@@ -59,6 +59,15 @@ export async function clearUnlockFortuneOutcomeState() {
   await appStorage.removeItem(UNLOCK_FORTUNE_OUTCOME_STORAGE_KEY);
 }
 
+/** 해당 lockId의 당일 광고운 고정만 지운다. 다른 잠금은 유지. */
+export async function clearUnlockFortuneOutcome(lockId: string): Promise<void> {
+  const state = await loadUnlockFortuneOutcomeState();
+  if (!state.outcomes[lockId]) return;
+  const next = { ...state.outcomes };
+  delete next[lockId];
+  await saveUnlockFortuneOutcomeState({ ...state, outcomes: next });
+}
+
 /** 당일 고정 결과가 있으면 반환, 없으면 null. */
 export async function peekUnlockFortuneOutcome(lockId: string): Promise<UnlockActionId | null> {
   const state = await loadUnlockFortuneOutcomeState();

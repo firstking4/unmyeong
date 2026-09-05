@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Image, Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
 
@@ -12,6 +12,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { tarotCardImage } from '@/lib/tarotDeckImages';
 import { tarotEnglishName } from '@/lib/tarotEnglishNames';
+import { tarotKeywordTone } from '@/lib/tarotKeywordTone';
 import {
   drawTarotSpread,
   getTarotSpread,
@@ -19,7 +20,8 @@ import {
   type TarotSpreadCard,
   type TarotSpreadKind,
 } from '@/lib/tarotSpread';
-import { tarotSpreadTicketAllows } from '@/lib/tarotSpreadUnlock';
+import { tarotSpreadFortuneLockId, tarotSpreadTicketAllows } from '@/lib/tarotSpreadUnlock';
+import { clearUnlockFortuneOutcome } from '@/lib/unlockFortuneOutcome';
 
 function parseKind(value: string | string[] | undefined): TarotSpreadKind | null {
   const raw = Array.isArray(value) ? value[0] : value;
@@ -44,15 +46,21 @@ export default function TarotSpreadResultScreen() {
   const allowed = Boolean(kind && ticket && tarotSpreadTicketAllows(ticket, kind));
 
   const reading = useMemo(() => (kind && allowed ? drawTarotSpread(kind) : null), [kind, allowed]);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useEffect(() => {
+    if (!kind || !allowed) return;
+    void clearUnlockFortuneOutcome(tarotSpreadFortuneLockId(kind));
+  }, [kind, allowed]);
 
   if (!kind || !allowed || !reading) {
     return <Redirect href="/tarot-spread" />;
   }
 
   const definition = getTarotSpread(kind);
-  const selected = selectedIndex === null ? null : reading.cards[selectedIndex];
+  const selected = reading.cards[selectedIndex] ?? reading.cards[0]!;
   const gap = 10;
+  const idleBorder = c.muted;
   const sidePad = pagePad;
   const cardWidth = Math.floor((width - sidePad * 2 - gap * 2) / 3);
   const artHeight = Math.round(cardWidth * (400 / 279));
@@ -62,12 +70,12 @@ export default function TarotSpreadResultScreen() {
       <Stack.Screen options={{ title: definition.title }} />
       <PaperGrain color={c.grain} />
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.lead, { color: c.muted }]}>{definition.description}</Text>
-        <Text style={[styles.hint, { color: c.muted }]}>카드를 누르면 풀이를 볼 수 있어요.</Text>
+        <Text style={[styles.synthesis, { color: c.text, fontFamily: display }]}>{reading.synthesis}</Text>
 
         <View style={[styles.row, { gap }]}>
           {reading.cards.map((spreadCard, index) => {
             const active = selectedIndex === index;
+            const borderWidth = active ? 3 : 1;
             const art = tarotCardImage(spreadCard.card);
             const englishName = tarotEnglishName(spreadCard.card);
             const title = spreadCard.card.title ?? spreadCard.card.label;
@@ -107,15 +115,19 @@ export default function TarotSpreadResultScreen() {
                       {
                         width: cardWidth,
                         height: artHeight,
-                        borderColor: active ? c.tint : c.hairline,
-                        borderWidth: active ? 1.5 : StyleSheet.hairlineWidth,
+                        borderColor: active ? c.tint : idleBorder,
+                        borderWidth,
                         backgroundColor: c.surface,
                       },
                     ]}>
                     {art ? (
                       <Image
                         source={art}
-                        style={[styles.art, spreadCard.reversed && styles.artReversed]}
+                        style={{
+                          width: cardWidth,
+                          height: artHeight,
+                          transform: spreadCard.reversed ? [{ rotate: '180deg' }] : undefined,
+                        }}
                         resizeMode="cover"
                       />
                     ) : null}
@@ -128,8 +140,6 @@ export default function TarotSpreadResultScreen() {
             );
           })}
         </View>
-
-        <Text style={[styles.synthesis, { color: c.text }]}>{reading.synthesis}</Text>
 
         <DetailCard
           reading={selected}
@@ -154,48 +164,40 @@ function DetailCard({
   surface,
   hairline,
 }: {
-  reading: TarotSpreadCard | null;
+  reading: TarotSpreadCard;
   tint: string;
   text: string;
   muted: string;
   surface: string;
   hairline: string;
 }) {
-  const title = reading?.card.title ?? reading?.card.label;
-  const englishName = reading ? tarotEnglishName(reading.card) : null;
+  const title = reading.card.title ?? reading.card.label;
+  const englishName = tarotEnglishName(reading.card);
+  const orientation = reading.reversed ? '역방향' : '정방향';
 
   return (
     <View style={[styles.detail, paperShadow, { backgroundColor: surface, borderColor: hairline }]}>
-      {reading ? (
-        <>
-          <Text style={[styles.position, { color: tint }]}>{reading.position}</Text>
-          <Text style={[styles.detailTitle, { color: text, fontFamily: display }]}>{title}</Text>
-          {englishName ? <Text style={[styles.detailEnglish, { color: muted }]}>{englishName}</Text> : null}
-          <Text style={[styles.orientation, { color: tint }]}>
-            {reading.reversed ? '역방향' : '정방향'}
-          </Text>
-          {reading.card.keywords.length > 0 ? (
-            <View style={styles.keywordRow}>
-              {reading.card.keywords.map((keyword) => (
-                <KeywordBadge key={keyword} label={keyword} />
-              ))}
-            </View>
-          ) : null}
-          <View style={[styles.interpretation, { borderTopColor: hairline }]}>
-            <Text style={[styles.interpretationBody, { color: muted }]}>{reading.interpretation}</Text>
-          </View>
-        </>
-      ) : (
-        <>
-          <Text style={[styles.position, { color: tint }]}>카드 풀이</Text>
-          <Text style={[styles.detailTitle, { color: text, fontFamily: display }]}>카드를 골라 주세요</Text>
-          <View style={[styles.interpretation, { borderTopColor: hairline }]}>
-            <Text style={[styles.interpretationBody, { color: muted }]}>
-              세 장 가운데 보고 싶은 카드를 누르면 포지션에 맞는 풀이가 이 카드 안에 표시됩니다.
-            </Text>
-          </View>
-        </>
-      )}
+      <View style={styles.positionRow}>
+        <Text style={[styles.position, { color: tint }]}>{reading.position}</Text>
+        <Text style={[styles.positionHint, { color: muted }]} numberOfLines={1}>
+          다른 카드를 눌러 보세요
+        </Text>
+      </View>
+      <Text style={styles.identityLine}>
+        <Text style={[styles.detailTitle, { color: text, fontFamily: display }]}>{title}</Text>
+        {englishName ? <Text style={[styles.detailEnglish, { color: muted }]}>{` · ${englishName}`}</Text> : null}
+        <Text style={[styles.orientation, { color: tint }]}>{` · ${orientation}`}</Text>
+      </Text>
+      {reading.card.keywords.length > 0 ? (
+        <View style={styles.keywordRow}>
+          {reading.card.keywords.map((keyword) => (
+            <KeywordBadge key={keyword} label={keyword} tone={tarotKeywordTone(keyword)} />
+          ))}
+        </View>
+      ) : null}
+      <View style={[styles.interpretation, { borderTopColor: hairline }]}>
+        <Text style={[styles.interpretationBody, { color: muted }]}>{reading.interpretation}</Text>
+      </View>
     </View>
   );
 }
@@ -204,14 +206,11 @@ const styles = StyleSheet.create({
   content: {
     ...tabSection.content,
   },
-  lead: {
-    ...tabSection.lead,
-    marginBottom: 4,
-  },
-  hint: {
-    fontSize: 13,
-    lineHeight: 18,
+  synthesis: {
     marginBottom: space.sm,
+    fontSize: 17,
+    lineHeight: 26,
+    letterSpacing: 0.2,
   },
   row: {
     flexDirection: 'row',
@@ -255,23 +254,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     overflow: 'hidden',
   },
-  art: {
-    width: '100%',
-    height: '100%',
-    opacity: 0.85,
-  },
-  artReversed: {
-    transform: [{ rotate: '180deg' }],
-  },
   englishName: {
     fontSize: 12,
     lineHeight: 16,
     textAlign: 'center',
     letterSpacing: 0.2,
-  },
-  synthesis: {
-    ...tabSection.detailBody,
-    marginTop: space.sm,
   },
   detail: {
     ...tabSection.card,
@@ -279,20 +266,37 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     gap: tabSection.summaryGap,
   },
+  positionRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
   position: {
     ...tabSection.flowTitle,
+    flexShrink: 0,
+  },
+  positionHint: {
+    flexShrink: 1,
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'right',
+  },
+  identityLine: {
+    flexShrink: 1,
   },
   detailTitle: {
-    fontSize: 26,
-    lineHeight: 34,
-    letterSpacing: 0.3,
+    fontSize: 18,
+    lineHeight: 26,
+    letterSpacing: 0.2,
   },
   detailEnglish: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 14,
+    lineHeight: 26,
   },
   orientation: {
     fontSize: 14,
+    lineHeight: 26,
     fontWeight: '700',
   },
   keywordRow: {

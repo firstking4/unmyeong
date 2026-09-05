@@ -46,6 +46,14 @@ export function ChevronRightIcon({ color, size = 22 }: IconProps) {
   return <MaterialIcons name="chevron-right" size={size} color={color} />;
 }
 
+export function ExpandIcon({
+  color,
+  size = 22,
+  expanded = false,
+}: IconProps & { expanded?: boolean }) {
+  return <MaterialIcons name={expanded ? 'expand-less' : 'expand-more'} size={size} color={color} />;
+}
+
 export function LockIcon({ color, size = 22 }: IconProps) {
   return <MaterialIcons name="lock" size={size} color={color} />;
 }

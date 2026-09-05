@@ -1,10 +1,12 @@
 ---
-description: 타로 질문 스프레드 구조·정책 (재뽑기·한도·기록은 추후)
-globs: app/tarot-spread*.tsx,lib/tarotSpread.ts,lib/tarotSpreadUnlock.ts
+description: 한 점 타로 구조·정책 (재뽑기·한도·기록은 추후)
+globs: app/tarot-spread*.tsx,lib/tarotSpread.ts,lib/tarotSpreadUnlock.ts,lib/unlockFortuneOutcome.ts,components/ui/useUnlockFortuneFlow.tsx
 alwaysApply: false
 ---
 
-# 질문 스프레드
+# 한 점 타로
+
+화면 표시명. 코드·파일은 `tarot-spread` / `TAROT_SPREADS` 를 유지한다.
 
 ## 확정 구조
 
@@ -13,7 +15,7 @@ alwaysApply: false
 - 새 상황(금전·관계 등)은 같은 목록에 항목만 추가한다. 공통 추첨·결과 UI는 재사용한다.
 - 덱: 메이저+마이너 **78장 풀덱**, 중복 없이 **3장**, 각 장 **정/역** 가능.
 - 화면 흐름: 상황 선택(`tarot-spread`) → 결과(`tarot-spread-result`).
-- 결과 UI: 가로 3장, **위=포지션**, **아래=영문 명칭**, 탭 시 하단 **동일 카드 셸**에 풀이.
+- 결과 UI: 상단에 **종합 한 줄**. 가로 3장, **위=포지션**, **아래=영문 명칭**. **맨 앞 장 기본 선택**. 미선택은 **회색** 보더, 선택은 인장색 보더.
 
 ## 초기 상황 (현재)
 
@@ -25,9 +27,12 @@ alwaysApply: false
 
 ## 잠금 · 광고 (확정)
 
-- **연애·일·선택** 모두 목록에서 자물쇠로 잠김 표시.
-- **광고 1회 = 해당 유형 결과 1회**. `lib/tarotSpreadUnlock.ts`에서 티켓 발급 → 결과 params로 전달 → **선택 화면으로 돌아오면** 티켓 폐기.
-- AdMob 전에는 Alert 스탠드인(“광고 보고 열기”)으로 같은 티켓 규칙을 쓴다. 실 SDK는 `ads-plan` 이후.
+- **연애·일·선택** 모두 목록에서 오늘 카드와 **같은 잠금 버튼**(자물쇠+문구). 헤더 자물쇠·「1번 열람」은 쓰지 않음. 광고운 모달도 오늘 카드와 같음.
+- lockId: `tarot_spread:love` · `tarot_spread:work` · `tarot_spread:choice` (`tarotSpreadFortuneLockId`).
+- **즉시확인 또는 광고 1회 = 해당 유형 결과 1회.** 티켓 발급 → 결과 params → **선택 화면으로 돌아오면** 티켓 폐기.
+- **자정까지 열린 채로 두지 않음.** `RewardUnlock`에 넣지 않는다. 목록 카드는 계속 잠금.
+- **결과를 한 번 보면** 그 유형의 **광고운 고정만** 초기화. 오늘 타로 카드 등 다른 잠금은 유지.
+- 모달만 열고 취소·광고 실패면 해당 유형 광고운 고정은 유지(오늘 카드와 같음).
 - 티켓 없이 결과 URL로 들어오면 선택 화면으로 되돌린다.
 
 ## 아직 정하지 않음 (추후 · 임의로 넣지 말 것)

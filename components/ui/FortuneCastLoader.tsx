@@ -26,6 +26,8 @@ const TRIGRAMS: number[][] = [
 type Props = {
   size?: number;
   color?: string;
+  /** 태극 음양 중 밝은 쪽. 팝업 종이와 맞춘다. */
+  paper?: string;
 };
 
 function TrigramMarks({
@@ -105,8 +107,12 @@ function TrigramMarks({
   );
 }
 
-/** 천천히 도는 팔괘 — 크림 팝업용 (어두운 금빛). */
-export function FortuneCastLoader({ size = 148, color = '#8B6914' }: Props) {
+/** 천천히 도는 팔괘. 금빛 획 + 종이색 태극. */
+export function FortuneCastLoader({
+  size = 148,
+  color = '#8B6914',
+  paper = '#F7F1E6',
+}: Props) {
   const spin = useSharedValue(0);
   const glow = useSharedValue(0.45);
 
@@ -164,9 +170,9 @@ export function FortuneCastLoader({ size = 148, color = '#8B6914' }: Props) {
           <Circle cx={cx} cy={cy} r={18} fill={color} opacity={0.95} />
           <Path
             d={`M ${cx} ${cy - 18} A 18 18 0 0 1 ${cx} ${cy + 18} A 9 9 0 0 1 ${cx} ${cy} A 9 9 0 0 0 ${cx} ${cy - 18}`}
-            fill="#F7F1E6"
+            fill={paper}
           />
-          <Circle cx={cx} cy={cy - 9} r={3.2} fill="#F7F1E6" />
+          <Circle cx={cx} cy={cy - 9} r={3.2} fill={paper} />
           <Circle cx={cx} cy={cy + 9} r={3.2} fill={color} />
         </Svg>
       </Animated.View>

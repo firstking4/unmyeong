@@ -1,5 +1,5 @@
 /**
- * 질문 스프레드 렌더 검사 — `npm run check:tarot-spread`
+ * 한 점 타로 렌더 검사 — `npm run check:tarot-spread`
  *
  * 78장 × 3유형 × 정/역 × 3포지션 × 해당 포지션 frame 전부.
  * 빈 문장 0, `을(를)` 0, 마침표 중복 0.

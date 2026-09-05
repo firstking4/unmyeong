@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Image,
   Pressable,
@@ -6,41 +6,32 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/Themed';
+import { ExpandIcon } from '@/components/icons/AppIcon';
 import { KeywordBadge } from '@/components/ui/KeywordBadge';
 import { PaperGrain } from '@/components/ui/PaperGrain';
-import { StarIcon } from '@/components/ui/StarIcon';
 import Colors from '@/constants/Colors';
 import { display } from '@/constants/Fonts';
-import { paperShadow, radius, space, tabSection } from '@/constants/Theme';
+import { fs, paperShadow, radius, space, tabSection } from '@/constants/Theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { listTarotDeck } from '@/lib/data/catalog';
 import type { SeedRecord } from '@/lib/data/types';
 import { ENTERTAINMENT_DISCLAIMER } from '@/lib/disclaimer';
 import { tarotCardImage } from '@/lib/tarotDeckImages';
 import { tarotEnglishName } from '@/lib/tarotEnglishNames';
-import {
-  emptyTarotBookmarks,
-  isTarotBookmarked,
-  loadTarotBookmarks,
-  toggleTarotBookmark,
-  type TarotBookmarkStore,
-} from '@/lib/tarotBookmarks';
+import { tarotKeywordTone } from '@/lib/tarotKeywordTone';
 
 const CARD_ART_W = 72;
 const CARD_ART_H = 104;
+/**
+ * 접힌 키워드 한 줄. KeywordBadge md = paddingVertical 5×2 + Themed 12pt(fs, lineHeight 1.4).
+ * +2는 글리프가 lineHeight 밖으로 나가는 여유. 더 키우면 둘째 줄이 비친다(gap 6).
+ */
+const KEYWORD_ROW_CLIP = 5 * 2 + Math.round(fs(12) * 1.4) + 2;
 
-type DeckFilter =
-  | 'all'
-  | 'major'
-  | 'wands'
-  | 'cups'
-  | 'swords'
-  | 'pentacles'
-  | 'bookmarks';
+type DeckFilter = 'all' | 'major' | 'wands' | 'cups' | 'swords' | 'pentacles';
 
 const FILTERS: { id: DeckFilter; label: string }[] = [
   { id: 'all', label: '전체' },
@@ -49,7 +40,6 @@ const FILTERS: { id: DeckFilter; label: string }[] = [
   { id: 'cups', label: '컵' },
   { id: 'swords', label: '소드' },
   { id: 'pentacles', label: '펜타클' },
-  { id: 'bookmarks', label: '북마크' },
 ];
 
 function matchesFilter(card: SeedRecord, filter: DeckFilter): boolean {
@@ -72,13 +62,7 @@ function cardMetaLabel(card: SeedRecord): string {
   return en ? `${cue} · ${en}` : cue;
 }
 
-function emptyCopy(filter: DeckFilter): { title: string; body: string } {
-  if (filter === 'bookmarks') {
-    return {
-      title: '북마크한 카드가 없습니다',
-      body: '전체·슈트 목록에서 별표를 누르면 여기에 모입니다.',
-    };
-  }
+function emptyCopy(): { title: string; body: string } {
   return {
     title: '표시할 카드가 없습니다',
     body: '다른 탭을 골라 보세요.',
@@ -90,21 +74,8 @@ export default function TarotCardbookScreen() {
   const c = Colors[scheme];
   const insets = useSafeAreaInsets();
   const cards = useMemo(() => listTarotDeck(), []);
-  const [bookmarks, setBookmarks] = useState<TarotBookmarkStore>(emptyTarotBookmarks);
   const [filter, setFilter] = useState<DeckFilter>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  useFocusEffect(
-    useCallback(() => {
-      let alive = true;
-      void loadTarotBookmarks().then((store) => {
-        if (alive) setBookmarks(store);
-      });
-      return () => {
-        alive = false;
-      };
-    }, []),
-  );
 
   const counts = useMemo(() => {
     const next: Record<DeckFilter, number> = {
@@ -114,7 +85,6 @@ export default function TarotCardbookScreen() {
       cups: 0,
       swords: 0,
       pentacles: 0,
-      bookmarks: bookmarks.ids.length,
     };
     for (const card of cards) {
       if (matchesFilter(card, 'major')) next.major += 1;
@@ -124,21 +94,14 @@ export default function TarotCardbookScreen() {
       if (matchesFilter(card, 'pentacles')) next.pentacles += 1;
     }
     return next;
-  }, [bookmarks.ids.length, cards]);
+  }, [cards]);
 
-  const visible = useMemo(() => {
-    if (filter === 'bookmarks') {
-      return cards.filter((card) => isTarotBookmarked(bookmarks, card.id));
-    }
-    return cards.filter((card) => matchesFilter(card, filter));
-  }, [bookmarks, cards, filter]);
+  const visible = useMemo(
+    () => cards.filter((card) => matchesFilter(card, filter)),
+    [cards, filter],
+  );
 
-  const onToggleBookmark = async (cardId: string) => {
-    const next = await toggleTarotBookmark(cardId);
-    setBookmarks(next);
-  };
-
-  const empty = emptyCopy(filter);
+  const empty = emptyCopy();
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
@@ -150,8 +113,7 @@ export default function TarotCardbookScreen() {
           { paddingBottom: Math.max(insets.bottom, space.lg) },
         ]}>
         <Text style={[styles.lead, { color: c.muted }]}>
-          메이저 22장과 마이너 56장의 정·역방향 핵심을 모아 둔 타로 덱입니다. 별표로 자주 보는
-          카드를 남길 수 있어요.
+          메이저 22장과 마이너 56장의 정·역방향 핵심을 모아 둔 타로 덱입니다.
         </Text>
 
         <ScrollView
@@ -196,7 +158,6 @@ export default function TarotCardbookScreen() {
               <CardbookRow
                 key={card.id}
                 card={card}
-                bookmarked={isTarotBookmarked(bookmarks, card.id)}
                 expanded={expandedId === card.id}
                 text={c.text}
                 muted={c.muted}
@@ -206,7 +167,6 @@ export default function TarotCardbookScreen() {
                 onToggleExpand={() =>
                   setExpandedId((prev) => (prev === card.id ? null : card.id))
                 }
-                onToggleBookmark={() => void onToggleBookmark(card.id)}
               />
             ))}
           </View>
@@ -220,7 +180,6 @@ export default function TarotCardbookScreen() {
 
 function CardbookRow({
   card,
-  bookmarked,
   expanded,
   text,
   muted,
@@ -228,10 +187,8 @@ function CardbookRow({
   surface,
   hairline,
   onToggleExpand,
-  onToggleBookmark,
 }: {
   card: SeedRecord;
-  bookmarked: boolean;
   expanded: boolean;
   text: string;
   muted: string;
@@ -239,7 +196,6 @@ function CardbookRow({
   surface: string;
   hairline: string;
   onToggleExpand: () => void;
-  onToggleBookmark: () => void;
 }) {
   const art = tarotCardImage(card);
   const title = card.title ?? card.label;
@@ -252,25 +208,13 @@ function CardbookRow({
   return (
     <View style={[styles.card, paperShadow, { backgroundColor: surface }]}>
       <Pressable
-        onPress={(e) => {
-          e.stopPropagation?.();
-          onToggleBookmark();
-        }}
-        hitSlop={8}
-        style={styles.starBtn}
-        accessibilityRole="button"
-        accessibilityLabel={bookmarked ? '북마크 해제' : '북마크'}
-        accessibilityState={{ selected: bookmarked }}>
-        <StarIcon color={bookmarked ? tint : muted} size={20} filled={bookmarked} />
-      </Pressable>
-
-      <Pressable
         onPress={onToggleExpand}
         style={styles.cardHead}
         accessibilityRole="button"
+        accessibilityState={{ expanded }}
         accessibilityLabel={`${title} 해석 ${expanded ? '접기' : '펼치기'}`}>
         {art ? (
-          <View style={[styles.artFrame, { borderColor: hairline, backgroundColor: surface }]}>
+          <View style={[styles.artFrame, { borderColor: muted, backgroundColor: surface }]}>
             <Image
               source={art}
               style={styles.art}
@@ -286,11 +230,18 @@ function CardbookRow({
             <View style={[styles.keywordsClip, !expanded && styles.keywordsClipCollapsed]}>
               <View style={styles.keywords}>
                 {keywords.map((kw, i) => (
-                  <KeywordBadge key={`${card.id}-kw-${i}-${kw}`} label={kw} />
+                  <KeywordBadge
+                    key={`${card.id}-kw-${i}-${kw}`}
+                    label={kw}
+                    tone={tarotKeywordTone(kw)}
+                  />
                 ))}
               </View>
             </View>
           ) : null}
+        </View>
+        <View style={styles.expandIcon} pointerEvents="none">
+          <ExpandIcon color={muted} size={24} expanded={expanded} />
         </View>
       </Pressable>
 
@@ -361,19 +312,17 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: 14,
     gap: 0,
-    position: 'relative',
   },
   cardHead: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
-    paddingRight: 28,
   },
   artFrame: {
     width: CARD_ART_W,
     height: CARD_ART_H,
     borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     overflow: 'hidden',
   },
   art: { width: '100%', height: '100%', opacity: 0.82 },
@@ -383,18 +332,14 @@ const styles = StyleSheet.create({
   keywordsClip: {
     overflow: 'hidden',
   },
-  /** KeywordBadge md: paddingVertical 5×2 + text ~18 ≈ 28 */
   keywordsClipCollapsed: {
-    height: 28,
+    maxHeight: KEYWORD_ROW_CLIP,
   },
   keywords: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  starBtn: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    zIndex: 2,
-    width: 36,
-    height: 36,
+  expandIcon: {
+    width: 28,
+    height: 28,
+    marginTop: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },

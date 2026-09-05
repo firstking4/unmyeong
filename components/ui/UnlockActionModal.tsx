@@ -21,12 +21,14 @@ import { DojangSeal } from '@/components/ink/DojangSeal';
 import { Text } from '@/components/Themed';
 import { FortuneCastLoader } from '@/components/ui/FortuneCastLoader';
 import { LatticePattern } from '@/components/ui/LatticePattern';
+import { useColorScheme } from '@/components/useColorScheme';
 import { display } from '@/constants/Fonts';
 import { paperShadow, radius } from '@/constants/Theme';
 import {
   UNLOCK_ACTION_LABELS,
-  UNLOCK_FORTUNE_COPY,
+  getUnlockFortuneCopy,
   type UnlockActionId,
+  type UnlockFortuneCopyVariant,
 } from '@/lib/unlockActions';
 
 const wash = require('@/assets/images/ink/mountains-wash.png');
@@ -35,14 +37,37 @@ const pine = require('@/assets/images/ink/pine.png');
 export type UnlockModalPhase = 'loading' | 'ready';
 
 const POPUP = {
-  paper: '#F7F1E6',
-  gold: '#B8955A',
-  goldSoft: '#D4B87A',
-  ink: '#3A3228',
-  muted: '#7A6F60',
-  seal: '#B23A2F',
-  bagua: '#8B6914',
-};
+  light: {
+    paper: '#F7F1E6',
+    gold: '#B8955A',
+    goldSoft: '#D4B87A',
+    ink: '#3A3228',
+    muted: '#7A6F60',
+    seal: '#B23A2F',
+    bagua: '#8B6914',
+    baguaGlow: 'rgba(212, 184, 122, 0.22)',
+    backdrop: 'rgba(26, 23, 20, 0.42)',
+    btnLabel: '#F7F1E6',
+    washOpacity: 0.12,
+    pineOpacity: 0.14,
+    washTint: undefined,
+  },
+  dark: {
+    paper: '#26211C',
+    gold: '#C4A574',
+    goldSoft: '#B8955A',
+    ink: '#F3EEE6',
+    muted: '#9A9186',
+    seal: '#E07A6E',
+    bagua: '#C4A574',
+    baguaGlow: 'rgba(196, 165, 116, 0.22)',
+    backdrop: 'rgba(0, 0, 0, 0.62)',
+    btnLabel: '#F7F1E6',
+    washOpacity: 0.16,
+    pineOpacity: 0.18,
+    washTint: '#E8DCC8',
+  },
+} as const;
 
 /** 안내 문구 아래·인장·팔괘 위아래·보더 안 여백에 공통으로 쓰는 값. */
 const STAGE_GAP = 18;
@@ -66,19 +91,30 @@ type Props = {
   busy?: boolean;
   /** true면 결과 요소를 즉시 전부 표시(고정 결과 재오픈). */
   instantReveal?: boolean;
+  copyVariant?: UnlockFortuneCopyVariant;
 };
 
-function LoadingText() {
+function LoadingText({
+  loadingBody,
+  loadingHint,
+  ink,
+  muted,
+}: {
+  loadingBody: string;
+  loadingHint: string;
+  ink: string;
+  muted: string;
+}) {
   return (
     <>
-      <RNText style={[styles.loadingLine, { fontFamily: display }]}>{UNLOCK_FORTUNE_COPY.loadingBody}</RNText>
-      <RNText style={styles.loadingHint}>{UNLOCK_FORTUNE_COPY.loadingHint}</RNText>
+      <RNText style={[styles.loadingLine, { color: ink, fontFamily: display }]}>{loadingBody}</RNText>
+      <RNText style={[styles.loadingHint, { color: muted }]}>{loadingHint}</RNText>
     </>
   );
 }
 
 /**
- * 크림 종이 레이어 팝업.
+ * 광고운 레이어 팝업. 종이·잉크는 앱 테마(라이트/다크)를 따른다.
  * 금테 안: ✕ · 제목 · 본문. 인장은 결과 화면에서만 1개.
  */
 export function UnlockActionModal({
@@ -89,11 +125,14 @@ export function UnlockActionModal({
   onClose,
   busy = false,
   instantReveal = false,
+  copyVariant = 'untilMidnight',
 }: Props) {
+  const popup = POPUP[useColorScheme()];
+  const fortuneCopy = getUnlockFortuneCopy(copyVariant);
   const showLoading = phase === 'loading';
   const showResult = phase === 'ready' && outcome != null;
   const interactionLocked = showLoading || !showResult;
-  const copy = outcome ? UNLOCK_FORTUNE_COPY[outcome] : null;
+  const copy = outcome ? fortuneCopy[outcome] : null;
   const lucky = outcome === 'open_detail';
 
   /** 로딩 레이어 마운트(페이드아웃 중에도 유지). */
@@ -192,30 +231,33 @@ export function UnlockActionModal({
       transparent
       animationType="fade"
       statusBarTranslucent
+      navigationBarTranslucent
       onRequestClose={onClose}>
-      <View style={styles.backdrop}>
+      <View style={[styles.backdrop, { backgroundColor: popup.backdrop }]}>
         <Pressable
           style={StyleSheet.absoluteFill}
           onPress={busy || interactionLocked ? undefined : onClose}
           accessibilityLabel="배경 닫기"
         />
 
-        <View style={[styles.card, paperShadow]}>
-          <LatticePattern color={POPUP.gold} opacity={0.1} />
+        <View style={[styles.card, paperShadow, { backgroundColor: popup.paper }]}>
+          <LatticePattern color={popup.gold} opacity={0.1} />
           <Image
             source={wash}
-            style={styles.wash}
+            style={[styles.wash, { opacity: popup.washOpacity }]}
+            tintColor={popup.washTint}
             resizeMode="cover"
             accessibilityIgnoresInvertColors
           />
           <Image
             source={pine}
-            style={styles.pine}
+            style={[styles.pine, { opacity: popup.pineOpacity }]}
+            tintColor={popup.washTint}
             resizeMode="contain"
             accessibilityIgnoresInvertColors
           />
 
-          <View style={[styles.innerFrame, { borderColor: POPUP.goldSoft }]}>
+          <View style={[styles.innerFrame, { borderColor: popup.goldSoft }]}>
             <View style={styles.frameTop}>
               <View style={styles.frameTopSpacer} />
               <Pressable
@@ -225,30 +267,32 @@ export function UnlockActionModal({
                 style={[styles.closeBtn, { opacity: busy || interactionLocked ? 0.35 : 1 }]}
                 accessibilityRole="button"
                 accessibilityLabel="닫기">
-                <Text style={styles.closeX}>✕</Text>
+                <Text style={[styles.closeX, { color: popup.muted }]}>✕</Text>
               </Pressable>
             </View>
 
             <View style={styles.header}>
-              <Text style={[styles.title, { fontFamily: display }]}>
-                {UNLOCK_FORTUNE_COPY.loadingTitle}
+              <Text style={[styles.title, { color: popup.ink, fontFamily: display }]}>
+                {fortuneCopy.loadingTitle}
               </Text>
-              <Text style={styles.subtitle}>{UNLOCK_FORTUNE_COPY.subtitle}</Text>
+              <Text style={[styles.subtitle, { color: popup.muted }]}>{fortuneCopy.subtitle}</Text>
             </View>
 
-            <View style={[styles.divider, { backgroundColor: POPUP.goldSoft }]} />
+            <View style={[styles.divider, { backgroundColor: popup.goldSoft }]} />
 
             <View style={styles.stage}>
               {showResult ? (
                 <View style={styles.resultLayer}>
                   <Animated.View style={sealStyle}>
-                    <DojangSeal size={40} color={POPUP.seal} rotate={lucky ? -8 : 8} />
+                    <DojangSeal size={40} color={popup.seal} rotate={lucky ? -8 : 8} />
                   </Animated.View>
                   <Animated.View style={resultStyle}>
-                    <Text style={[styles.resultLine, { fontFamily: display }]}>{copy?.result}</Text>
+                    <Text style={[styles.resultLine, { color: popup.ink, fontFamily: display }]}>
+                      {copy?.result}
+                    </Text>
                   </Animated.View>
                   <Animated.View style={hintStyle}>
-                    <Text style={styles.hint}>{copy?.hint}</Text>
+                    <Text style={[styles.hint, { color: popup.muted }]}>{copy?.hint}</Text>
                   </Animated.View>
                   <Animated.View style={[styles.btnWrap, btnStyle]}>
                     <Pressable
@@ -256,14 +300,14 @@ export function UnlockActionModal({
                       onPress={() => outcome && onSelect(outcome)}
                       style={({ pressed }) => [
                         styles.primaryBtn,
-                        { opacity: busy ? 0.55 : pressed ? 0.88 : 1 },
+                        { backgroundColor: popup.seal, opacity: busy ? 0.55 : pressed ? 0.88 : 1 },
                       ]}
                       accessibilityRole="button"
                       accessibilityLabel={outcome ? UNLOCK_ACTION_LABELS[outcome] : undefined}>
                       {busy ? (
-                        <ActivityIndicator color="#F7F1E6" />
+                        <ActivityIndicator color={popup.btnLabel} />
                       ) : (
-                        <Text style={styles.primaryLabel}>
+                        <Text style={[styles.primaryLabel, { color: popup.btnLabel }]}>
                           {outcome ? UNLOCK_ACTION_LABELS[outcome] : ''}
                         </Text>
                       )}
@@ -274,12 +318,21 @@ export function UnlockActionModal({
 
               {loadingVisible ? (
                 <Animated.View
-                  style={[styles.loadingOverlay, loadingFadeStyle]}
+                  style={[
+                    styles.loadingOverlay,
+                    loadingFadeStyle,
+                    { backgroundColor: popup.paper },
+                  ]}
                   pointerEvents={showLoading ? 'auto' : 'none'}>
-                  <View style={styles.baguaGlow}>
-                    <FortuneCastLoader size={100} color={POPUP.bagua} />
+                  <View style={[styles.baguaGlow, { backgroundColor: popup.baguaGlow }]}>
+                    <FortuneCastLoader size={100} color={popup.bagua} paper={popup.paper} />
                   </View>
-                  <LoadingText />
+                  <LoadingText
+                    loadingBody={fortuneCopy.loadingBody}
+                    loadingHint={fortuneCopy.loadingHint}
+                    ink={popup.ink}
+                    muted={popup.muted}
+                  />
                 </Animated.View>
               ) : null}
             </View>
@@ -293,7 +346,6 @@ export function UnlockActionModal({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(26, 23, 20, 0.42)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 22,
@@ -301,7 +353,6 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 340,
-    backgroundColor: POPUP.paper,
     borderRadius: 22,
     padding: 10,
     overflow: 'hidden',
@@ -312,7 +363,6 @@ const styles = StyleSheet.create({
     top: 80,
     width: 220,
     height: 160,
-    opacity: 0.12,
   },
   pine: {
     position: 'absolute',
@@ -320,7 +370,6 @@ const styles = StyleSheet.create({
     bottom: -10,
     width: 120,
     height: 140,
-    opacity: 0.14,
   },
   innerFrame: {
     borderWidth: 1.5,
@@ -344,7 +393,6 @@ const styles = StyleSheet.create({
   },
   closeX: {
     fontSize: 15,
-    color: POPUP.muted,
   },
   header: {
     alignItems: 'center',
@@ -355,14 +403,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     lineHeight: 30,
-    color: POPUP.ink,
     textAlign: 'center',
     letterSpacing: -0.2,
   },
   subtitle: {
     fontSize: 13,
     lineHeight: 19,
-    color: POPUP.muted,
     textAlign: 'center',
   },
   divider: {
@@ -391,39 +437,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: STAGE_GAP,
     paddingHorizontal: 4,
-    backgroundColor: POPUP.paper,
   },
   baguaGlow: {
     width: 118,
     height: 118,
     borderRadius: 59,
-    backgroundColor: 'rgba(212, 184, 122, 0.22)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   loadingLine: {
     fontSize: 16,
     lineHeight: 22,
-    color: POPUP.ink,
     textAlign: 'center',
   },
   loadingHint: {
     fontSize: 12,
     lineHeight: 18,
-    color: POPUP.muted,
     textAlign: 'center',
   },
   resultLine: {
     fontSize: 19,
     lineHeight: 28,
-    color: POPUP.ink,
     textAlign: 'center',
     paddingHorizontal: 6,
   },
   hint: {
     fontSize: 13,
     lineHeight: 22,
-    color: POPUP.muted,
     textAlign: 'center',
     paddingHorizontal: 4,
   },
@@ -437,10 +477,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 46,
-    backgroundColor: POPUP.seal,
   },
   primaryLabel: {
-    color: '#F7F1E6',
     fontSize: 16,
     fontWeight: '700',
   },

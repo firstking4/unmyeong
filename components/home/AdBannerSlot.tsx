@@ -12,7 +12,7 @@ type BannerAdComponent = typeof import('react-native-google-mobile-ads').BannerA
 type BannerAdSizeEnum = typeof import('react-native-google-mobile-ads').BannerAdSize;
 
 /**
- * 홈 오늘의 운세 카드 아래·메뉴 하단용 배너.
+ * 지도 탭 페이지 최하단·메뉴 하단용 배너.
  * 네이티브 SDK 없으면 렌더하지 않음 (레이아웃만 비움).
  */
 export function AdBannerSlot() {

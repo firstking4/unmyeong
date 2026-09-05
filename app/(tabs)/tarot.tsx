@@ -81,6 +81,22 @@ export default function TarotScreen() {
 
         <View style={[styles.featureList, { borderTopColor: c.hairline }]}>
           <Pressable
+            onPress={() => router.push('/tarot-spread')}
+            style={({ pressed }) => [
+              styles.featureRow,
+              { borderBottomColor: c.hairline, opacity: pressed ? 0.6 : 1 },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="한 점 타로">
+            <View style={styles.featureCopy}>
+              <Text style={[styles.featureTitle, { color: c.text }]}>한 점 타로</Text>
+              <Text style={[styles.featureBlurb, { color: c.muted }]}>
+                연애·일·선택에 맞춰 세 장을 펼쳐 봅니다
+              </Text>
+            </View>
+            <ChevronRightIcon color={c.muted} size={22} />
+          </Pressable>
+          <Pressable
             onPress={() => router.push('/tarot-cardbook')}
             style={({ pressed }) => [
               styles.featureRow,
@@ -91,23 +107,7 @@ export default function TarotScreen() {
             <View style={styles.featureCopy}>
               <Text style={[styles.featureTitle, { color: c.text }]}>타로 덱</Text>
               <Text style={[styles.featureBlurb, { color: c.muted }]}>
-                78장 의미와 나만의 카드 북마크
-              </Text>
-            </View>
-            <ChevronRightIcon color={c.muted} size={22} />
-          </Pressable>
-          <Pressable
-            onPress={() => router.push('/tarot-spread')}
-            style={({ pressed }) => [
-              styles.featureRow,
-              { borderBottomColor: c.hairline, opacity: pressed ? 0.6 : 1 },
-            ]}
-            accessibilityRole="button"
-            accessibilityLabel="질문 스프레드">
-            <View style={styles.featureCopy}>
-              <Text style={[styles.featureTitle, { color: c.text }]}>질문 스프레드</Text>
-              <Text style={[styles.featureBlurb, { color: c.muted }]}>
-                연애·일·선택에 맞춰 세 장을 펼쳐 봅니다
+                78장 정·역방향 의미
               </Text>
             </View>
             <ChevronRightIcon color={c.muted} size={22} />
@@ -182,7 +182,7 @@ function TodayTarotCard({
         </View>
         <View style={styles.summaryRow}>
           {art ? (
-            <View style={[styles.artFrame, { borderColor: hairline, backgroundColor: surface }]}>
+            <View style={[styles.artFrame, { borderColor: muted, backgroundColor: surface }]}>
               <Image
                 source={art}
                 style={[styles.art, reading.reversed && styles.artReversed]}
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     width: CARD_ART_W,
     height: CARD_ART_H,
     borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     overflow: 'hidden',
   },
   art: {

@@ -21,7 +21,7 @@ alwaysApply: true
 |---|---|
 | Close / Back / Menu / Copy | `close` / `arrow-back` / `menu` / `content-copy` |
 | Share / Reset / Chevron | `share_windows`(Symbols path) / `refresh` / `chevron-right` |
-| Lock / Star | `lock` / `star`·`star-border` |
+| Expand / Lock / Star | `expand-more`·`expand-less` / `lock` / `star`·`star-border` |
 
 공유는 Material Symbols `share_windows`. 번들 폰트에 없는 글리프라 `AppIcon.tsx`에 path로 둔다.
 

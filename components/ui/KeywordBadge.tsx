@@ -4,35 +4,47 @@ import { Text } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { keywordPolarity } from '@/lib/keywordPolarity';
+import type { KeywordTone } from '@/lib/tarotKeywordTone';
 
 export function KeywordBadge({
   label,
   hits = 1,
   size = 'md',
   onPress,
+  tone,
 }: {
   label: string;
   hits?: number;
   size?: 'md' | 'lg';
   onPress?: () => void;
+  /** 있으면 이 톤을 쓰고, 없으면 기존 긍정/부정 이분. */
+  tone?: KeywordTone;
 }) {
   const c = Colors[useColorScheme() ?? 'light'];
   const text = label?.trim();
   if (!text) return null;
 
-  const negative = keywordPolarity(text) === 'negative';
+  const resolved: KeywordTone = tone ?? keywordPolarity(text);
+  const fill =
+    resolved === 'negative'
+      ? c.keywordNegative
+      : resolved === 'neutral'
+        ? c.keywordNeutral
+        : c.keywordPositive;
+  const stroke =
+    resolved === 'negative'
+      ? c.keywordNegativeBorder
+      : resolved === 'neutral'
+        ? c.keywordNeutralBorder
+        : c.keywordPositiveBorder;
   const duplicate = hits > 1;
 
   const chipStyle = [
     styles.chip,
     {
-      backgroundColor: negative ? c.keywordNegative : c.keywordPositive,
+      backgroundColor: fill,
       borderWidth: duplicate ? 1.5 : 0,
-      borderColor: duplicate
-        ? negative
-          ? c.keywordNegativeBorder
-          : c.keywordPositiveBorder
-        : 'transparent',
+      borderColor: duplicate ? stroke : 'transparent',
     },
   ];
   const labelText = (

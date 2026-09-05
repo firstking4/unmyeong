@@ -94,7 +94,7 @@ export function listTarotMajor(): SeedRecord[] {
   return tarotCollection.items;
 }
 
-/** 마이너 아르카나 56장 — 카드북·질문 스프레드용 */
+/** 마이너 아르카나 56장 — 카드북·한 점 타로용 */
 export function listTarotMinor(): SeedRecord[] {
   return tarotMinorCollection.items;
 }
