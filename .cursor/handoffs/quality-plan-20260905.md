@@ -6,7 +6,7 @@
 
 사람과 AI 모두 이 파일만 읽고 맥락을 잡을 수 있어야 하므로, 용어 → 코드 위치 매핑과 측정 근거를 함께 둔다.
 
-**진행 (2026-09-05):** S1-b 진행 중 — 키워드 표 확정(E·F 승인), **saju·seonghyang 팩 v2 완료**, tarot·physiognomy·gunghap 남음. 결정 A~D 미확정. 시나리오를 끝내면 이 절과 규칙 포인터를 같이 고친다.
+**진행 (2026-09-05):** S1-b 진행 중 — 키워드 표 확정(E·F 승인), **saju·seonghyang·tarot 팩 v2 완료**, physiognomy·gunghap 남음. 결정 A~D 미확정. 시나리오를 끝내면 이 절과 규칙 포인터를 같이 고친다.
 
 ---
 
@@ -35,7 +35,7 @@
 | 오늘의 관상 | `buildTodayPhysiognomy` · `buildPhysiognomyComposite` (`lib/physiognomy.ts`) · 화면 `app/gwansang.tsx` |
 | 관상 얼굴 고르기 위저드 · 증명사진 | `components/id-card/PhysiognomyAvatarWizard.tsx` · `PhysiognomyFacePreview.tsx` · 이미지 `assets/images/gwansang/{static,warp}` · 생성 `npm run gwansang:warps` |
 | 오늘의 궁합 (지인) | `buildTodayCompatibility` (`lib/gunghap.ts`) · `lib/gunghapTarot.ts` · 화면 `app/contact/[id]/index.tsx` |
-| 팩 변주 1개 | `DailyVariant` = `{ id, keyword, headline, focus, relationship, action, caution, closing?, reverseKeyword? }` |
+| 팩 변주 1개 | `DailyVariant` = `{ id, keyword, headline, focus, relationship, action, caution, closing?, reverseKeyword?, reverseHeadline? }` |
 | 잠금(광고 해금) 상세 | `components/ui/LockedContentCard.tsx` · `lib/ads/rewarded.ts` · 규칙 `ads-plan.mdc` |
 | 조사·문장 접합 헬퍼 | `lib/korean/particle.ts` (`withIga` `withEulReul` `withRo` …) · `lib/korean/sentence.ts` (`joinSentences` `endSentence`) |
 
@@ -46,7 +46,7 @@
 ### 현재 작업 트리 상태
 
 브랜치 `feat/quality-s1-packs`에서 S1-b 진행 중. `main`에는 오늘 카드 칩 통일·허브 이동·라이트 테마·검사 스크립트가 커밋돼 있다(`a6548e4`).
-S1-b 진행: **saju · seonghyang 팩 v2 완료** → tarot → physiognomy → gunghap 순 (§3 「작업 순서 · 진행」).
+S1-b 진행: **saju · seonghyang · tarot 팩 v2 완료** → physiognomy → gunghap 순 (§3 「작업 순서 · 진행」).
 
 ---
 
@@ -172,7 +172,7 @@ const interpretation =
 |---|---|---|
 | `saju` ✅ v2 | 오행 일상어 — 목 5 · 화 4 · 토 5 · 금 5 · 수 5: 뿌리 · 새순 · 틔우기 · 씨앗 · 자리잡기 / 불씨 · 온기 · 밝히기 · 데우기 / 밑거름 · 다지기 · 갈무리 · 채우기 · 비우기 / 벼리기 · 거두기 · 매듭 · 결실 · 식히기 / 물꼬 · 물길 · 스미기 · 머무름 · 고요 | 들어오는 기운 vs 내 기운, 채우기/비우기 구조. 십신 명칭 금지. **`focus`·`action`·`caution`에 「오늘」을 쓰지 않는다** — 같은 팩이 주·월·년 블록 요약에도 붙는다 |
 | `seonghyang` ✅ v2 | 기질·리듬: 몰입 · 거리감 · 즉흥 · 꼼꼼함 · 말수 · 온도 · 속도 · 관찰 · 직진 · 리듬 · 취향 · 눈치 · 유머 · 솔직함 · 느긋함 · 기민함 · 진지함 · 장난기 · 뚝심 · 융통성 · 감수성 · 실행력 · 상상력 · 소신 | 「평소의 나」와 오늘의 어긋남/맞물림 — MBTI·별자리 언급 없이 기질 동사 |
-| `tarot` | 카드 상징: 여정 · 직감 · 저울 · 전환 · 등불 · 문턱 · 수확 · 침묵 · 손잡기 · 뒤집기 · 별빛 · 바퀴 · 열쇠 · 새벽 · 우물 · 나침반 · 실타래 · 거울 · 다리 · 지팡이 · 항해 · 날개 · 정원 · 왕관 | 이미지·장면 문장. `reverseKeyword` 6종 유지(점검·지연·재조정·숨고르기·되감기·정비). **템플릿 손질 필요** — `lib/tarot.ts`의 「{키워드} 쪽에서 점검해 보세요」·「{키워드}를 다시 맞출 날」은 추상어용이라 상징어(저울·우물)에 어색하다. 타로 팩 차례에 템플릿을 장면형으로 바꾼다 |
+| `tarot` ✅ v2 | 카드 상징: 여정 · 직감 · 저울 · 전환 · 등불 · 문턱 · 수확 · 침묵 · 손잡기 · 뒤집기 · 별빛 · 바퀴 · 열쇠 · 새벽 · 우물 · 나침반 · 실타래 · 거울 · 다리 · 지팡이 · 항해 · 날개 · 정원 · 왕관 | 이미지·장면 문장. `reverseKeyword` 6종 유지(점검·지연·재조정·숨고르기·되감기·정비). 템플릿 손질 완료 — 역방향 헤드라인은 팩 `reverseHeadline` 24개(장면형), 폴백은 「오늘의 상징 ‘{키워드}’」 |
 | `physiognomy` | 인상·표정·태도: 눈맞춤 · 첫인상 · 표정 · 자세 · 미소 · 시선 · 목소리 · 여백 · 단정함 · 너그러움 · 끄덕임 · 말투 · 걸음 · 손짓 · 온화함 · 눈빛 · 옷차림 · 인사 · 웃음 · 침착함 · 다정함 · 기품 · 얼굴빛 · 어깨 펴기 | 「오늘 남에게 어떻게 보이는가」 — 부위 이름 없이 인상 행동. **헤드라인 중복 버그** — `app/gwansang.tsx`가 `theme.keyword`와 `theme.headline`(키워드 포함)을 함께 그려 「정리 · 정리 · 정리한 만큼…」이 된다. 관상 팩 차례에 화면 쪽을 함께 고친다 |
 | `gunghap` | 관계 행위 (칩만 쓰임): 안부 · 경청 · 양보 · 약속 · 맞장구 · 간격 · 사과 · 초대 · 기다림 · 공유 · 칭찬 · 부탁 · 응원 · 배려 · 속마음 · 농담 · 답장 · 마중 · 축하 · 나눔 · 인정 · 존중 · 챙기기 · 물어보기 | 두 사람의 오늘 행동. 사람 판정(낙인) 금지 — `fortune-copy.mdc` §4 |
 
@@ -196,7 +196,7 @@ const interpretation =
 | home | 지도 헤드라인·luckTags | 미사용 | 지도 본문 | 지도 주의 | 지도 행동 | 지도 주의 |
 | seonghyang | 칩·요약 「‘키워드’ 흐름」 | 카드 헤드라인 | 요약 | 힌트 관계 | 힌트 오늘의 한 가지 | 힌트 주의 |
 | saju | 칩 (오늘 3 · 주/월/년 1) | 만세력 없을 때 폴백 「금의 기운, {headline}」 | 오늘·주·월·년 요약 둘째 문장 | — | 기간 카피 없을 때 폴백 | 기간 카피 없을 때 폴백 |
-| tarot | 칩·헤드라인 | 정방향 헤드라인 | blurb | 힌트 관계 | 힌트 오늘의 한 가지 | 힌트 주의 (+theme2 caution) |
+| tarot | 칩 (theme·theme2·reverseKeyword) | 정방향 헤드라인 (역방향은 `reverseHeadline`) | blurb 둘째 문장 · theme2는 일·재능/성장 힌트 | 힌트 관계 | 힌트 오늘의 한 가지 · theme2는 성장 힌트 | 힌트 주의 · theme2는 역방향 일·재능 |
 | physiognomy | 칩·헤드라인 | 헤드라인 | 요약 | 힌트 관계 | 힌트 일·재능 | 힌트 오늘의 주의 |
 | gunghap | 칩 | 미사용 | 미사용 | 미사용 | 미사용 | 미사용 |
 
@@ -206,8 +206,8 @@ const interpretation =
 **작업 순서 · 진행**
 
 1. ✅ 키워드 24개 표 확정 (위 표).
-2. ✅ `saju` 팩 v2 (2026-09-05). ✅ `seonghyang` 팩 v2 (2026-09-05). 이어서 `tarot`(템플릿 손질 포함) → `physiognomy`(헤드라인 중복 수정 포함) → `gunghap`(키워드만). 각 팩마다 화면 렌더 확인 → §9 검사 → 사용자 검수 → 커밋.
-3. ✅ `cleanThemeLine` 삭제. ✅ `check:today-crosstab` 등록 — 스키마(24개 · 필드 누락 0 · 문장 끝 마침표 0 · 조사 병기 0 · keyword 팩 안 고유 · 네 탭 간 고유) + 팩 간 동일 문장 + 같은 날 교차 중복. **남은 팩 3개가 끝날 때까지는 실패가 정상**이다.
+2. ✅ `saju` 팩 v2 · ✅ `seonghyang` 팩 v2 · ✅ `tarot` 팩 v2 (모두 2026-09-05). 이어서 `physiognomy`(헤드라인 중복 수정 포함) → `gunghap`(키워드만). 각 팩마다 화면 렌더 확인 → §9 검사 → 사용자 검수 → 커밋.
+3. ✅ `cleanThemeLine` 삭제. ✅ `check:today-crosstab` 등록 — 스키마(24개 · 필드 누락 0 · 문장 끝 마침표 0 · 조사 병기 0 · keyword 팩 안 고유 · 네 탭 간 고유) + 팩 간 동일 문장 + 같은 날 교차 중복. **남은 팩 2개가 끝날 때까지는 실패가 정상**이다.
 4. 팩 5개 끝난 뒤 `data/daily/meta.json` version 올리고 §9 전부 통과 → S1 완료.
 
 **사주 단계에서 함께 고친 코드 (`lib/saju.ts`)**
@@ -223,12 +223,20 @@ const interpretation =
 - 주의 템플릿 「{주의점} 신호를 느끼면 …」 → `cautionWithWatch`: 시드 `watchouts` 96개가 전부 「…할 때」로 끝나므로 「{주의점}면 …」(「몰입이 깊어질 때면 …」). 「때」로 끝나지 않는 값만 옛 표현으로 잇는다.
 - 팩 `caution`은 이 템플릿 뒤에 붙으므로 **「…면」으로 시작하는 조건절을 넣지 않는다** (「…때면 …길어지면」 이중 조건).
 
+**타로 단계에서 함께 고친 코드 (`lib/tarot.ts` · `lib/gunghapTarot.ts` · `lib/daily/pick.ts`)**
+
+- 팩에 `reverseHeadline` 필드 추가 (`DailyVariant.reverseHeadline?`). 역방향 헤드라인이 「{키워드}를 다시 맞출 날」 템플릿이었는데 상징어(우물·등불)에 어색해서 24개를 장면형으로 직접 썼다 (「저울 · 기울기를 다시 재는 날」).
+- 오늘의 카드 `headline`에서 카드명을 뺐다. 화면(`app/(tabs)/tarot.tsx`)이 카드명·정/역을 따로 그리는데 헤드라인이 「바보, …」로 카드명을 반복했다. 지인 타로 레이어는 카드명이 헤드라인에만 있어 그대로 둔다.
+- 키워드를 끼우는 폴백 두 곳(「{키워드} 쪽에서 점검해 보세요」·「키워드 ‘{키워드}’를 업무 한 곳에 적용」)을 「오늘의 상징 ‘{키워드}’를 …」로. 시드 78장이 upright·reversed·hints를 모두 갖고 있어 실제로는 거의 안 타는 경로.
+- `gunghapTarot.ts`의 `summary`·`relationship`이 `join(' ')`로 팩 문장을 이어 마침표가 빠졌다 → `joinSentences`. UI에는 `summaryLine`·`detailLine`만 보이므로 표시 변화는 `detailLine` 마침표 정도.
+- 그대로 둔 것: `pickDailyPair`의 이웃 변주 — 오늘 `theme2`가 내일 `theme`이라 「어제 성장 힌트 = 오늘의 한 가지」가 매일 한 번 생기고, 칩 3개 중 2개가 전날과 겹친다. 성향·사주·관상 칩(`pickDailyMany` 이웃 3)도 같다. **S1-c 후보:** `pickDailyMany`를 이웃(p, p+1, p+2) 대신 간격(p, p+8, p+16)으로 바꾸면 날마다 칩 3개가 전부 바뀌고 8일에 24개를 다 돈다. 사용자 결정 뒤 진행.
+
 ### 완료 기준
 
 - `npm run check:today-crosstab` 통과 — 팩 간 `action`·`caution`·`headline` 동일 문장 **0**, 네 탭 키워드 교집합 **0**, 같은 날 교차 동일 문장 **0/60일**.
 - `check:today-fixed` · `check:today-repetition` · `check:today-content` · `check:today-keywords-fixed` · `verify:fortune-variety` 통과.
 
-진행 기록: 사주 팩 v2 뒤 교차 중복 21/60 → 20/60일, 사주가 낀 조합 0. 허브 고유 칩 30 → 54. 성향 팩 v2 뒤 16/60일(남은 조합 타로+관상 16 · 지도+관상 11 · 지도+타로 5), 허브 고유 칩 78.
+진행 기록: 사주 팩 v2 뒤 교차 중복 21/60 → 20/60일, 사주가 낀 조합 0. 허브 고유 칩 30 → 54. 성향 팩 v2 뒤 16/60일(남은 조합 타로+관상 16 · 지도+관상 11 · 지도+타로 5), 허브 고유 칩 78. 타로 팩 v2 뒤 **5/60일**(남은 조합 지도+관상 11 — 관상 팩만 남음), 허브 고유 칩 102.
 
 ### 하지 말 것
 

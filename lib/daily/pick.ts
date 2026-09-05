@@ -23,6 +23,8 @@ export type DailyVariant = {
   caution: string;
   closing?: string;
   reverseKeyword?: string;
+  /** 타로 역방향 헤드라인 — 「저울 · 기울기를 다시 재는 날」 */
+  reverseHeadline?: string;
 };
 
 export type DailyPack = {

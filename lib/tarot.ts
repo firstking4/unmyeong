@@ -1,6 +1,6 @@
 import { pickDailyTarotCard } from '@/lib/data/catalog';
 import { pickDailyPair } from '@/lib/daily/pick';
-import { hasFinalConsonant, withEulReul, withIga } from '@/lib/korean/particle';
+import { hasFinalConsonant, withIga } from '@/lib/korean/particle';
 import { endSentence, joinSentences } from '@/lib/korean/sentence';
 import { tarotEnglishName } from '@/lib/tarotEnglishNames';
 import type { Profile } from '@/lib/types';
@@ -72,16 +72,19 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
   const reversedCore =
     card.reversed && !card.reversed.includes('에너지가 막히거나 지연')
       ? card.reversed
-      : `${title}의 기운이 안쪽으로 가라앉아 있습니다. 속도를 낮추고 ${theme.keyword} 쪽에서 점검해 보세요.`;
+      : `${title}의 기운이 안쪽으로 가라앉아 있습니다. 속도를 낮추고 오늘의 상징 ‘${theme.keyword}’${
+          hasFinalConsonant(theme.keyword) ? '을' : '를'
+        } 떠올려 보세요.`;
 
   const blurb = reversed
     ? joinSentences([reversedCore, theme.focus])
     : joinSentences([uprightCore, theme.focus]);
 
   const summary = card.summary;
+  // 카드명·정/역은 화면이 따로 그리므로 헤드라인은 오늘 상징 한 줄만 둔다.
   const headline = reversed
-    ? `${title} · ${withEulReul(theme.keyword)} 다시 맞출 날`
-    : `${title}, ${theme.headline}`;
+    ? (theme.reverseHeadline ?? `${theme.keyword} · 한 번 더 돌아보는 날`)
+    : theme.headline;
 
   const keywords = unique([theme.keyword, theme2.keyword, reverseWord]);
 
@@ -135,7 +138,7 @@ export function buildTarotReading(profile: Profile, date = new Date()): TarotRea
             ? joinSentences([seedHints.work, theme2.focus])
             : joinSentences([
                 theme2.focus,
-                `키워드 ‘${theme.keyword}’${hasFinalConsonant(theme.keyword) ? '을' : '를'} 오늘의 업무 한 곳에 적용해 보세요.`,
+                `오늘의 상징 ‘${theme.keyword}’${hasFinalConsonant(theme.keyword) ? '을' : '를'} 업무 한 곳에 떠올려 보세요.`,
               ]),
         },
         {

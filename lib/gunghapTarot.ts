@@ -1,6 +1,7 @@
 import { listTarotDeck } from '@/lib/data/catalog';
 import { localYmd, pickDaily } from '@/lib/daily/pick';
-import { hasFinalConsonant, resolveParticles, withEulReul } from '@/lib/korean/particle';
+import { hasFinalConsonant, resolveParticles } from '@/lib/korean/particle';
+import { endSentence, joinSentences } from '@/lib/korean/sentence';
 import { tarotEnglishName } from '@/lib/tarotEnglishNames';
 import type { SeedRecord } from '@/lib/data/types';
 
@@ -80,37 +81,32 @@ export function buildGunghapTarotReading(
   const reversedCore =
     card.reversed && !card.reversed.includes('에너지가 막히거나 지연')
       ? card.reversed
-      : `${title}의 기운이 안쪽으로 가라앉아 있습니다. 속도를 낮추고 ${theme.keyword} 쪽에서 점검해 보세요.`;
+      : `${title}의 기운이 안쪽으로 가라앉아 있습니다. 속도를 낮추고 오늘의 상징 ‘${theme.keyword}’${
+          hasFinalConsonant(theme.keyword) ? '을' : '를'
+        } 떠올려 보세요.`;
 
+  // 팩 문장은 마침표 없이 끝나므로 joinSentences로 잇는다 (fortune-copy §3)
   const relationship = reversed
     ? seedHints?.love
-      ? `역방향 · ${seedHints.love} ${theme.relationship}`
-      : `역방향에서는 거리와 속도가 핵심입니다. ${theme.relationship} 오늘은 먼저 맞추기보다 서로의 페이스를 확인하는 편이 낫습니다.`
+      ? joinSentences([`역방향 · ${seedHints.love}`, theme.relationship])
+      : joinSentences([
+          '역방향에서는 거리와 속도가 핵심입니다.',
+          theme.relationship,
+          '오늘은 먼저 맞추기보다 서로의 페이스를 확인하는 편이 낫습니다.',
+        ])
     : seedHints?.love
-      ? `${seedHints.love} ${theme.relationship}`
-      : `${theme.relationship} ${title}의 기운을 빌려 솔직한 한 마디를 건네 보세요.`;
+      ? joinSentences([seedHints.love, theme.relationship])
+      : joinSentences([theme.relationship, `${title}의 기운을 빌려 솔직한 한 마디를 건네 보세요.`]);
 
   const summary = reversed
-    ? [
-        `${title}(${reverseWord}) — ${reversedCore}`,
-        theme.caution,
-        theme.focus,
-      ]
-        .filter(Boolean)
-        .join(' ')
-    : [
-        `${title} — ${uprightCore}`,
-        theme.focus,
-        theme.action,
-      ]
-        .filter(Boolean)
-        .join(' ');
+    ? joinSentences([`${title}(${reverseWord}) — ${reversedCore}`, theme.caution, theme.focus])
+    : joinSentences([`${title} — ${uprightCore}`, theme.focus, theme.action]);
 
-  const caution = theme.caution;
+  const caution = endSentence(theme.caution);
 
   const headline = fixObjectParticle(
     reversed
-      ? `${title} · ${withEulReul(theme.keyword)} 다시 맞출 날`
+      ? `${title} · ${theme.reverseHeadline ?? `${theme.keyword} · 한 번 더 돌아보는 날`}`
       : `${title}, ${theme.headline}`,
   );
 
@@ -120,8 +116,8 @@ export function buildGunghapTarotReading(
 
   const detailLine = fixObjectParticle(
     reversed
-      ? `${title} 역방향 — 「${theme.keyword}」${hasFinalConsonant(theme.keyword) ? '을' : '를'} 한 번 더 돌아보는 날이에요.`
-      : theme.relationship,
+      ? `${title} 역방향 — 오늘의 상징 ‘${theme.keyword}’${hasFinalConsonant(theme.keyword) ? '을' : '를'} 한 번 더 돌아보는 날이에요.`
+      : endSentence(theme.relationship),
   );
 
   // 카드 원문 키워드(비참·황폐·악소식 …)는 지인 카드 칩으로 너무 세다.

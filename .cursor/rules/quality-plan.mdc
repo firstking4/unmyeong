@@ -12,7 +12,7 @@ alwaysApply: false
 
 ## 우선순위 (의존)
 
-1. **S1** 일일 팩 분리 — 6팩이 같은 24문장. 같은 날 교차 중복 21/60일. **진행 중:** saju·seonghyang v2 완료 → tarot → physiognomy → gunghap. 완료 기준은 `npm run check:today-crosstab` 통과
+1. **S1** 일일 팩 분리 — 6팩이 같은 24문장. 같은 날 교차 중복 21/60일. **진행 중:** saju·seonghyang·tarot v2 완료 → physiognomy → gunghap. 완료 기준은 `npm run check:today-crosstab` 통과
 2. **S2** 지도 취합 — 점수(사주) · 본문(사주+타로) · 칩(4탭)이 세 출처
 3. **S3** 관상 — 조합 해설 → 시드 → 옵션·이미지 (선택지 늘리기 전)
 4. **S4** 타로 스프레드 — 포지션 × 정역 × 질문유형

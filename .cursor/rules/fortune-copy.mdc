@@ -59,8 +59,8 @@ pickDailyFrom(opts, `x:${profile.birthDate ?? 'anon'}`, date);
 ```ts
 import { withEulReul, withIga, withEun, withGwa, withRo } from '@/lib/korean/particle';
 
-`${withEulReul(keyword)} 다시 맞출 날`   // 목을 / 화를
-`${withIga(label)} 어긋납니다`            // 정재가 / 편관이
+`${withEulReul(strength)} 오늘의 ‘${keyword}’에 얹어 보세요`   // 비전을 / 설득을
+`${withIga(label)} 어긋납니다`                                  // 정재가 / 편관이
 ```
 
 - 시드·팩 데이터에도 `을(를)` 같은 표기를 새로 쓰지 않는다

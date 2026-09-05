@@ -33,6 +33,7 @@ type Variant = {
   caution: string;
   closing?: string;
   reverseKeyword?: string;
+  reverseHeadline?: string;
 };
 
 type Pack = { version: number; variants: Variant[] };
