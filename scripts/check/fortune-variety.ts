@@ -133,7 +133,8 @@ for (const d of days) {
   const f = buildIntegratedFortune(profile, d);
   const hub = buildTodayKeywords(profile, d);
   const first = hub.keywords[0]?.label;
-  const moodKw = f.moodHeadline.split(' · ')[0];
+  const parts = f.moodHeadline.split(' · ');
+  const moodKw = parts[parts.length - 1];
   if (!first || moodKw !== first || !hub.keywords.some((k) => k.label === moodKw)) {
     hubMiss += 1;
   }
@@ -163,6 +164,17 @@ if (sourceCountMiss) {
   problems.push(`지도 출처 줄 수 ${sourceCountMiss}일`);
 } else {
   console.log('  프로필 완전: 사주·성향·타로·관상 4줄');
+}
+
+{
+  const bare = { ...profile, physiognomy: undefined };
+  const emptyGwan = buildIntegratedFortune(bare, days[0]!).sources?.find((s) => s.source === '관상');
+  if (!emptyGwan?.placeholder || !emptyGwan.line.includes('고르지')) {
+    console.log('  ⚠ 관상 미선택 안내 없음');
+    problems.push('관상 미선택 안내 없음');
+  } else {
+    console.log('  관상 미선택: 안내 줄 유지');
+  }
 }
 
 console.log('\n=== 문장 접합 검사 (마침표 없이 붙은 문장) ===');

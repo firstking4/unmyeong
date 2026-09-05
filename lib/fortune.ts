@@ -77,6 +77,15 @@ const CLOSING_LINES = [
 
 export type FortuneGrade = '주의' | '조심' | '무난' | '좋음' | '최고';
 
+/** 점수 옆 헤드라인 — 등급 약어만 두면 「느긋함 · 무난」이 무엇을 말하는지 안 보인다 */
+const GRADE_DAY: Record<FortuneGrade, string> = {
+  주의: '주의가 필요한 하루',
+  조심: '조심할 하루',
+  무난: '무난한 하루',
+  좋음: '좋은 하루',
+  최고: '가장 좋은 하루',
+};
+
 function hashSeed(input: string): number {
   let h = 0;
   for (let i = 0; i < input.length; i++) h = (h * 31 + input.charCodeAt(i)) >>> 0;
@@ -222,29 +231,53 @@ function buildScoreNote(period: PersonalFortuneScore, profileSalt: string, date:
   const todayPool =
     todaySign > 0
       ? [
-          '오늘 들어오는 기운이 내 기운을 밀어 주고',
-          '오늘의 기운이 나와 잘 맞고',
-          '오늘 흐름이 내 쪽으로 기울고',
+          '오늘 들어오는 기운이 내 기운을 밀어 줍니다',
+          '오늘의 기운이 나와 잘 맞습니다',
+          '오늘 흐름이 내 쪽으로 기울었습니다',
         ]
       : todaySign < 0
         ? [
-            '오늘 들어오는 기운이 내 기운과 부딪히고',
-            '오늘의 기운이 나와 엇갈리고',
-            '오늘 흐름이 내 결과 다르게 가고',
+            '오늘 들어오는 기운이 내 기운과 부딪힙니다',
+            '오늘의 기운이 나와 엇갈립니다',
+            '오늘 흐름이 나와 다른 결입니다',
           ]
-        : ['오늘 들어오는 기운은 내 기운과 나란하고', '오늘의 기운은 나와 비슷한 결이고'];
+        : [
+            '오늘 들어오는 기운은 내 기운과 나란합니다',
+            '오늘의 기운은 나와 비슷한 결입니다',
+            '오늘 흐름은 내 기운과 크게 어긋나지 않습니다',
+          ];
   const todayClause =
     pickDailyFrom(todayPool, `fortune-score-today:${profileSalt}`, date) ?? todayPool[0]!;
 
   const same = todaySign === seasonSign;
-  const seasonClause =
+  const seasonPool =
     seasonSign > 0
-      ? `이달·올해 흐름${same ? '도' : '이'} 받쳐 주어`
+      ? same
+        ? ['이달과 올해도 받쳐 줍니다', '이달과 올해도 힘이 실립니다', '이달과 올해도 같은 방향입니다']
+        : ['이달과 올해도 받쳐 줍니다', '이달과 올해도 힘이 실립니다', '이달·올해 흐름이 받쳐 줍니다']
       : seasonSign < 0
-        ? `이달·올해 흐름${same ? '도' : '은'} 조심스러워`
-        : `이달·올해 흐름${same ? '도' : '은'} 무난해`;
+        ? same
+          ? [
+              '이달과 올해도 조심할 때입니다',
+              '이달과 올해도 속도를 낮추는 편이 낫습니다',
+              '이달과 올해도 무리하지 않는 쪽이 편합니다',
+            ]
+          : [
+              '다만 이달·올해는 조심할 때입니다',
+              '다만 이달·올해는 속도를 낮추는 편이 낫습니다',
+              '다만 이달·올해는 무리하지 않는 쪽이 편합니다',
+            ]
+        : same
+          ? ['이달과 올해도 무난합니다', '이달과 올해도 평이합니다', '이달과 올해도 크게 기울지 않습니다']
+          : [
+              '이달·올해는 무난합니다',
+              '이달·올해 흐름은 평이합니다',
+              '이달·올해는 크게 기울지 않습니다',
+            ];
+  const seasonClause =
+    pickDailyFrom(seasonPool, `fortune-score-season:${profileSalt}`, date) ?? seasonPool[0]!;
 
-  return `${todayClause} ${seasonClause} ${period.score}점입니다.`;
+  return joinSentences([todayClause, seasonClause, `점수는 ${period.score}입니다`]);
 }
 
 function buildInsightChips(profile: Profile, tarotTitle: string, tones: PillarTone[]): string[] {
@@ -425,7 +458,16 @@ function buildIntegratedFortuneNow(
       route: '/tarot',
     });
   }
-  if (gwansangToday) sources.push({ source: '관상', line: gwansangToday.focus, route: '/gwansang' });
+  sources.push(
+    gwansangToday
+      ? { source: '관상', line: gwansangToday.focus, route: '/gwansang' }
+      : {
+          source: '관상',
+          line: '아직 얼굴 특징을 고르지 않았습니다. 누르면 골라 볼 수 있습니다.',
+          route: '/gwansang',
+          placeholder: true,
+        },
+  );
 
   const introLine = periodScore ? undefined : sajuLine;
   const summary = joinSentences([introLine, ...sources.map((item) => item.line)]);
@@ -442,12 +484,13 @@ function buildIntegratedFortuneNow(
     luckTags: luckTags.slice(0, 4),
   };
 
-  // 헤드라인 키워드는 허브 첫 칩 — home 팩 단어는 칩에 없어 「정리 · 좋음」이 허브와 어긋났다
+  // 점수 옆 헤드라인: 등급을 문장으로 두고, 허브 첫 칩을 뒤에 붙인다 (칩 목록과 일치)
   const hubFirst = buildTodayKeywords(profile, date).keywords[0]?.label;
+  const gradeLine = GRADE_DAY[grade];
 
   return {
     headline,
-    moodHeadline: hubFirst ? `${hubFirst} · ${grade}` : grade,
+    moodHeadline: hubFirst ? `${gradeLine} · ${hubFirst}` : gradeLine,
     summary,
     introLine,
     sources,

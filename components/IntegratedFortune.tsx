@@ -99,7 +99,14 @@ function FortuneSourceLines({ sources }: { sources: FortuneSourceLine[] }) {
           accessibilityLabel={`${item.source} 오늘 카드로 이동`}
         >
           <Text style={[styles.sourceLabel, { color: c.muted }]}>{item.source}</Text>
-          <Text style={[styles.detailBody, { color: c.text }]}>{item.line}</Text>
+          <Text
+            style={[
+              item.placeholder ? styles.detailMuted : styles.detailBody,
+              { color: item.placeholder ? c.muted : c.text },
+            ]}
+          >
+            {item.line}
+          </Text>
         </Pressable>
       ))}
     </View>

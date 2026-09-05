@@ -97,6 +97,8 @@ export type FortuneSourceLine = {
   source: FortuneSource;
   line: string;
   route: string;
+  /** 관상 미선택 안내처럼, 오늘 풀이 대신 빈 상태 문구 */
+  placeholder?: boolean;
 };
 
 export type IntegratedFortune = {
