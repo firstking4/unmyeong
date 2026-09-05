@@ -125,6 +125,16 @@ function westMeta(record: SeedRecord): string | undefined {
   return `${Number(sm)}/${Number(sd)} – ${Number(em)}/${Number(ed)}`;
 }
 
+/**
+ * MBTI 주의점(시드 `watchouts`, 「…할 때」 꼴)에 오늘 팩 주의를 잇는다.
+ * 「몰입이 깊어질 때면 잠깐 자리에서 일어나 …」. 「때」로 끝나지 않는 값은 신호 표현으로 잇는다.
+ */
+function cautionWithWatch(watch: string | null | undefined, caution: string): string {
+  if (!watch) return endSentence(caution);
+  const lead = watch.endsWith('때') ? `${watch}면` : `${watch} 신호를 느끼면`;
+  return endSentence(`${lead} ${stripSentenceEnd(caution)}`);
+}
+
 function buildTodaySeonghyang(
   profile: Profile,
   assessments: PersonalityAssessmentResults = {},
@@ -175,9 +185,7 @@ function buildTodaySeonghyang(
 
   const summaryParts = [theme.focus, signClause];
   if (mbtiSeed && strength) {
-    summaryParts.push(
-      `${mbtiSeed.label}로는 ‘${theme.keyword}’ 흐름 위에서 ${strength} 쪽을 가볍게 살려 보세요.`,
-    );
+    summaryParts.push(`${mbtiSeed.label}의 ${withEulReul(strength)} 오늘의 ‘${theme.keyword}’에 얹어 보세요.`);
   } else if (mbtiReady) {
     summaryParts.push(mbtiReady.summary);
   }
@@ -195,9 +203,7 @@ function buildTodaySeonghyang(
     ? joinSentences([theme.relationship, loveHint])
     : endSentence(theme.relationship);
   const action = endSentence(theme.action);
-  const caution = watch
-    ? endSentence(`${watch} 신호를 느끼면 ${stripSentenceEnd(theme.caution)}`)
-    : endSentence(theme.caution);
+  const caution = cautionWithWatch(watch, theme.caution);
 
   return {
     dateLabel: date.toLocaleDateString('ko-KR', {
@@ -255,7 +261,7 @@ export function buildTodayMbti(
       // 오늘 풀이에는 싣지 않고 오늘 테마와 오늘의 강점만 엮는다.
       summary: joinSentences([
         theme.focus,
-        `오늘은 ‘${theme.keyword}’ 흐름 위에서 ${strength} 쪽을 가볍게 살려 보세요.`,
+        `오늘의 ‘${theme.keyword}’에 ${withEulReul(strength)} 얹어 보세요.`,
       ]),
       hints: [
         {
@@ -292,12 +298,7 @@ export function buildTodayMbti(
           })(),
         },
         { label: '오늘의 한 가지', text: endSentence(theme.action) },
-        {
-          label: '주의',
-          text: watch
-            ? endSentence(`${watch} 신호를 느끼면 ${stripSentenceEnd(theme.caution)}`)
-            : endSentence(theme.caution),
-        },
+        { label: '주의', text: cautionWithWatch(watch, theme.caution) },
       ],
       watchouts: unique([watch, ...(mbti.watchouts ?? [])]).slice(0, 2),
     },
