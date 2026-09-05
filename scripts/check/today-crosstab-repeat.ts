@@ -5,9 +5,10 @@
  *    keyword 팩 안 고유 · 성향/사주/타로/관상 네 팩 사이 고유
  * 2. 팩 문장 — 도메인 간 동일한 headline·action·caution 0
  * 3. 화면 — 같은 날 2개 이상 화면에 같은 문장 0/60일
+ *    지도가 성향·타로·관상 오늘 카드를 한 줄씩 가져오는 것(S2)은 제외한다.
+ *    지도 쪽은 사주 리드·행동·주의만 비교한다.
  *
  * 실행: npm run check:today-crosstab
- * S1-b가 끝나기 전에는 남은 팩 때문에 실패한다. 어떤 팩이 남았는지 출력으로 본다.
  */
 import gunghapPack from '@/data/daily/packs/gunghap.json';
 import homePack from '@/data/daily/packs/home.json';
@@ -135,7 +136,8 @@ const examples: string[] = [];
 for (const d of days) {
   const texts: Record<string, string[]> = {};
   const f = buildIntegratedFortune(profile, d);
-  texts['지도'] = sentences([f.summary, f.guidance, f.caution ?? ''].join(' '));
+  const mapSaju = f.sources?.find((row) => row.source === '사주')?.line ?? f.introLine ?? '';
+  texts['지도'] = sentences([mapSaju, f.guidance, f.caution ?? '', f.scoreNote ?? ''].join(' '));
   const s = buildSeonghyangReading(profile, {}, d).today;
   texts['성향'] = sentences([s?.summary ?? '', ...(s?.hints ?? []).map((h) => h.text)].join(' '));
   const sj = buildSajuReading(profile.birthDate!, d, profile.birthTime)?.today;

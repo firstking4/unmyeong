@@ -53,6 +53,8 @@ export type TodaySeonghyang = {
   headline: string;
   meta: string;
   keywords: string[];
+  /** 오늘 팩 focus 한 문장 — `summary`의 첫 문장이자 지도 「성향」 줄 */
+  focus: string;
   summary: string;
   hints: { label: string; text: string }[];
   /** 오늘의 성향 카드에 얹는 MBTI 레이어 (별도 섹션이 아님) */
@@ -215,6 +217,7 @@ function buildTodaySeonghyang(
     headline: theme.headline,
     meta: labels.join(' · '),
     keywords,
+    focus: endSentence(theme.focus),
     summary: joinSentences(summaryParts),
     hints: [
       { label: '관계', text: relationship },

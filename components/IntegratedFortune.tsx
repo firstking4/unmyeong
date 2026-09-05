@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { type Href, useRouter } from 'expo-router';
 
 import { TodayKeywordCaption, TodayKeywords } from '@/components/home/TodayKeywords';
 import { BrushScoreRing } from '@/components/ink/BrushScoreRing';
@@ -11,7 +12,9 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { useProfile } from '@/context/ProfileContext';
 import { buildIntegratedFortune } from '@/lib/fortune';
 import { recordFortuneView } from '@/lib/history';
+import type { FortuneSourceLine } from '@/lib/types';
 import { useLocalDateKey } from '@/lib/useLocalDateKey';
+import { requestTabScrollReset } from '@/lib/useTabScrollReset';
 
 export function IntegratedFortune() {
   const scheme = useColorScheme() ?? 'light';
@@ -50,7 +53,17 @@ export function IntegratedFortune() {
       </View>
 
       <View style={[styles.detail, { borderTopColor: c.card }]}>
-        <Text style={[styles.detailBody, { color: c.text }]}>{fortune.summary}</Text>
+        {fortune.introLine ? (
+          <Text style={[styles.detailBody, { color: c.text }]}>{fortune.introLine}</Text>
+        ) : null}
+        {fortune.sources?.length ? (
+          <FortuneSourceLines sources={fortune.sources} />
+        ) : (
+          <Text style={[styles.detailBody, { color: c.text }]}>{fortune.summary}</Text>
+        )}
+        {fortune.scoreNote ? (
+          <Text style={[styles.detailMuted, { color: c.muted }]}>{fortune.scoreNote}</Text>
+        ) : null}
         <Text style={[styles.detailLabel, { color: c.tint, fontFamily: display }]}>행동 가이드</Text>
         <Text style={[styles.detailMuted, { color: c.muted }]}>{fortune.guidance}</Text>
         {fortune.caution ? (
@@ -63,6 +76,32 @@ export function IntegratedFortune() {
           {fortune.closing}
         </Text>
       </View>
+    </View>
+  );
+}
+
+function FortuneSourceLines({ sources }: { sources: FortuneSourceLine[] }) {
+  const router = useRouter();
+  const c = Colors[useColorScheme() ?? 'light'];
+
+  const openSource = (item: FortuneSourceLine) => {
+    if (item.source !== '관상') requestTabScrollReset();
+    router.navigate(item.route as Href);
+  };
+
+  return (
+    <View style={styles.sourceStack}>
+      {sources.map((item) => (
+        <Pressable
+          key={item.source}
+          onPress={() => openSource(item)}
+          accessibilityRole="link"
+          accessibilityLabel={`${item.source} 오늘 카드로 이동`}
+        >
+          <Text style={[styles.sourceLabel, { color: c.muted }]}>{item.source}</Text>
+          <Text style={[styles.detailBody, { color: c.text }]}>{item.line}</Text>
+        </Pressable>
+      ))}
     </View>
   );
 }
@@ -128,6 +167,14 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     borderTopWidth: StyleSheet.hairlineWidth,
     gap: 10,
+  },
+  sourceStack: {
+    gap: 10,
+  },
+  sourceLabel: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 2,
   },
   detailBody: {
     fontSize: 15,

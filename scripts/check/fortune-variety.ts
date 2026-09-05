@@ -1,8 +1,10 @@
 import { buildIntegratedFortune } from '@/lib/fortune';
 import { buildSeonghyangReading } from '@/lib/seonghyang';
 import { buildTodayCompatibility } from '@/lib/gunghap';
+import { buildTodayPhysiognomy } from '@/lib/physiognomy';
 import { buildTarotReading } from '@/lib/tarot';
 import { buildSajuReading } from '@/lib/saju';
+import { buildTodayKeywords } from '@/lib/todayKeywords';
 import type { ContactProfile, Profile } from '@/lib/types';
 
 const profile = {
@@ -12,6 +14,11 @@ const profile = {
   mbti: 'INTJ',
   bloodType: 'A',
   gender: 'male',
+  physiognomy: {
+    eyes: 'eyes_large_double_upturned',
+    nose: 'nose_high_wide',
+    mouth: 'mouth_large_full',
+  },
 } as Profile;
 
 const contact = {
@@ -117,6 +124,46 @@ for (let i = 0; i < DAYS; i++) {
 }
 if (mismatch === 0) console.log('  14일 전부 일치');
 else problems.push(`홈·타로 카드 불일치 ${mismatch}일`);
+
+console.log('\n=== 지도 취합 (S2) ===');
+let hubMiss = 0;
+let sourceMiss = 0;
+let sourceCountMiss = 0;
+for (const d of days) {
+  const f = buildIntegratedFortune(profile, d);
+  const hub = buildTodayKeywords(profile, d);
+  const first = hub.keywords[0]?.label;
+  const moodKw = f.moodHeadline.split(' · ')[0];
+  if (!first || moodKw !== first || !hub.keywords.some((k) => k.label === moodKw)) {
+    hubMiss += 1;
+  }
+  const seongToday = buildSeonghyangReading(profile, {}, d).today;
+  const tarotToday = buildTarotReading(profile, d);
+  const gwanToday = buildTodayPhysiognomy(profile.physiognomy!, d, profile.birthDate);
+  const bySource = Object.fromEntries((f.sources ?? []).map((s) => [s.source, s.line]));
+  if (seongToday && bySource['성향'] !== seongToday.focus) sourceMiss += 1;
+  if (bySource['타로'] !== `「${tarotToday.title}」 — ${tarotToday.summary}`) sourceMiss += 1;
+  if (bySource['관상'] !== gwanToday.focus) sourceMiss += 1;
+  if ((f.sources?.length ?? 0) !== 4) sourceCountMiss += 1;
+}
+if (hubMiss) {
+  console.log(`  ⚠ 헤드라인 ≠ 허브 첫 칩 ${hubMiss}/${DAYS}일`);
+  problems.push(`지도 헤드라인이 허브 첫 칩과 다름 ${hubMiss}일`);
+} else {
+  console.log('  헤드라인 = 허브 첫 칩');
+}
+if (sourceMiss) {
+  console.log(`  ⚠ 출처 줄 ≠ 탭 오늘 카드 ${sourceMiss}/${DAYS}일`);
+  problems.push(`지도 출처 줄이 탭과 다름 ${sourceMiss}일`);
+} else {
+  console.log('  성향·타로·관상 줄 = 탭 오늘 카드');
+}
+if (sourceCountMiss) {
+  console.log(`  ⚠ 출처 줄 수 ≠ 4 ${sourceCountMiss}/${DAYS}일`);
+  problems.push(`지도 출처 줄 수 ${sourceCountMiss}일`);
+} else {
+  console.log('  프로필 완전: 사주·성향·타로·관상 4줄');
+}
 
 console.log('\n=== 문장 접합 검사 (마침표 없이 붙은 문장) ===');
 // `…풀립니다 INTJ로는` 처럼 종결어미 뒤에 마침표 없이 다음 문장이 붙는 경우
@@ -244,9 +291,12 @@ for (let i = 0; i < 3; i++) {
 
 console.log('\n=== 지도 2일치 ===');
 for (let i = 0; i < 2; i++) {
-  console.log(`\n[${days[i].toISOString().slice(0, 10)}] ${fortunes[i].headline} (${fortunes[i].score})`);
-  console.log(`  ${fortunes[i].guidance}`);
-  console.log(`  ${fortunes[i].closing}`);
+  const f = fortunes[i];
+  console.log(`\n[${days[i].toISOString().slice(0, 10)}] ${f.moodHeadline} (${f.score})`);
+  for (const src of f.sources ?? []) console.log(`  [${src.source}] ${src.line}`);
+  if (f.scoreNote) console.log(`  ${f.scoreNote}`);
+  console.log(`  ${f.guidance}`);
+  console.log(`  ${f.closing}`);
 }
 
 if (problems.length) {

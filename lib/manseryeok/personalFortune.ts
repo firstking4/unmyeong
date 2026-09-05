@@ -98,6 +98,12 @@ export type PersonalFortuneScore = {
   todayBranchTenGod: string;
   hourAlignVerdict: PillarAlignVerdict | null;
   hourAlignDelta: number;
+  /** 오늘(일간+일지) 몫 — 진폭 적용 전 원점수. 지도 「점수 근거」 한 줄용 */
+  todayDelta: number;
+  /** 이달 몫 (진폭 적용 전) */
+  monthDelta: number;
+  /** 올해 몫 (진폭 적용 전) */
+  yearDelta: number;
 };
 
 export function computePersonalFortuneScore(
@@ -119,13 +125,12 @@ export function computePersonalFortuneScore(
     }
   }
 
+  const todayDelta =
+    (TODAY_STEM_DELTA[day.stemTenGod] ?? 0) + (TODAY_BRANCH_DELTA[day.branchTenGod] ?? 0);
+  const monthDelta = MONTH_DELTA[month.stemTenGod] ?? 0;
+  const yearDelta = YEAR_DELTA[year.stemTenGod] ?? 0;
   const rawTotal = Math.round(
-    ((TODAY_STEM_DELTA[day.stemTenGod] ?? 0) +
-      (TODAY_BRANCH_DELTA[day.branchTenGod] ?? 0) +
-      (MONTH_DELTA[month.stemTenGod] ?? 0) +
-      (YEAR_DELTA[year.stemTenGod] ?? 0) +
-      hourAlignDelta) *
-      RAW_AMPLITUDE,
+    (todayDelta + monthDelta + yearDelta + hourAlignDelta) * RAW_AMPLITUDE,
   );
 
   const todayScore = Math.max(
@@ -145,5 +150,8 @@ export function computePersonalFortuneScore(
     todayBranchTenGod: day.branchTenGod,
     hourAlignVerdict,
     hourAlignDelta,
+    todayDelta,
+    monthDelta,
+    yearDelta,
   };
 }

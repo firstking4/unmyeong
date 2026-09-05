@@ -1,5 +1,9 @@
 import { keywordPolarity, type KeywordPolarity } from '@/lib/keywordPolarity';
-import { buildTodayPhysiognomy, countPhysiognomySelections } from '@/lib/physiognomy';
+import {
+  buildTodayPhysiognomy,
+  countPhysiognomySelections,
+  physiognomySelectionKey,
+} from '@/lib/physiognomy';
 import { buildSajuReading } from '@/lib/saju';
 import { buildSeonghyangReading } from '@/lib/seonghyang';
 import { buildTarotReading } from '@/lib/tarot';
@@ -126,13 +130,7 @@ const keywordsMemo: { key: string; value: TodayKeywordSet | undefined } = { key:
 
 export function buildTodayKeywords(profile: Profile, date = new Date()): TodayKeywordSet {
   const dateKey = ymd(date);
-  const physiognomyKey = profile.physiognomy
-    ? Object.entries(profile.physiognomy)
-        .filter(([, value]) => Boolean(value))
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([category, option]) => `${category}=${option}`)
-        .join(',')
-    : '';
+  const physiognomyKey = physiognomySelectionKey(profile.physiognomy);
   const key = `${dateKey}:${profile.birthDate ?? ''}:${profile.birthTime ?? ''}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}:${profile.name ?? ''}:${profile.gender ?? ''}:${physiognomyKey}`;
   return memoLast(keywordsMemo, key, () => buildTodayKeywordsNow(profile, date));
 }

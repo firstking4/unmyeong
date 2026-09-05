@@ -90,10 +90,26 @@ export type FortuneInsights = {
   luckTags: string[];
 };
 
+export type FortuneSource = '사주' | '성향' | '타로' | '관상';
+
+/** 지도 본문 한 줄과 그 출처 탭 — 칩과 같은 딥링크 */
+export type FortuneSourceLine = {
+  source: FortuneSource;
+  line: string;
+  route: string;
+};
+
 export type IntegratedFortune = {
   headline: string;
   moodHeadline: string;
+  /** `sources`의 줄을 사주 → 성향 → 타로 · 관상 순으로 이은 본문 */
   summary: string;
+  /** 만세력 없을 때만 — 출처 라벨 없이 본문 앞에 두는 종합 리드 */
+  introLine?: string;
+  /** 본문을 만든 출처별 한 줄. 프로필이 비어 있으면 일부만 있다 */
+  sources?: FortuneSourceLine[];
+  /** 점수 근거 한 줄 (만세력 있을 때만) */
+  scoreNote?: string;
   guidance: string;
   caution?: string;
   closing: string;

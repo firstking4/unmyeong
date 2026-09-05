@@ -39,6 +39,19 @@ export function getPhysiognomyOptionForCategory(
   return getPhysiognomyOption(selection[categoryId]);
 }
 
+/**
+ * 선택을 메모 키에 넣을 때 쓰는 문자열 — 카테고리 순 정렬, 빈 값 제외.
+ * `buildTodayKeywords`·`buildIntegratedFortune`이 같은 키를 써야 한다.
+ */
+export function physiognomySelectionKey(selection?: PhysiognomySelection | null): string {
+  if (!selection) return '';
+  return Object.entries(selection)
+    .filter(([, value]) => Boolean(value))
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([category, option]) => `${category}=${option}`)
+    .join(',');
+}
+
 export function countPhysiognomySelections(selection: PhysiognomySelection): number {
   return collection.categories.filter((cat) => selection[cat.id]).length;
 }
@@ -134,6 +147,8 @@ export function buildTodayPhysiognomy(
     }),
     // 팩 headline이 이미 「키워드 · 문장」이라 키워드를 다시 붙이지 않는다
     headline: theme.headline,
+    /** 오늘 팩 focus 한 문장 — `summary`의 첫 문장이자 지도 「관상」 줄 */
+    focus: endSentence(theme.focus),
     keywords: withSparseCaution(
       themes.map((item) => item.keyword),
       `physiognomy-caution:${selectedIds}:${personSalt ?? ''}`,

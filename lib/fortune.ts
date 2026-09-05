@@ -1,11 +1,4 @@
-import {
-  getBloodType,
-  getFiveElement,
-  getMbti,
-  getWesternZodiac,
-  getZodiacAnimalRecord,
-  pickDailyTarotCard,
-} from '@/lib/data/catalog';
+import { getBloodType, getMbti, getWesternZodiac, pickDailyTarotCard } from '@/lib/data/catalog';
 import { pickDaily, pickDailyFrom } from '@/lib/daily/pick';
 import { withEulReul, withGwa, withIga, withRo } from '@/lib/korean/particle';
 import { joinSentences } from '@/lib/korean/sentence';
@@ -14,11 +7,26 @@ import {
   computePersonalFortuneScore,
   getManseryeokPeriod,
   getPillarAlignVerdict,
+  type PersonalFortuneScore,
   tenGodPlain,
 } from '@/lib/manseryeok';
 import { memoLast } from '@/lib/memoLast';
+import {
+  buildTodayPhysiognomy,
+  countPhysiognomySelections,
+  physiognomySelectionKey,
+} from './physiognomy';
 import { getElement, getZodiacAnimal, tonesForTenGods } from './saju';
-import type { FortuneInsights, IntegratedFortune, PillarTone, Profile } from './types';
+import { buildSeonghyangReading } from './seonghyang';
+import { buildTarotReading } from './tarot';
+import { buildTodayKeywords } from './todayKeywords';
+import type {
+  FortuneInsights,
+  FortuneSourceLine,
+  IntegratedFortune,
+  PillarTone,
+  Profile,
+} from './types';
 
 /** 톤별 안내 — 한 문장만 두면 같은 톤이 걸린 날마다 같은 말이 나온다 */
 const TONE_GUIDANCE: Record<PillarTone, string[]> = {
@@ -202,26 +210,41 @@ function buildTodayLead(
 }
 
 /**
- * 내 고유의 결과 오늘의 만남 — 하나만 골라 엮는다.
- * 띠·별자리·MBTI·혈액형을 한 문장에 다 넣으면 읽기 어려운 장문이 된다.
+ * 점수 근거 한 줄 — 오늘(일간+일지)과 이달·올해 몫의 방향만 쉬운 말로.
+ * 십신 이름·점수 표는 사주 탭에 둔다 (`fortune-copy.mdc` §7).
+ * 시주 맞음/어긋남은 사주 줄(`buildHourPillarContext`)이 이미 말하므로 여기서 되풀이하지 않는다.
  */
-function buildBaseMeetLine(profile: Profile, profileSalt: string, date: Date): string | null {
-  const mbtiRec = getMbti(profile.mbti);
-  const blood = getBloodType(profile.bloodType);
-  const west = resolveWesternZodiac(profile);
-  const animal = getZodiacAnimalRecord(getZodiacAnimal(profile.birthDate));
-  const mood = getFiveElement(getElement(profile.birthDate))?.mood;
+function buildScoreNote(period: PersonalFortuneScore, profileSalt: string, date: Date): string {
+  const todaySign = period.todayDelta > 0 ? 1 : period.todayDelta < 0 ? -1 : 0;
+  const season = period.monthDelta + period.yearDelta;
+  const seasonSign = season >= 6 ? 1 : season <= -6 ? -1 : 0;
 
-  const options = [
-    animal && mood ? `${animal.label}띠의 ${withIga(mood)} 오늘 흐름과 잘 맞물립니다.` : null,
-    west ? `${west.label} 기질이 오늘 흐름을 타기 쉽습니다.` : null,
-    mbtiRec?.keywords[0] ? `평소의 ${withIga(mbtiRec.keywords[0])} 오늘 살아납니다.` : null,
-    blood?.keywords[0]
-      ? `${blood.label}형 특유의 ${withIga(blood.keywords[0])} 오늘은 빛을 냅니다.`
-      : null,
-  ].filter((line): line is string => Boolean(line));
+  const todayPool =
+    todaySign > 0
+      ? [
+          '오늘 들어오는 기운이 내 기운을 밀어 주고',
+          '오늘의 기운이 나와 잘 맞고',
+          '오늘 흐름이 내 쪽으로 기울고',
+        ]
+      : todaySign < 0
+        ? [
+            '오늘 들어오는 기운이 내 기운과 부딪히고',
+            '오늘의 기운이 나와 엇갈리고',
+            '오늘 흐름이 내 결과 다르게 가고',
+          ]
+        : ['오늘 들어오는 기운은 내 기운과 나란하고', '오늘의 기운은 나와 비슷한 결이고'];
+  const todayClause =
+    pickDailyFrom(todayPool, `fortune-score-today:${profileSalt}`, date) ?? todayPool[0]!;
 
-  return pickDailyFrom(options, `fortune-base:${profileSalt}`, date);
+  const same = todaySign === seasonSign;
+  const seasonClause =
+    seasonSign > 0
+      ? `이달·올해 흐름${same ? '도' : '이'} 받쳐 주어`
+      : seasonSign < 0
+        ? `이달·올해 흐름${same ? '도' : '은'} 조심스러워`
+        : `이달·올해 흐름${same ? '도' : '은'} 무난해`;
+
+  return `${todayClause} ${seasonClause} ${period.score}점입니다.`;
 }
 
 function buildInsightChips(profile: Profile, tarotTitle: string, tones: PillarTone[]): string[] {
@@ -307,7 +330,8 @@ const fortuneMemo: { key: string; value: IntegratedFortune | undefined } = { key
 
 export function buildIntegratedFortune(profile: Profile, date = new Date()): IntegratedFortune {
   const dateKey = localYmd(date);
-  const key = `${dateKey}:${profile.birthDate ?? ''}:${profile.birthTime ?? ''}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}:${profile.name ?? ''}:${profile.gender ?? ''}`;
+  // 관상 줄이 본문에 들어가므로 선택 특징도 키에 넣는다 (`buildTodayKeywords`와 같은 방식)
+  const key = `${dateKey}:${profile.birthDate ?? ''}:${profile.birthTime ?? ''}:${profile.mbti ?? ''}:${profile.bloodType ?? ''}:${profile.name ?? ''}:${profile.gender ?? ''}:${physiognomySelectionKey(profile.physiognomy)}`;
   return memoLast(fortuneMemo, key, () => buildIntegratedFortuneNow(profile, date, dateKey));
 }
 
@@ -374,14 +398,38 @@ function buildIntegratedFortuneNow(
   const name = profile.name?.trim() || '당신';
   const headline = `${name}의 오늘`;
 
-  // 지도 카드는 한 문장에 하나씩, 쉬운 말로 — 전문 코드는 사주 탭에 둔다
-  const summary = joinSentences([
+  // 본문은 「오늘 네 탭이 말하는 것의 요약」 — 출처마다 한 줄, 쉬운 말로 (전문 코드는 사주 탭에 둔다).
+  // 성향·관상 줄은 각 탭 오늘 카드의 첫 문장(팩 focus)과 같은 빌더 결과다 — 칩을 눌러 가면 이어진다.
+  const sajuLine = joinSentences([
     buildTodayLead(primaryTone, dailyMood, profileSalt, date, periodScore?.selfTodayTenGod),
     buildHourPillarContext(profile, date),
-    buildBaseMeetLine(profile, profileSalt, date),
-    theme.focus,
-    tarot.summary ? `타로 「${tarot.title}」 — ${tarot.summary}` : null,
   ]);
+  const seonghyangToday = buildSeonghyangReading(profile, {}, date).today;
+  const tarotReading = buildTarotReading(profile, date);
+  const gwansangToday =
+    profile.physiognomy && countPhysiognomySelections(profile.physiognomy) > 0
+      ? buildTodayPhysiognomy(profile.physiognomy, date, profile.birthDate)
+      : null;
+
+  const sources: FortuneSourceLine[] = [];
+  // 만세력이 없으면 리드가 사주가 아니라 종합 팩 문장이라 출처를 붙이지 않는다
+  if (periodScore) sources.push({ source: '사주', line: sajuLine, route: '/saju' });
+  if (seonghyangToday) {
+    sources.push({ source: '성향', line: seonghyangToday.focus, route: '/seonghyang' });
+  }
+  if (tarotReading.summary) {
+    sources.push({
+      source: '타로',
+      // 출처 라벨이 「타로」이므로 줄 앞에 같은 말을 반복하지 않는다
+      line: `「${tarotReading.title}」 — ${tarotReading.summary}`,
+      route: '/tarot',
+    });
+  }
+  if (gwansangToday) sources.push({ source: '관상', line: gwansangToday.focus, route: '/gwansang' });
+
+  const introLine = periodScore ? undefined : sajuLine;
+  const summary = joinSentences([introLine, ...sources.map((item) => item.line)]);
+  const scoreNote = periodScore ? buildScoreNote(periodScore, profileSalt, date) : undefined;
 
   const luckTags = [theme.keyword, ...buildLuckTags(tones)].filter(
     (tag, index, all) => all.indexOf(tag) === index,
@@ -394,10 +442,16 @@ function buildIntegratedFortuneNow(
     luckTags: luckTags.slice(0, 4),
   };
 
+  // 헤드라인 키워드는 허브 첫 칩 — home 팩 단어는 칩에 없어 「정리 · 좋음」이 허브와 어긋났다
+  const hubFirst = buildTodayKeywords(profile, date).keywords[0]?.label;
+
   return {
     headline,
-    moodHeadline: `${theme.keyword} · ${grade}`,
+    moodHeadline: hubFirst ? `${hubFirst} · ${grade}` : grade,
     summary,
+    introLine,
+    sources,
+    scoreNote,
     guidance,
     caution: joinSentences([theme.caution, theme.relationship]),
     closing,
